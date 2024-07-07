@@ -1,7 +1,6 @@
 package dev.evanchang.somnia.ui.composables
 
 import android.content.res.Configuration
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
@@ -14,9 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -26,10 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,20 +49,21 @@ import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 @Composable
 fun SubmissionList(
     submissions: Flow<PagingData<Submission>>,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> = submissions.collectAsLazyPagingItems()
-    val listState = rememberLazyListState()
+    val listState = rememberLazyStaggeredGridState()
     val scrollState = rememberScrollState()
 
-    LazyColumn(
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(400.dp),
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .scrollable(scrollState, Orientation.Vertical), state = listState
+            .scrollable(scrollState, Orientation.Vertical),
+        state = listState
     ) {
         items(count = lazySubmissionItems.itemCount,
             key = { index -> lazySubmissionItems[index]!!.id }) { index ->
@@ -82,7 +78,7 @@ private fun SubmissionCard(submission: Submission) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ), onClick = {}, modifier = Modifier.padding(vertical = 4.dp)
+        ), onClick = {}, modifier = Modifier.padding(4.dp)
     ) {
         Column(modifier = Modifier.padding(all = 16.dp)) {
             SubmissionCardHeader(submission = submission)
