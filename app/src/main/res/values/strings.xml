@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Somnia</string>
+    <string name="title_activity_submission_list">SubmissionList</string>
 </resources>
