@@ -12,14 +12,11 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import dev.evanchang.somnia.api.reddit.SubredditSubmissionsPagingBackend
 import dev.evanchang.somnia.api.reddit.SubredditSubmissionsViewModel
 import dev.evanchang.somnia.ui.composables.SubmissionList
 
 class MainActivity : ComponentActivity() {
-    private val mainViewModel: SubredditSubmissionsViewModel = SubredditSubmissionsViewModel(
-        SubredditSubmissionsPagingBackend()
-    )
+    private val mainViewModel: SubredditSubmissionsViewModel = SubredditSubmissionsViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

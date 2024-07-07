@@ -87,6 +87,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    val retrofitVersion = "2.11.0"
+    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
+    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
+    implementation("io.gsonfire:gson-fire:1.9.0")
+
     val coilVersion = "2.6.0"
     implementation("io.coil-kt:coil:$coilVersion")
     implementation("io.coil-kt:coil-compose:$coilVersion")
