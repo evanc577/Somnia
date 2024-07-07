@@ -3,6 +3,10 @@ package dev.evanchang.somnia.data
 import android.text.Html
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
+import java.time.Instant
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Keep
 data class Submission(
@@ -14,9 +18,31 @@ data class Submission(
     val url: String,
     val preview: SubmissionPreview?,
     @SerializedName("media_metadata") val mediaMetadata: Map<String, MediaMetadata>?,
+    val score: Int,
+    @SerializedName("num_comments") val numComments: Int,
+    private val created: Int,
 ) {
     fun escapedTitle(): String {
         return escapeString(title)
+    }
+
+    fun elapsedTime(): Duration {
+        return (Instant.now().epochSecond - created).toDuration(DurationUnit.SECONDS)
+    }
+
+    fun elapsedTimeString(): String {
+        val elapsedTime = elapsedTime()
+        if (elapsedTime < (1).toDuration(DurationUnit.MINUTES)) {
+            return "${elapsedTime.inWholeSeconds}s"
+        } else if (elapsedTime < (1).toDuration(DurationUnit.HOURS)) {
+            return "${elapsedTime.inWholeMinutes}m"
+        } else if (elapsedTime < (1).toDuration(DurationUnit.DAYS)) {
+            return "${elapsedTime.inWholeHours}h"
+        } else if (elapsedTime < (365).toDuration(DurationUnit.DAYS)) {
+            return "${elapsedTime.inWholeDays}d"
+        } else {
+            return "${elapsedTime.inWholeDays / 365}y"
+        }
     }
 }
 

@@ -2,11 +2,13 @@ package dev.evanchang.somnia.api.reddit
 
 import androidx.annotation.Keep
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import androidx.paging.cachedIn
 import com.google.gson.annotations.SerializedName
 import dev.evanchang.somnia.data.Submission
 import kotlinx.coroutines.flow.Flow
@@ -44,6 +46,7 @@ private interface API {
 
     companion object {
         var api: API? = null
+
         fun getInstance(): API {
             if (api == null) {
                 val retrofit = Retrofit.Builder().baseUrl("https://api.reddit.com")
@@ -86,5 +89,5 @@ private class SubredditSubmissionsPagingSource : PagingSource<String, Submission
 class SubredditSubmissionsViewModel : ViewModel() {
     val submissions: Flow<PagingData<Submission>> = Pager(PagingConfig(pageSize = 100)) {
         SubredditSubmissionsPagingSource()
-    }.flow
+    }.flow.cachedIn(viewModelScope)
 }
