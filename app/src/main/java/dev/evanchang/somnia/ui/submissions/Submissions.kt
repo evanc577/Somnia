@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,10 +33,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.paging.PagingData
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.SubcomposeAsyncImage
@@ -46,13 +48,76 @@ import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
 import dev.evanchang.somnia.ui.theme.SomniaTheme
-import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun Submissions(
     submissionsViewModel: SubmissionsViewModel,
 ) {
-    val lazySubmissionItems: LazyPagingItems<Submission> = submissionsViewModel.submissions.collectAsLazyPagingItems()
+    val lazySubmissionItems: LazyPagingItems<Submission> =
+        submissionsViewModel.submissions.collectAsLazyPagingItems()
+
+    when (val s = lazySubmissionItems.loadState.refresh) {
+        is LoadState.Loading -> InitialLoading()
+        is LoadState.Error -> ErrorCard(
+            lazySubmissionItems = lazySubmissionItems,
+            message = s.error.message,
+            retry = ErrorRetry.RETRY
+        )
+
+        else -> SubmissionList(lazySubmissionItems = lazySubmissionItems)
+    }
+}
+
+@Preview
+@Composable
+private fun InitialLoading() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        CircularProgressIndicator()
+    }
+}
+
+private enum class ErrorRetry {
+    RETRY, REFRESH,
+}
+
+@Composable
+private fun ErrorCard(
+    lazySubmissionItems: LazyPagingItems<Submission>, message: String?, retry: ErrorRetry
+) {
+    Card(
+        onClick = {
+            when (retry) {
+                ErrorRetry.RETRY -> lazySubmissionItems.retry()
+                ErrorRetry.REFRESH -> lazySubmissionItems.refresh()
+            }
+        },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
+        modifier = Modifier.padding(4.dp)
+    ) {
+        Box(modifier = Modifier.padding(8.dp)) {
+            Column {
+                Text(
+                    text = "Could not fetch posts, tap to retry",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (message != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$message",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onError,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubmissionList(lazySubmissionItems: LazyPagingItems<Submission>) {
     val listState = rememberLazyStaggeredGridState()
     val scrollState = rememberScrollState()
 
@@ -66,7 +131,21 @@ fun Submissions(
         items(count = lazySubmissionItems.itemCount,
             key = { index -> lazySubmissionItems[index]!!.id }) { index ->
             val submission = lazySubmissionItems[index]
-            SubmissionCard(submission = submission!!)
+            if (submission != null) {
+                SubmissionCard(submission = submission)
+            }
+        }
+        when (val s = lazySubmissionItems.loadState.append) {
+            is LoadState.Loading -> item { LinearProgressIndicator() }
+            is LoadState.Error -> item {
+                ErrorCard(
+                    lazySubmissionItems = lazySubmissionItems,
+                    message = s.error.message,
+                    retry = ErrorRetry.RETRY,
+                )
+            }
+
+            else -> Unit
         }
     }
 }
