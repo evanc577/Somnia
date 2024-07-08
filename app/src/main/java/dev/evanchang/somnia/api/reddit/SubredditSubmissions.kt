@@ -1,17 +1,10 @@
 package dev.evanchang.somnia.api.reddit
 
 import androidx.annotation.Keep
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import androidx.paging.cachedIn
 import com.google.gson.annotations.SerializedName
 import dev.evanchang.somnia.data.Submission
-import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -58,7 +51,7 @@ private interface API {
     }
 }
 
-private class SubredditSubmissionsPagingSource : PagingSource<String, Submission>() {
+class SubredditSubmissionsPagingSource : PagingSource<String, Submission>() {
     private val backend: API = API.getInstance()
 
     override suspend fun load(
@@ -84,10 +77,4 @@ private class SubredditSubmissionsPagingSource : PagingSource<String, Submission
     override fun getRefreshKey(state: PagingState<String, Submission>): String? {
         return null
     }
-}
-
-class SubredditSubmissionsViewModel : ViewModel() {
-    val submissions: Flow<PagingData<Submission>> = Pager(PagingConfig(pageSize = 100)) {
-        SubredditSubmissionsPagingSource()
-    }.flow.cachedIn(viewModelScope)
 }

@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.composables
+package dev.evanchang.somnia.ui.submissions
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,7 +49,7 @@ import dev.evanchang.somnia.ui.theme.SomniaTheme
 import kotlinx.coroutines.flow.Flow
 
 @Composable
-fun SubmissionList(
+fun Submissions(
     submissions: Flow<PagingData<Submission>>,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> = submissions.collectAsLazyPagingItems()
@@ -217,17 +215,15 @@ private fun SubmissionCardPreview(submission: Submission) {
         ImageRequest.Builder(LocalContext.current).data(previewImage.escapedUrl()).crossfade(true)
             .build()
 
-    SubcomposeAsyncImage(
-        model = imageRequest,
-        contentDescription = "Submission image",
-        contentScale = ContentScale.FillWidth,
-        loading = { PreviewLoading(width = previewImage.width, height = previewImage.height) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(
-                RoundedCornerShape(16.dp)
-            )
-    )
+    Card {
+        SubcomposeAsyncImage(
+            model = imageRequest,
+            contentDescription = "Submission image",
+            contentScale = ContentScale.FillWidth,
+            loading = { PreviewLoading(width = previewImage.width, height = previewImage.height) },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
@@ -274,6 +270,10 @@ private fun PreviewPostCard() {
     )
 
     SomniaTheme {
-        SubmissionCard(submission = submission)
+        Column {
+            for (i in 1..10) {
+                SubmissionCard(submission = submission)
+            }
+        }
     }
 }
