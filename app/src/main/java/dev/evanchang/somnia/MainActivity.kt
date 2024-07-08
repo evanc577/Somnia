@@ -18,7 +18,7 @@ import dev.evanchang.somnia.ui.submissions.SubmissionsViewModel
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 
 class MainActivity : ComponentActivity() {
-    private val mainViewModel by viewModels<SubmissionsViewModel>()
+    private val submissionsViewModel by viewModels<SubmissionsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                     Spacer(
                         modifier = Modifier.windowInsetsTopHeight(WindowInsets.systemBars)
                     )
-                    Submissions(submissions = mainViewModel.submissions)
+                    Submissions(submissionsViewModel = submissionsViewModel)
                 }
             }
         }

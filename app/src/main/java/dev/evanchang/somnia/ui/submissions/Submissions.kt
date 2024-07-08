@@ -50,9 +50,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun Submissions(
-    submissions: Flow<PagingData<Submission>>,
+    submissionsViewModel: SubmissionsViewModel,
 ) {
-    val lazySubmissionItems: LazyPagingItems<Submission> = submissions.collectAsLazyPagingItems()
+    val lazySubmissionItems: LazyPagingItems<Submission> = submissionsViewModel.submissions.collectAsLazyPagingItems()
     val listState = rememberLazyStaggeredGridState()
     val scrollState = rememberScrollState()
 
