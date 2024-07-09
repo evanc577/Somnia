@@ -325,7 +325,7 @@ private fun PreviewLoading(width: Int, height: Int) {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun PreviewPostCard() {
+fun PreviewPostCard() {
     val submission = Submission(
         id = "",
         author = "author",

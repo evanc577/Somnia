@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import dev.evanchang.somnia.ui.scaffold.MainScaffold
 import dev.evanchang.somnia.ui.submissions.Submissions
 import dev.evanchang.somnia.ui.submissions.SubmissionsViewModel
 import dev.evanchang.somnia.ui.theme.SomniaTheme
@@ -26,10 +27,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SomniaTheme {
-                Column(modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceDim)) {
-                    Spacer(
-                        modifier = Modifier.windowInsetsTopHeight(WindowInsets.systemBars)
-                    )
+                MainScaffold {
                     Submissions(submissionsViewModel = submissionsViewModel)
                 }
             }
