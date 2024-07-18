@@ -282,11 +282,8 @@ private fun CommentsButton(submission: Submission) {
 
 @Composable
 private fun SubmissionCardPreview(submission: Submission) {
-    val previewImage = if (submission.preview != null) {
-        submission.preview.images[0].source
-    } else if (submission.mediaMetadata != null) {
-        submission.mediaMetadata.values.first().source
-    } else {
+    val previewImage = submission.previewImage()
+    if (previewImage == null) {
         return
     }
 

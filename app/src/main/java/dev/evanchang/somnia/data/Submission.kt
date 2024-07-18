@@ -16,8 +16,8 @@ data class Submission(
     private val title: String,
     @SerializedName("post_hint") val postHint: PostHint?,
     val url: String,
-    val preview: SubmissionPreview?,
-    @SerializedName("media_metadata") val mediaMetadata: Map<String, MediaMetadata>?,
+    private val preview: SubmissionPreview?,
+    @SerializedName("media_metadata") private val mediaMetadata: Map<String, MediaMetadata>?,
     val score: Int,
     @SerializedName("num_comments") val numComments: Int,
     private val created: Int,
@@ -42,6 +42,16 @@ data class Submission(
             return "${elapsedTime.inWholeDays}d"
         } else {
             return "${elapsedTime.inWholeDays / 365}y"
+        }
+    }
+
+    fun previewImage(): PreviewImage? {
+        return if (preview != null) {
+            preview.images[0].source
+        } else if (mediaMetadata != null) {
+            mediaMetadata.values.first().source
+        } else {
+            null
         }
     }
 }
