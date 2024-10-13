@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,6 @@ import dev.evanchang.somnia.ui.submissions.SubmissionsViewModel
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 
 class MainActivity : ComponentActivity() {
-    private val submissionsViewModel by viewModels<SubmissionsViewModel>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -28,7 +27,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SomniaTheme {
                 MainScaffold {
-                    Submissions(submissionsViewModel = submissionsViewModel)
+                    Submissions()
                 }
             }
         }

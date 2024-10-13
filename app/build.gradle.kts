@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.evanchang.somnia"
-        minSdk = 26
+        minSdk = 30
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -95,4 +95,7 @@ dependencies {
     // Coil
     implementation(libs.coil)
     implementation(libs.coil.compose)
+
+    // Lifecycle
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

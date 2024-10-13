@@ -9,6 +9,9 @@ import androidx.paging.cachedIn
 import dev.evanchang.somnia.api.reddit.SubredditSubmissionsPagingSource
 import dev.evanchang.somnia.data.Submission
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class SubmissionsViewModel : ViewModel() {
     val submissions: Flow<PagingData<Submission>> = Pager(PagingConfig(pageSize = 3)) {

@@ -3,10 +3,12 @@ package dev.evanchang.somnia.api.reddit
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 import dev.evanchang.somnia.data.Submission
+import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -26,7 +28,8 @@ interface RedditApi {
         fun getInstance(): RedditApi {
             if (api == null) {
                 val retrofit = Retrofit.Builder().baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create()).build()
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
                 api = retrofit.create(RedditApi::class.java)
             }
             return api!!

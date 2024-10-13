@@ -15,7 +15,7 @@ class SubredditSubmissionsPagingSource : PagingSource<String, Submission>() {
                 subreddit = "dreamcatcher",
                 sort = "new",
                 after = params.key,
-                limit = params.loadSize
+                limit = 100,
             )
             val submissions: List<Submission> =
                 response.body()!!.responseData.children.map { d -> d.submission }
