@@ -96,6 +96,9 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.compose)
 
+    // Telephoto
+    implementation(libs.telephoto)
+
     // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

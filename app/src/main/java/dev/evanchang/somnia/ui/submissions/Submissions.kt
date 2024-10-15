@@ -25,10 +25,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,6 +54,7 @@ import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.theme.SomniaTheme
+import dev.evanchang.somnia.ui.util.ImageLoading
 
 @Composable
 fun Submissions(
@@ -325,12 +324,7 @@ private fun PreviewLoading(width: Int, height: Int) {
             .aspectRatio(width.toFloat() / height)
             .background(color = MaterialTheme.colorScheme.surfaceDim)
     ) {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .width(48.dp)
-                .height(48.dp)
-                .align(Alignment.Center)
-        )
+        ImageLoading()
     }
 }
 
@@ -344,6 +338,7 @@ fun PreviewPostCard() {
         subreddit = "subreddit",
         title = "Post title",
         postHint = null,
+        isGallery = null,
         url = "",
         preview = SubmissionPreview(
             listOf(

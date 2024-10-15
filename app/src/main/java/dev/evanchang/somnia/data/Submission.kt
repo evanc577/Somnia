@@ -15,6 +15,7 @@ data class Submission(
     val subreddit: String,
     private val title: String,
     @SerializedName("post_hint") val postHint: PostHint?,
+    @SerializedName("is_gallery") val isGallery: Boolean?,
     val url: String,
     private val preview: SubmissionPreview?,
     @SerializedName("media_metadata") private val mediaMetadata: Map<String, MediaMetadata>?,
@@ -53,6 +54,15 @@ data class Submission(
         } else {
             null
         }
+    }
+
+    fun images(): List<String>? {
+        if (postHint == PostHint.IMAGE) {
+            return arrayListOf(url)
+        } else if (isGallery == true) {
+            return mediaMetadata?.map({ (k, v) -> "https://i.redd.it/${k}.jpg" })?.toList()
+        }
+        return null
     }
 }
 
