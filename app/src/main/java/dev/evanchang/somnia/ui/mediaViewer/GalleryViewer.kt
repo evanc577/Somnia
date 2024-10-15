@@ -24,7 +24,7 @@ fun GalleryViewer(
     val pagerState = rememberPagerState { images.size }
     val loaded = remember { images.map({ _ -> false }).toMutableStateList() }
 
-    HorizontalPager(state = pagerState, beyondBoundsPageCount = 1) { imageIdx ->
+    HorizontalPager(state = pagerState, beyondViewportPageCount = 1) { imageIdx ->
         val imageRequest =
             ImageRequest.Builder(LocalContext.current).data(images[imageIdx])
                 .listener(

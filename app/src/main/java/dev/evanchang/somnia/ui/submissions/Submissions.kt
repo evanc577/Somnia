@@ -303,9 +303,7 @@ private fun SubmissionCardPreview(submission: Submission) {
         MediaViewer(submission = submission, onClose = { showMediaViewer = false })
     }
 
-    Card(
-        onClick = { showMediaViewer = true }
-    ) {
+    Card(onClick = { showMediaViewer = true }) {
         SubcomposeAsyncImage(
             model = imageRequest,
             contentDescription = "Submission image",

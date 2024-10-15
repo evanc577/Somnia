@@ -76,7 +76,7 @@ data class Submission(
         if (postHint == PostHint.IMAGE) {
             return arrayListOf(url)
         } else if (isGallery == true) {
-            return mediaMetadata?.map({ (k, v) -> "https://i.redd.it/${k}.jpg" })?.toList()
+            return mediaMetadata?.map({ (k, _) -> "https://i.redd.it/${k}.jpg" })?.toList()
         }
         return null
     }
