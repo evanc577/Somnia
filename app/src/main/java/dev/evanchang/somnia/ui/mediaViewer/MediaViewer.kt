@@ -4,9 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.evanchang.somnia.data.Media
 import dev.evanchang.somnia.data.Submission
 
 @Composable
@@ -15,8 +17,8 @@ fun MediaViewer(
     submission: Submission,
     onClose: () -> Unit,
 ) {
-    val images = submission.images()
-    if (images == null) {
+    val media = remember { submission.media() }
+    if (media == null) {
         return
     }
 
@@ -30,7 +32,10 @@ fun MediaViewer(
                     color = Color.Black,
                 )
         ) {
-            GalleryViewer(images)
+            when (media) {
+                is Media.Images -> GalleryViewer(media.images)
+                is Media.RedditVideo -> VideoViewer(media.video)
+            }
         }
     }
 }

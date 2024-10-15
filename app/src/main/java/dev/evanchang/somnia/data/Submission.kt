@@ -2,6 +2,7 @@ package dev.evanchang.somnia.data
 
 import android.text.Html
 import androidx.annotation.Keep
+import androidx.media3.common.MediaItem
 import com.google.gson.annotations.SerializedName
 import java.time.Instant
 import kotlin.time.Duration
@@ -19,6 +20,7 @@ data class Submission(
     val url: String,
     private val preview: SubmissionPreview?,
     @SerializedName("media_metadata") private val mediaMetadata: Map<String, MediaMetadata>?,
+    @SerializedName("secure_media") private val media: SecureMedia?,
     val score: Int,
     @SerializedName("num_comments") val numComments: Int,
     private val created: Int,
@@ -56,7 +58,21 @@ data class Submission(
         }
     }
 
-    fun images(): List<String>? {
+    fun media(): Media? {
+        val images = images()
+        if (images != null) {
+            return Media.Images(images)
+        }
+
+        val video = video()
+        if (video != null) {
+            return Media.RedditVideo(video)
+        }
+
+        return null
+    }
+
+    private fun images(): List<String>? {
         if (postHint == PostHint.IMAGE) {
             return arrayListOf(url)
         } else if (isGallery == true) {
@@ -64,6 +80,19 @@ data class Submission(
         }
         return null
     }
+
+    private fun video(): MediaItem? {
+        if (media?.redditVideo == null) {
+            return null
+        }
+        val mediaItem = MediaItem.fromUri(media.redditVideo.dashUrl)
+        return mediaItem
+    }
+}
+
+sealed class Media {
+    class Images(val images: List<String>) : Media()
+    class RedditVideo(val video: MediaItem) : Media()
 }
 
 @Keep
@@ -90,6 +119,17 @@ data class PreviewImage(
 @Keep
 data class MediaMetadata(
     @SerializedName("s") val source: PreviewImage,
+)
+
+@Keep
+data class SecureMedia(
+    @SerializedName("reddit_video") val redditVideo: RedditVideo?
+)
+
+@Keep
+data class RedditVideo(
+    @SerializedName("dash_url") val dashUrl: String,
+    val duration: Int,
 )
 
 @Keep
