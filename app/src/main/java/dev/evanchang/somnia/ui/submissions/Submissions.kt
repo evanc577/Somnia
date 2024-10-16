@@ -1,7 +1,6 @@
 package dev.evanchang.somnia.ui.submissions
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -48,6 +46,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtLeast
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
@@ -69,7 +69,7 @@ import kotlinx.coroutines.launch
 fun Submissions(
     submissionsViewModel: SubmissionsViewModel = viewModel(),
     listState: LazyStaggeredGridState,
-    padding: PaddingValues,
+    topPadding: Dp,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         submissionsViewModel.submissions.collectAsLazyPagingItems()
@@ -84,7 +84,7 @@ fun Submissions(
         else -> SubmissionList(
             lazySubmissionItems = lazySubmissionItems,
             listState = listState,
-            padding = padding,
+            topPadding = topPadding,
         )
     }
 }
@@ -143,7 +143,7 @@ private fun ErrorCard(
 private fun SubmissionList(
     lazySubmissionItems: LazyPagingItems<Submission>,
     listState: LazyStaggeredGridState,
-    padding: PaddingValues,
+    topPadding: Dp,
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -171,15 +171,14 @@ private fun SubmissionList(
                 isRefreshing = isRefreshing,
                 color = MaterialTheme.colorScheme.primary,
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter)
             )
-        }) {
+        },
+        modifier = Modifier.padding(top = topPadding)
+    ) {
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Adaptive(400.dp),
-            modifier = Modifier
-//                .padding(paddingValues = padding)
-                .background(MaterialTheme.colorScheme.surfaceContainerLowest),
+            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest),
             state = listState
         ) {
             items(count = lazySubmissionItems.itemCount,

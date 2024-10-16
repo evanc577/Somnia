@@ -1,6 +1,5 @@
 package dev.evanchang.somnia.ui.scaffold
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +19,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,12 +37,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import dev.evanchang.somnia.ui.submissions.Submissions
 import kotlin.math.roundToInt
 
-val TOP_BAR_HEIGHT = 64.dp
 val BOTTOM_BAR_HEIGHT = 80.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,21 +51,21 @@ fun MainScaffold() {
     val density = LocalDensity.current
     val listState = rememberLazyStaggeredGridState()
 
+    // Top bar
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    var topPadding by remember { mutableStateOf(0.dp) }
     val statusBarHeightPx = WindowInsets.safeDrawing.getTop(density)
+
+    // Bottom bar
     val navBarHeightPx = WindowInsets.safeDrawing.getBottom(density)
-
-    val topBarHeight = with(density) { statusBarHeightPx.toDp() + TOP_BAR_HEIGHT }
     val bottomBarHeight = with(density) { navBarHeightPx.toDp() + BOTTOM_BAR_HEIGHT }
-
     val bottomBarHeightPx = with(density) { bottomBarHeight.roundToPx().toFloat() }
     var tmpBottomBarOffsetHeightPx by remember { mutableStateOf(0f) }
     var bottomBarOffsetHeightPx by remember { mutableStateOf(0f) }
-
     LaunchedEffect(tmpBottomBarOffsetHeightPx) {
         bottomBarOffsetHeightPx = tmpBottomBarOffsetHeightPx.coerceIn(-(bottomBarHeightPx), 0f)
         tmpBottomBarOffsetHeightPx = bottomBarOffsetHeightPx
     }
-
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -74,7 +75,15 @@ fun MainScaffold() {
         }
     }
 
-    Scaffold(modifier = Modifier.nestedScroll(nestedScrollConnection), bottomBar = {
+    Scaffold(modifier = Modifier
+        .nestedScroll(nestedScrollConnection)
+        .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
+        TopAppBar(
+            title = {},
+            scrollBehavior = scrollBehavior,
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+        )
+    }, bottomBar = {
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerHighest,
             modifier = Modifier
@@ -101,9 +110,14 @@ fun MainScaffold() {
             }
         }
     }) { padding ->
+        // Only use top bar padding without status bar
+        topPadding =
+            (padding.calculateTopPadding() - with(density) { statusBarHeightPx.toDp() }).coerceAtLeast(
+                0.dp
+            )
         Column {
             Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
-            Submissions(listState = listState, padding = padding)
+            Submissions(listState = listState, topPadding = topPadding)
         }
     }
 }
