@@ -1,32 +1,39 @@
 package dev.evanchang.somnia.ui.submissions
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
@@ -55,30 +63,42 @@ import dev.evanchang.somnia.data.SubmissionPreview
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 import dev.evanchang.somnia.ui.util.ImageLoading
+import kotlinx.coroutines.launch
 
 @Composable
 fun Submissions(
     submissionsViewModel: SubmissionsViewModel = viewModel(),
+    listState: LazyStaggeredGridState,
+    padding: PaddingValues,
+    topBarHeight: Dp,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         submissionsViewModel.submissions.collectAsLazyPagingItems()
 
     when (val s = lazySubmissionItems.loadState.refresh) {
-        is LoadState.Loading -> InitialLoading()
+//        is LoadState.Loading -> InitialLoading(padding = padding)
         is LoadState.Error -> ErrorCard(
             lazySubmissionItems = lazySubmissionItems,
             message = s.error.message,
-            retry = ErrorRetry.RETRY
         )
 
-        else -> SubmissionList(lazySubmissionItems = lazySubmissionItems)
+        else -> SubmissionList(
+            lazySubmissionItems = lazySubmissionItems,
+            listState = listState,
+            padding = padding,
+            topBarHeight = topBarHeight,
+        )
     }
 }
 
-@Preview
 @Composable
-private fun InitialLoading() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+private fun InitialLoading(padding: PaddingValues) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(padding)
+            .fillMaxWidth()
+    ) {
         CircularProgressIndicator()
     }
 }
@@ -89,14 +109,11 @@ private enum class ErrorRetry {
 
 @Composable
 private fun ErrorCard(
-    lazySubmissionItems: LazyPagingItems<Submission>, message: String?, retry: ErrorRetry
+    lazySubmissionItems: LazyPagingItems<Submission>, message: String?
 ) {
     Card(
         onClick = {
-            when (retry) {
-                ErrorRetry.RETRY -> lazySubmissionItems.retry()
-                ErrorRetry.REFRESH -> lazySubmissionItems.refresh()
-            }
+            lazySubmissionItems.retry()
         },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
         modifier = Modifier.padding(4.dp)
@@ -123,36 +140,70 @@ private fun ErrorCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SubmissionList(lazySubmissionItems: LazyPagingItems<Submission>) {
-    val listState = rememberLazyStaggeredGridState()
-    val scrollState = rememberScrollState()
-
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Adaptive(400.dp),
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .scrollable(scrollState, Orientation.Vertical),
-        state = listState
-    ) {
-        items(count = lazySubmissionItems.itemCount,
-            key = { index -> lazySubmissionItems[index]!!.id }) { index ->
-            val submission = lazySubmissionItems[index]
-            if (submission != null) {
-                SubmissionCard(submission = submission)
-            }
+private fun SubmissionList(
+    lazySubmissionItems: LazyPagingItems<Submission>,
+    listState: LazyStaggeredGridState,
+    padding: PaddingValues,
+    topBarHeight: Dp,
+) {
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh: () -> Unit = {
+        isRefreshing = true
+        coroutineScope.launch {
+            lazySubmissionItems.refresh()
         }
-        when (val s = lazySubmissionItems.loadState.append) {
-            is LoadState.Loading -> item { LinearProgressIndicator() }
-            is LoadState.Error -> item {
-                ErrorCard(
-                    lazySubmissionItems = lazySubmissionItems,
-                    message = s.error.message,
-                    retry = ErrorRetry.RETRY,
-                )
-            }
+    }
 
-            else -> Unit
+    LaunchedEffect(lazySubmissionItems.loadState.refresh) {
+        if (isRefreshing && lazySubmissionItems.loadState.refresh != LoadState.Loading) {
+            isRefreshing = false
+            listState.scrollToItem(0)
+        }
+    }
+
+    PullToRefreshBox(isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        state = pullToRefreshState,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                color = MaterialTheme.colorScheme.primary,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .offset(x = 0.dp, y = topBarHeight)
+            )
+        }) {
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Adaptive(400.dp),
+            modifier = Modifier
+                .padding(paddingValues = padding)
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest),
+            state = listState
+        ) {
+            items(count = lazySubmissionItems.itemCount,
+                key = { index -> lazySubmissionItems[index]!!.id }) { index ->
+                val submission = lazySubmissionItems[index]
+                if (submission != null) {
+                    SubmissionCard(submission = submission)
+                }
+            }
+            when (val s = lazySubmissionItems.loadState.append) {
+                is LoadState.Loading -> item { LinearProgressIndicator() }
+                is LoadState.Error -> item {
+                    ErrorCard(
+                        lazySubmissionItems = lazySubmissionItems,
+                        message = s.error.message,
+                    )
+                }
+
+                else -> Unit
+            }
         }
     }
 }

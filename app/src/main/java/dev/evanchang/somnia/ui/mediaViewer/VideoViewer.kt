@@ -1,9 +1,5 @@
 package dev.evanchang.somnia.ui.mediaViewer
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
@@ -18,14 +14,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
@@ -61,11 +53,7 @@ fun VideoViewer(mediaItem: MediaItem) {
             setControllerVisibilityListener(object : PlayerView.ControllerVisibilityListener {
                 // Set immersive variable depending on controller visibility
                 override fun onVisibilityChanged(visibility: Int) {
-                    if (isControllerFullyVisible) {
-                        immersive = false
-                    } else {
-                        immersive = true
-                    }
+                    immersive = !isControllerFullyVisible
                 }
             })
             FrameLayout.LayoutParams(

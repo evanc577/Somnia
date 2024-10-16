@@ -4,19 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.activity.viewModels
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsTopHeight
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Modifier
 import dev.evanchang.somnia.ui.scaffold.MainScaffold
-import dev.evanchang.somnia.ui.submissions.Submissions
-import dev.evanchang.somnia.ui.submissions.SubmissionsViewModel
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,9 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SomniaTheme {
-                MainScaffold {
-                    Submissions()
-                }
+                MainScaffold()
             }
         }
     }
