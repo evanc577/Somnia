@@ -70,7 +70,6 @@ fun Submissions(
     submissionsViewModel: SubmissionsViewModel = viewModel(),
     listState: LazyStaggeredGridState,
     padding: PaddingValues,
-    topBarHeight: Dp,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         submissionsViewModel.submissions.collectAsLazyPagingItems()
@@ -86,7 +85,6 @@ fun Submissions(
             lazySubmissionItems = lazySubmissionItems,
             listState = listState,
             padding = padding,
-            topBarHeight = topBarHeight,
         )
     }
 }
@@ -146,7 +144,6 @@ private fun SubmissionList(
     lazySubmissionItems: LazyPagingItems<Submission>,
     listState: LazyStaggeredGridState,
     padding: PaddingValues,
-    topBarHeight: Dp,
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -176,13 +173,12 @@ private fun SubmissionList(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .offset(x = 0.dp, y = topBarHeight)
             )
         }) {
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Adaptive(400.dp),
             modifier = Modifier
-                .padding(paddingValues = padding)
+//                .padding(paddingValues = padding)
                 .background(MaterialTheme.colorScheme.surfaceContainerLowest),
             state = listState
         ) {
