@@ -15,6 +15,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -46,8 +49,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.coerceAtLeast
-import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
@@ -55,7 +56,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import dev.evanchang.somnia.R
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
@@ -162,7 +162,8 @@ private fun SubmissionList(
         }
     }
 
-    PullToRefreshBox(isRefreshing = isRefreshing,
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
         onRefresh = onRefresh,
         state = pullToRefreshState,
         indicator = {
@@ -281,7 +282,7 @@ private fun ScoreButton(submission: Submission) {
             Row {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.outline_keyboard_arrow_up_24),
+                    imageVector = Icons.Outlined.KeyboardArrowUp,
                     contentDescription = "",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.align(Alignment.CenterVertically)
@@ -295,7 +296,7 @@ private fun ScoreButton(submission: Submission) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.outline_keyboard_arrow_down_24),
+                    imageVector = Icons.Outlined.KeyboardArrowDown,
                     contentDescription = "",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.align(Alignment.CenterVertically)
@@ -313,7 +314,7 @@ private fun CommentsButton(submission: Submission) {
             Row {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.outline_comment_24),
+                    imageVector = Icons.Outlined.ModeComment,
                     contentDescription = "",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.align(Alignment.CenterVertically)

@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import dev.evanchang.somnia.ui.submissions.Submissions
 import kotlin.math.roundToInt
 
-val BOTTOM_BAR_HEIGHT = 80.dp
+private val BOTTOM_BAR_HEIGHT = 80.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -78,11 +80,19 @@ fun MainScaffold() {
     Scaffold(modifier = Modifier
         .nestedScroll(nestedScrollConnection)
         .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
-        TopAppBar(
-            title = {},
+        TopAppBar(title = {},
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
-        )
+            navigationIcon = {
+                IconButton(onClick = {}) {
+                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "")
+                }
+            },
+            actions = {
+                IconButton(onClick = {}) {
+                    Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
+                }
+            })
     }, bottomBar = {
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -103,7 +113,7 @@ fun MainScaffold() {
                 ) {
                     for (i in 0..4) {
                         IconButton(onClick = {}) {
-                            Icon(Icons.Default.Star, contentDescription = "")
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
                         }
                     }
                 }
