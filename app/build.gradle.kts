@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -85,31 +86,20 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Material 3
-    implementation(libs.material.icons.extended)
-
-    // Paging
-    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.paging.compose)
-
-    // Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-
-    // Coil
+    implementation(libs.androidx.paging.runtime)
     implementation(libs.coil)
     implementation(libs.coil.compose)
-
-    // Media3
+    implementation(libs.converter.gson)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.material.icons.extended)
+    implementation(libs.media3.common)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.ui)
-    implementation(libs.media3.common)
-
-    // Telephoto
+    implementation(libs.navigation.compose)
+    implementation(libs.retrofit)
     implementation(libs.telephoto)
-
-    // Lifecycle
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

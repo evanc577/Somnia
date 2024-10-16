@@ -1,5 +1,6 @@
 package dev.evanchang.somnia.ui.scaffold
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,13 +15,17 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -41,17 +46,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import dev.evanchang.somnia.SettingsScreen
 import dev.evanchang.somnia.ui.submissions.Submissions
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
-fun MainScaffold() {
+fun MainScaffold(
+    navController: NavController,
+) {
     val density = LocalDensity.current
+
+    // Scrolling
     val listState = rememberLazyStaggeredGridState()
+    var scrollToTop by remember { mutableStateOf(false) }
+    LaunchedEffect(scrollToTop) {
+        if (scrollToTop) {
+            listState.scrollToItem(0)
+            scrollToTop = false
+        }
+    }
 
     // Top bar
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -77,10 +95,16 @@ fun MainScaffold() {
         }
     }
 
+    // Buttons
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    // UI
     Scaffold(modifier = Modifier
         .nestedScroll(nestedScrollConnection)
         .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
-        TopAppBar(title = {},
+        TopAppBar(title = {
+            Text(text = "Somnia")
+        },
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
             navigationIcon = {
@@ -89,10 +113,16 @@ fun MainScaffold() {
                 }
             },
             actions = {
-                IconButton(onClick = {}) {
-                    Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
+                Box {
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
+                    }
+                    Menu(expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false },
+                        navigateToSettings = { navController.navigate(SettingsScreen) })
                 }
-            })
+            },
+            modifier = Modifier.clickable { scrollToTop = true })
     }, bottomBar = {
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -130,4 +160,22 @@ fun MainScaffold() {
             Submissions(listState = listState, topPadding = topPadding)
         }
     }
+}
+
+@Composable
+private fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, navigateToSettings: () -> Unit) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
+        DropdownMenuItem(onClick = {
+            navigateToSettings()
+            onDismissRequest()
+        },
+            text = { Text("Settings") },
+            leadingIcon = { Icon(imageVector = Icons.Default.Settings, contentDescription = "") })
+    }
+}
+
+@Preview
+@Composable
+private fun MainScaffoldPreview() {
+    MainScaffold(navController = rememberNavController())
 }
