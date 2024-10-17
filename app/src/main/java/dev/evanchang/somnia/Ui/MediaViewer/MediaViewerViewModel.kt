@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.mediaViewer
+package dev.evanchang.somnia.Ui.MediaViewer
 
 import androidx.lifecycle.ViewModel
 

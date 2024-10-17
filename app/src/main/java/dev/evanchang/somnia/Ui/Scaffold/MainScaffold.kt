@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.scaffold
+package dev.evanchang.somnia.Ui.Scaffold
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import dev.evanchang.somnia.SettingsScreen
-import dev.evanchang.somnia.ui.submissions.Submissions
+import dev.evanchang.somnia.Ui.Submissions.Submissions
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp

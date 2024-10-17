@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.scaffold
+package dev.evanchang.somnia.Ui.Scaffold
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface

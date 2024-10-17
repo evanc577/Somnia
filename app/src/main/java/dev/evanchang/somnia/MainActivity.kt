@@ -7,9 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import dev.evanchang.somnia.ui.scaffold.MainScaffold
-import dev.evanchang.somnia.ui.settings.Settings
-import dev.evanchang.somnia.ui.theme.SomniaTheme
+import dev.evanchang.somnia.Ui.Scaffold.MainScaffold
+import dev.evanchang.somnia.Ui.Settings.Settings
+import dev.evanchang.somnia.Ui.Theme.SomniaTheme
 import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {

@@ -1,8 +1,8 @@
-package dev.evanchang.somnia.api.reddit
+package dev.evanchang.somnia.Api.reddit
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.Data.Submission
 
 class SubredditSubmissionsPagingSource : PagingSource<String, Submission>() {
     private val backend: RedditApi = RedditApi.getInstance()

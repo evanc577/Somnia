@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.util
+package dev.evanchang.somnia.Ui.Util
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

@@ -1,14 +1,12 @@
-package dev.evanchang.somnia.api.reddit
+package dev.evanchang.somnia.Api.reddit
 
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
-import dev.evanchang.somnia.data.Submission
-import okhttp3.OkHttpClient
+import dev.evanchang.somnia.Data.Submission
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.Path
 import retrofit2.http.Query
 

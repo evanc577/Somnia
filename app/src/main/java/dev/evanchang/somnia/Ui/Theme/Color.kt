@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.theme
+package dev.evanchang.somnia.Ui.Theme
 
 import androidx.compose.ui.graphics.Color
 

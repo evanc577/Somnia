@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.submissions
+package dev.evanchang.somnia.Ui.Submissions
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -56,13 +56,13 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import dev.evanchang.somnia.data.PreviewImage
-import dev.evanchang.somnia.data.PreviewImages
-import dev.evanchang.somnia.data.Submission
-import dev.evanchang.somnia.data.SubmissionPreview
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
-import dev.evanchang.somnia.ui.theme.SomniaTheme
-import dev.evanchang.somnia.ui.util.ImageLoading
+import dev.evanchang.somnia.Data.PreviewImage
+import dev.evanchang.somnia.Data.PreviewImages
+import dev.evanchang.somnia.Data.Submission
+import dev.evanchang.somnia.Data.SubmissionPreview
+import dev.evanchang.somnia.Ui.MediaViewer.MediaViewer
+import dev.evanchang.somnia.Ui.Theme.SomniaTheme
+import dev.evanchang.somnia.Ui.Util.ImageLoading
 import kotlinx.coroutines.launch
 
 @Composable

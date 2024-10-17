@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.settings
+package dev.evanchang.somnia.Ui.Settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
