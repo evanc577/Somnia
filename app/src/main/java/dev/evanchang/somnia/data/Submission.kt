@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.Data
+package dev.evanchang.somnia.data
 
 import android.text.Html
 import androidx.annotation.Keep

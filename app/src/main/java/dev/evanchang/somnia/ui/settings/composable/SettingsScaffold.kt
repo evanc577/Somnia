@@ -1,9 +1,9 @@
-package dev.evanchang.somnia.Ui.Settings
+package dev.evanchang.somnia.ui.settings.composable
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,36 +24,39 @@ import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Settings(navController: NavController) {
+fun SettingsScaffold(
+    navController: NavController,
+    title: String,
+    content: @Composable (padding: PaddingValues) -> Unit
+) {
     Surface(color = MaterialTheme.colorScheme.surface) {
         Scaffold(topBar = {
-            TopAppBar(
-                title = { Text(text = "Settings") },
+            TopAppBar(title = { Text(text = title) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = ""
+                            contentDescription = "previous screen"
                         )
                     }
                 })
         }) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "Settings", color = MaterialTheme.colorScheme.onSurface)
-            }
+            content(padding)
         }
     }
 }
 
 @Preview
 @Composable
-private fun SettingsPreview() {
-    Settings(navController = rememberNavController())
+private fun SettingsScaffoldPreview() {
+    SettingsScaffold(navController = rememberNavController(), title = "Preview Settings") {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = "This is the preview settings page")
+        }
+    }
 }

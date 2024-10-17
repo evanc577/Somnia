@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.Ui.Scaffold
+package dev.evanchang.somnia.ui.scaffold
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import dev.evanchang.somnia.SettingsScreen
-import dev.evanchang.somnia.Ui.Submissions.Submissions
+import dev.evanchang.somnia.NavSettingsScreen
+import dev.evanchang.somnia.ui.submissions.Submissions
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
@@ -119,7 +119,7 @@ fun MainScaffold(
                     }
                     Menu(expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
-                        navigateToSettings = { navController.navigate(SettingsScreen) })
+                        navigateToSettings = { navController.navigate(NavSettingsScreen) })
                 }
             },
             modifier = Modifier.clickable { scrollToTop = true })

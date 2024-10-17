@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.Ui.Theme
+package dev.evanchang.somnia.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

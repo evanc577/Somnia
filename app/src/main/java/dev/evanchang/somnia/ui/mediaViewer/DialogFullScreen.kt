@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.Ui.MediaViewer
+package dev.evanchang.somnia.ui.mediaViewer
 
 import android.app.Activity
 import android.content.Context

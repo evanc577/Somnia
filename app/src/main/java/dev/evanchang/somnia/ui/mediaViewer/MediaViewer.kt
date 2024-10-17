@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.Ui.MediaViewer
+package dev.evanchang.somnia.ui.mediaViewer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,8 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.evanchang.somnia.Data.Media
-import dev.evanchang.somnia.Data.Submission
+import dev.evanchang.somnia.data.Media
+import dev.evanchang.somnia.data.Submission
 
 @Composable
 fun MediaViewer(

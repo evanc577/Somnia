@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.Ui.Submissions
+package dev.evanchang.somnia.ui.submissions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,8 +6,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import dev.evanchang.somnia.Api.reddit.SubredditSubmissionsPagingSource
-import dev.evanchang.somnia.Data.Submission
+import dev.evanchang.somnia.api.reddit.SubredditSubmissionsPagingSource
+import dev.evanchang.somnia.data.Submission
 import kotlinx.coroutines.flow.Flow
 
 class SubmissionsViewModel : ViewModel() {

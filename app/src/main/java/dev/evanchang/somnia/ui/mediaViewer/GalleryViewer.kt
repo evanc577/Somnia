@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.Ui.MediaViewer
+package dev.evanchang.somnia.ui.mediaViewer
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +13,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import coil.request.ImageRequest
-import dev.evanchang.somnia.Ui.Util.ImageLoading
+import dev.evanchang.somnia.ui.util.ImageLoading
 import me.saket.telephoto.zoomable.coil.ZoomableAsyncImage
 
 @OptIn(ExperimentalFoundationApi::class)
