@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.scaffold
+package dev.evanchang.somnia.ui.redditscreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,9 +46,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import dev.evanchang.somnia.NavSettingsScreen
 import dev.evanchang.somnia.ui.submissions.Submissions
 import kotlin.math.roundToInt
 
@@ -56,8 +53,8 @@ private val BOTTOM_BAR_HEIGHT = 80.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScaffold(
-    navController: NavController,
+fun HomeScreen(
+    onNavigateToSettings: () -> Unit,
 ) {
     val density = LocalDensity.current
 
@@ -119,7 +116,7 @@ fun MainScaffold(
                     }
                     Menu(expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
-                        navigateToSettings = { navController.navigate(NavSettingsScreen) })
+                        navigateToSettings = { onNavigateToSettings() })
                 }
             },
             modifier = Modifier.clickable { scrollToTop = true })
@@ -180,6 +177,6 @@ private fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, navigateToSett
 
 @Preview
 @Composable
-private fun MainScaffoldPreview() {
-    MainScaffold(navController = rememberNavController())
+private fun HomeScreenPreview() {
+    HomeScreen(onNavigateToSettings = {})
 }
