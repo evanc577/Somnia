@@ -92,6 +92,7 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     implementation(libs.coil)
     implementation(libs.coil.compose)
+    implementation(libs.composeSettings.ui)
     implementation(libs.converter.gson)
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.serialization.json)

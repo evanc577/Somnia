@@ -1,12 +1,12 @@
 package dev.evanchang.somnia.ui.settings.screen
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import dev.evanchang.somnia.ui.settings.composable.SettingsDirectory
+import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 
 @Composable
@@ -16,16 +16,12 @@ fun SettingsScreen(
     SettingsScaffold(
         title = "Settings",
         onNavigateBack = onNavigateBack,
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-            SettingsDirectory(
-                onClick = { onNavigateToApiSettings() }, text = "API"
-            )
-        }
+    ) {
+        SettingsMenuLink(
+            title = { Text(text = "API") },
+            onClick = { onNavigateToApiSettings() },
+            icon = { Icon(imageVector = Icons.Default.Api, contentDescription = "API icon")}
+        )
     }
 }
 
