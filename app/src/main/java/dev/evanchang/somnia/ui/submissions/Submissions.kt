@@ -171,7 +171,7 @@ private fun SubmissionList(
                 state = pullToRefreshState,
                 isRefreshing = isRefreshing,
                 color = MaterialTheme.colorScheme.primary,
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         },

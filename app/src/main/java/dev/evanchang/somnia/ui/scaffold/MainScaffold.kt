@@ -106,7 +106,7 @@ fun MainScaffold(
             Text(text = "Somnia")
         },
             scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
             navigationIcon = {
                 IconButton(onClick = {}) {
                     Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "")
@@ -125,7 +125,7 @@ fun MainScaffold(
             modifier = Modifier.clickable { scrollToTop = true })
     }, bottomBar = {
         Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
             modifier = Modifier
                 .height(bottomBarHeight)
                 .fillMaxWidth()
@@ -164,7 +164,11 @@ fun MainScaffold(
 
 @Composable
 private fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, navigateToSettings: () -> Unit) {
-    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        containerColor = MaterialTheme.colorScheme.surfaceBright,
+    ) {
         DropdownMenuItem(onClick = {
             navigateToSettings()
             onDismissRequest()

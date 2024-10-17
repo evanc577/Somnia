@@ -85,7 +85,7 @@ data class Submission(
         if (media?.redditVideo == null) {
             return null
         }
-        val mediaItem = MediaItem.fromUri(media.redditVideo.dashUrl)
+        val mediaItem = MediaItem.fromUri(media.redditVideo.hlsUrl)
         return mediaItem
     }
 }
@@ -129,6 +129,7 @@ data class SecureMedia(
 @Keep
 data class RedditVideo(
     @SerializedName("dash_url") val dashUrl: String,
+    @SerializedName("hls_url") val hlsUrl: String,
     val duration: Int,
 )
 
