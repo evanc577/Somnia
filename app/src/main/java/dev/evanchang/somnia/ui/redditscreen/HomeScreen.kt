@@ -104,11 +104,6 @@ fun HomeScreen(
         },
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-            navigationIcon = {
-                IconButton(onClick = {}) {
-                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "")
-                }
-            },
             actions = {
                 Box {
                     IconButton(onClick = { menuExpanded = true }) {

@@ -36,17 +36,16 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
         onNavigateBack = onNavigateBack,
     ) {
         SettingsGroup(title = { Text(text = "Reddit") }) {
-            SettingsTextEdit(
-                title = "Reddit Client ID",
+            SettingsTextEdit(title = "Reddit Client ID",
                 subtitle = {
-                    val text = appSettings.redditApiClientId
+                    val text = appSettings.apiSettings.redditApiClientId
                     if (text == null) {
                         Text(text = "(Unset)", color = MaterialTheme.colorScheme.error)
                     } else {
                         Text(text = text)
                     }
                 },
-                defaultText = appSettings.redditApiClientId ?: "",
+                defaultText = appSettings.apiSettings.redditApiClientId ?: "",
                 onConfirmRequest = {
                     openRedditClientIdDialog = false
                     coroutineScope.launch {
@@ -55,9 +54,9 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
                 })
 
             SettingsTextEdit(title = "Reddit User-Agent",
-                subtitle = { Text(text = appSettings.redditUserAgent) },
+                subtitle = { Text(text = appSettings.apiSettings.redditUserAgent) },
                 description = "User-Agent header sent with all Reddit API requests. Leave empty to return to default User-Agent.",
-                defaultText = appSettings.redditUserAgent,
+                defaultText = appSettings.apiSettings.redditUserAgent,
                 onConfirmRequest = {
                     openRedditUserAgentDialog = false
                     coroutineScope.launch {
@@ -69,21 +68,29 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
 }
 
 private suspend fun setRedditApiClientId(context: Context, clientId: String) {
-    val nullableClientId = if (clientId.isEmpty()) {
+    val nullableClientId = clientId.ifEmpty {
         null
-    } else {
-        clientId
     }
-    context.dataStore.updateData { it.copy(redditApiClientId = nullableClientId) }
+    context.dataStore.updateData {
+        it.copy(
+            apiSettings = it.apiSettings.copy(
+                redditApiClientId = nullableClientId
+            )
+        )
+    }
 }
 
 private suspend fun setRedditApiUserAgent(context: Context, userAgent: String) {
-    val ua = if (userAgent.isEmpty()) {
-        AppSettings().redditUserAgent
-    } else {
-        userAgent
+    val ua = userAgent.ifEmpty {
+        AppSettings().apiSettings.redditUserAgent
     }
-    context.dataStore.updateData { it.copy(redditUserAgent = ua) }
+    context.dataStore.updateData {
+        it.copy(
+            apiSettings = it.apiSettings.copy(
+                redditUserAgent = ua
+            )
+        )
+    }
 }
 
 @Preview
