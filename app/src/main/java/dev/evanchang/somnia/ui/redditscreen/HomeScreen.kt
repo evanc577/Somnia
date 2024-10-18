@@ -46,7 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import dev.evanchang.somnia.ui.submissions.Submissions
+import dev.evanchang.somnia.ui.submissions.SubmissionsList
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
@@ -154,7 +154,7 @@ fun HomeScreen(
             )
         Column {
             Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
-            Submissions(listState = listState, topPadding = topPadding)
+            SubmissionsList(listState = listState, topPadding = topPadding)
         }
     }
 }

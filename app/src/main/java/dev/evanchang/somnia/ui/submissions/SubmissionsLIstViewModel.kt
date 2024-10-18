@@ -10,7 +10,7 @@ import dev.evanchang.somnia.api.reddit.SubredditSubmissionsPagingSource
 import dev.evanchang.somnia.data.Submission
 import kotlinx.coroutines.flow.Flow
 
-class SubmissionsViewModel : ViewModel() {
+class SubmissionsLIstViewModel : ViewModel() {
     val submissions: Flow<PagingData<Submission>> = Pager(PagingConfig(pageSize = 3)) {
         SubredditSubmissionsPagingSource()
     }.flow.cachedIn(viewModelScope)

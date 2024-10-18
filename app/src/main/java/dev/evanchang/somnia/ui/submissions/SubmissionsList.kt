@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -21,7 +20,6 @@ import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -65,86 +63,16 @@ import dev.evanchang.somnia.ui.theme.SomniaTheme
 import dev.evanchang.somnia.ui.util.ImageLoading
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Submissions(
-    submissionsViewModel: SubmissionsViewModel = viewModel(),
+fun SubmissionsList(
+    submissionsListViewModel: SubmissionsLIstViewModel = viewModel(),
     listState: LazyStaggeredGridState,
     topPadding: Dp,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
-        submissionsViewModel.submissions.collectAsLazyPagingItems()
+        submissionsListViewModel.submissions.collectAsLazyPagingItems()
 
-    when (val s = lazySubmissionItems.loadState.refresh) {
-//        is LoadState.Loading -> InitialLoading(padding = padding)
-        is LoadState.Error -> ErrorCard(
-            lazySubmissionItems = lazySubmissionItems,
-            message = s.error.message,
-        )
-
-        else -> SubmissionList(
-            lazySubmissionItems = lazySubmissionItems,
-            listState = listState,
-            topPadding = topPadding,
-        )
-    }
-}
-
-@Composable
-private fun InitialLoading(padding: PaddingValues) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .padding(padding)
-            .fillMaxWidth()
-    ) {
-        CircularProgressIndicator()
-    }
-}
-
-private enum class ErrorRetry {
-    RETRY, REFRESH,
-}
-
-@Composable
-private fun ErrorCard(
-    lazySubmissionItems: LazyPagingItems<Submission>, message: String?
-) {
-    Card(
-        onClick = {
-            lazySubmissionItems.retry()
-        },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
-        modifier = Modifier.padding(4.dp)
-    ) {
-        Box(modifier = Modifier.padding(8.dp)) {
-            Column {
-                Text(
-                    text = "Could not fetch posts, tap to retry",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onError,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                if (message != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "$message",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onError,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SubmissionList(
-    lazySubmissionItems: LazyPagingItems<Submission>,
-    listState: LazyStaggeredGridState,
-    topPadding: Dp,
-) {
     var isRefreshing by remember { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
@@ -182,6 +110,18 @@ private fun SubmissionList(
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest),
             state = listState
         ) {
+            when (val s = lazySubmissionItems.loadState.refresh) {
+                is LoadState.Loading -> item { LinearProgressIndicator() }
+                is LoadState.Error -> item {
+                    ErrorCard(
+                        lazySubmissionItems = lazySubmissionItems,
+                        message = s.error.message,
+                    )
+                }
+
+                else -> Unit
+            }
+
             items(count = lazySubmissionItems.itemCount,
                 key = { index -> lazySubmissionItems[index]!!.id }) { index ->
                 val submission = lazySubmissionItems[index]
@@ -189,6 +129,7 @@ private fun SubmissionList(
                     SubmissionCard(submission = submission)
                 }
             }
+
             when (val s = lazySubmissionItems.loadState.append) {
                 is LoadState.Loading -> item { LinearProgressIndicator() }
                 is LoadState.Error -> item {
@@ -199,6 +140,39 @@ private fun SubmissionList(
                 }
 
                 else -> Unit
+            }
+        }
+    }
+}
+
+@Composable
+private fun ErrorCard(
+    lazySubmissionItems: LazyPagingItems<Submission>, message: String?
+) {
+    Card(
+        onClick = {
+            lazySubmissionItems.retry()
+        },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
+        modifier = Modifier.padding(4.dp)
+    ) {
+        Box(modifier = Modifier.padding(8.dp)) {
+            Column {
+                Text(
+                    text = "Could not fetch posts, tap to retry",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (message != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$message",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onError,
+                    )
+                }
             }
         }
     }
