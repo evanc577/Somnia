@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import com.alorma.compose.settings.ui.SettingsGroup
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.dataStore
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
@@ -34,30 +35,36 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
         title = "API Settings",
         onNavigateBack = onNavigateBack,
     ) {
-        SettingsTextEdit(title = "Reddit Client ID", subtitle = {
-            val text = appSettings.redditApiClientId
-            if (text == null) {
-                Text(text = "(Unset)", color = MaterialTheme.colorScheme.error)
-            } else {
-                Text(text = text)
-            }
-        }, defaultText = appSettings.redditApiClientId ?: "", onConfirmRequest = {
-            openRedditClientIdDialog = false
-            coroutineScope.launch {
-                setRedditApiClientId(context, it)
-            }
-        })
+        SettingsGroup(title = { Text(text = "Reddit") }) {
+            SettingsTextEdit(
+                title = "Reddit Client ID",
+                subtitle = {
+                    val text = appSettings.redditApiClientId
+                    if (text == null) {
+                        Text(text = "(Unset)", color = MaterialTheme.colorScheme.error)
+                    } else {
+                        Text(text = text)
+                    }
+                },
+                defaultText = appSettings.redditApiClientId ?: "",
+                onConfirmRequest = {
+                    openRedditClientIdDialog = false
+                    coroutineScope.launch {
+                        setRedditApiClientId(context, it)
+                    }
+                })
 
-        SettingsTextEdit(title = "Reddit User-Agent",
-            subtitle = { Text(text = appSettings.redditUserAgent) },
-            defaultText = appSettings.redditUserAgent,
-            description = "User-Agent header sent with all Reddit API requests. Leave empty to return to default User-Agent.",
-            onConfirmRequest = {
-                openRedditUserAgentDialog = false
-                coroutineScope.launch {
-                    setRedditApiUserAgent(context, it)
-                }
-            })
+            SettingsTextEdit(title = "Reddit User-Agent",
+                subtitle = { Text(text = appSettings.redditUserAgent) },
+                description = "User-Agent header sent with all Reddit API requests. Leave empty to return to default User-Agent.",
+                defaultText = appSettings.redditUserAgent,
+                onConfirmRequest = {
+                    openRedditUserAgentDialog = false
+                    coroutineScope.launch {
+                        setRedditApiUserAgent(context, it)
+                    }
+                })
+        }
     }
 }
 
