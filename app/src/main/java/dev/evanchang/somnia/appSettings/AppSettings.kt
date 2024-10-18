@@ -15,6 +15,7 @@ data class AppSettings(
 @Keep
 @Serializable
 data class ApiSettings(
-    val redditApiClientId: String? = null,
+    val redditClientId: String? = null,
     val redditUserAgent: String = "somnia",
+    val redditRedirectUri: String = "http://127.0.0.1",
 )

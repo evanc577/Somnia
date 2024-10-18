@@ -29,6 +29,7 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
     )
 
     var openRedditClientIdDialog by remember { mutableStateOf(false) }
+    var openRedditRedirectUriDialog by remember { mutableStateOf(false) }
     var openRedditUserAgentDialog by remember { mutableStateOf(false) }
 
     SettingsScaffold(
@@ -38,18 +39,30 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
         SettingsGroup(title = { Text(text = "Reddit") }) {
             SettingsTextEdit(title = "Reddit Client ID",
                 subtitle = {
-                    val text = appSettings.apiSettings.redditApiClientId
+                    val text = appSettings.apiSettings.redditClientId
                     if (text == null) {
                         Text(text = "(Unset)", color = MaterialTheme.colorScheme.error)
                     } else {
                         Text(text = text)
                     }
                 },
-                defaultText = appSettings.apiSettings.redditApiClientId ?: "",
+                description = "Reddit developed app client ID.",
+                defaultText = appSettings.apiSettings.redditClientId ?: "",
                 onConfirmRequest = {
                     openRedditClientIdDialog = false
                     coroutineScope.launch {
                         setRedditApiClientId(context, it)
+                    }
+                })
+
+            SettingsTextEdit(title = "Reddit redirect URI",
+                subtitle = { Text(text = appSettings.apiSettings.redditRedirectUri) },
+                description = "Reddit developed app redirect URI.",
+                defaultText = appSettings.apiSettings.redditRedirectUri,
+                onConfirmRequest = {
+                    openRedditRedirectUriDialog = false
+                    coroutineScope.launch {
+                        setRedditApiRedirectUri(context, it)
                     }
                 })
 
@@ -68,26 +81,39 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
 }
 
 private suspend fun setRedditApiClientId(context: Context, clientId: String) {
-    val nullableClientId = clientId.ifEmpty {
+    val x = clientId.ifEmpty {
         null
     }
     context.dataStore.updateData {
         it.copy(
             apiSettings = it.apiSettings.copy(
-                redditApiClientId = nullableClientId
+                redditClientId = x
+            )
+        )
+    }
+}
+
+private suspend fun setRedditApiRedirectUri(context: Context, redirect: String) {
+    val x = redirect.ifEmpty {
+        AppSettings().apiSettings.redditRedirectUri
+    }
+    context.dataStore.updateData {
+        it.copy(
+            apiSettings = it.apiSettings.copy(
+                redditRedirectUri = x
             )
         )
     }
 }
 
 private suspend fun setRedditApiUserAgent(context: Context, userAgent: String) {
-    val ua = userAgent.ifEmpty {
+    val x = userAgent.ifEmpty {
         AppSettings().apiSettings.redditUserAgent
     }
     context.dataStore.updateData {
         it.copy(
             apiSettings = it.apiSettings.copy(
-                redditUserAgent = ua
+                redditUserAgent = x
             )
         )
     }

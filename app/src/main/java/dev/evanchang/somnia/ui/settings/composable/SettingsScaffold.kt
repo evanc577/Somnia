@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -42,9 +43,12 @@ fun SettingsScaffold(
                     }
                 })
         }, snackbarHost = snackbarHost) { padding ->
-            Column(modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()) { content() }
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .imePadding()
+            ) { content() }
         }
     }
 }

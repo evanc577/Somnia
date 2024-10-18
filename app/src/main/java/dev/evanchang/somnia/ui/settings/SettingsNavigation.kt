@@ -6,9 +6,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
-import dev.evanchang.somnia.ui.settings.screen.LoginWebView
 import dev.evanchang.somnia.ui.settings.screen.AccountSettingsScreen
 import dev.evanchang.somnia.ui.settings.screen.ApiSettingsScreen
+import dev.evanchang.somnia.ui.settings.screen.LoginResult
+import dev.evanchang.somnia.ui.settings.screen.LoginWebView
 import dev.evanchang.somnia.ui.settings.screen.SettingsScreen
 import kotlinx.serialization.Serializable
 
@@ -28,6 +29,7 @@ object AccountSettings
 @Serializable
 data class Login(
     val clientId: String,
+    val redirectUri: String,
 )
 
 @Keep
@@ -46,10 +48,19 @@ fun NavGraphBuilder.settingsNavigation(
             onNavigateToAccountSettings = { navController.navigateToAccountSettings() })
         accountSettingsDestination(
             onNavigateBack = onNavigateBack,
-            onNavigateToLogin = { clientId ->
-                navController.navigateToLogin(clientId = clientId)
+            onNavigateToLogin = { clientId, redirectUri ->
+                navController.navigateToLogin(
+                    clientId = clientId,
+                    redirectUri = redirectUri,
+                )
             })
-        loginDestination(onNavigateBack = onNavigateBack)
+        loginDestination(onNavigateBack = {
+            navController.previousBackStackEntry?.savedStateHandle?.set("loginResult", null)
+            onNavigateBack()
+        }, onLoginFinished = { loginResult ->
+            navController.previousBackStackEntry?.savedStateHandle?.set("loginResult", loginResult)
+            onNavigateBack()
+        })
         apiSettingsDestination(onNavigateBack = onNavigateBack)
     }
 }
@@ -85,12 +96,16 @@ fun NavController.navigateToApiSettings() {
 }
 
 fun NavGraphBuilder.accountSettingsDestination(
-    onNavigateToLogin: (clientId: String) -> Unit,
+    onNavigateToLogin: (clientId: String, redirectUri: String) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     composable<AccountSettings> {
         AccountSettingsScreen(
-            onNavigateBack = onNavigateBack, onNavigateToLogin = onNavigateToLogin
+            onNavigateBack = onNavigateBack,
+            onNavigateToLogin = onNavigateToLogin,
+            loginResult = {
+                return@AccountSettingsScreen it.savedStateHandle.get("loginResult")
+            }
         )
     }
 }
@@ -101,14 +116,20 @@ fun NavController.navigateToAccountSettings() {
 
 fun NavGraphBuilder.loginDestination(
     onNavigateBack: () -> Unit,
+    onLoginFinished: (LoginResult) -> Unit,
 ) {
     composable<Login> {
         val route: Login = it.toRoute()
-        LoginWebView(clientId = route.clientId, onNavigateBack = onNavigateBack)
+        LoginWebView(
+            clientId = route.clientId,
+            redirectUri = route.redirectUri,
+            onNavigateBack = onNavigateBack,
+            onLoginFinished = onLoginFinished,
+        )
     }
 }
 
-fun NavController.navigateToLogin(clientId: String) {
-    val x = Login(clientId = clientId)
+fun NavController.navigateToLogin(clientId: String, redirectUri: String) {
+    val x = Login(clientId = clientId, redirectUri = redirectUri)
     navigate(x)
 }

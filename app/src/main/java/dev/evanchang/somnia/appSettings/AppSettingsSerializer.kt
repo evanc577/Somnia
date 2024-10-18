@@ -16,7 +16,6 @@ object AppSettingsSerializer : Serializer<AppSettings> {
             Json.decodeFromString(
                 deserializer = AppSettings.serializer(), string = input.readBytes().decodeToString()
             )
-
         } catch (e: SerializationException) {
             e.printStackTrace()
             defaultValue
