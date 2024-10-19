@@ -1,11 +1,10 @@
 package dev.evanchang.somnia.ui.settings.screen
 
-import android.util.Log
+import android.content.Context
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,9 +14,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
+import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.dataStore
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
+import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,26 +31,27 @@ fun AccountSettingsScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Extract API settings
     val appSettings by context.dataStore.data.collectAsState(
         initial = AppSettings()
     )
     val clientId = appSettings.apiSettings.redditClientId
     val redirectUri = appSettings.apiSettings.redditRedirectUri
 
-    // Snackbar on login error
-    var loginError: String? by remember { mutableStateOf(null) }
-    var loginErrorShown by remember { mutableStateOf(false) }
-    LaunchedEffect(loginError, loginErrorShown) {
-        val loginErrorValue = loginError
-        val loginErrorShownValue = loginErrorShown
-        if (loginErrorValue == null || loginErrorShownValue) {
-            return@LaunchedEffect
-        }
+    // Set to true after action is taken after login success or error
+    var loginFinished by remember { mutableStateOf(false) }
+    if (!loginFinished) {
+        loginFinished = true
+        when (val loginResultValue = loginResult()) {
+            is LoginResult.Ok -> scope.launch {
+                addAccountSettings(context, loginResultValue.user, loginResultValue.accountSettings)
+            }
 
-        loginError = null
-        loginErrorShown = true
-        scope.launch {
-            snackbarHostState.showSnackbar("Error logging in: $loginErrorValue")
+            is LoginResult.Err -> scope.launch {
+                snackbarHostState.showSnackbar("Error logging in: ${loginResultValue.error}")
+            }
+
+            null -> Unit
         }
     }
 
@@ -73,13 +75,25 @@ fun AccountSettingsScreen(
             },
         )
         if (appSettings.accountSettings.isNotEmpty()) {
-            SettingsGroup(title = { Text(text = "Saved accounts") }) {}
+            SettingsGroup(title = { Text(text = "Saved accounts") }) {
+                for (account in appSettings.accountSettings) {
+                    Text(text = account.key)
+                }
+            }
         }
-        when (val l = loginResult()) {
-            is LoginResult.Ok -> Log.d("AccountSettingsScreen", "LoginResult OK")
-            is LoginResult.Err -> loginError = l.error
+    }
+}
 
-            null -> Unit
-        }
+private suspend fun addAccountSettings(
+    context: Context,
+    user: String,
+    accountSettings: AccountSettings
+) {
+    context.dataStore.updateData { appSettings ->
+        appSettings.copy(
+            accountSettings = appSettings.accountSettings.mutate { accountSettingsMap ->
+                accountSettingsMap[user] = accountSettings
+            }
+        )
     }
 }

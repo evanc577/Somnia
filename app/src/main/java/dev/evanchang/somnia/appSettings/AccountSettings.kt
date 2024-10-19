@@ -9,18 +9,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Parcelize
 data class AccountSettings(
-    // ID
-    val user: String,
-
     // Auth
+    val clientId: String,
     val refreshToken: String,
-    val bearerToken: BearerToken,
+    val bearerToken: String,
     val redirectUri: String,
-) : Parcelable
-
-@Keep
-@Serializable
-@Parcelize
-data class BearerToken(
-    val token: String,
 ) : Parcelable

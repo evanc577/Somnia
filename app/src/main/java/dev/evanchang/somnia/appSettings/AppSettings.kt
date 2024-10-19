@@ -1,14 +1,15 @@
 package dev.evanchang.somnia.appSettings
 
 import androidx.annotation.Keep
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
 
 @Keep
 @Serializable
 data class AppSettings(
-    val accountSettings: PersistentList<AccountSettings> = persistentListOf(),
+    @Serializable(with = MyPersistentMapSerializer::class)
+    val accountSettings: PersistentMap<String, AccountSettings> = persistentMapOf(),
     val apiSettings: ApiSettings = ApiSettings(),
 )
 

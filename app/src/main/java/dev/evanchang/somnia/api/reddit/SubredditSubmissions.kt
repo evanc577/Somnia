@@ -5,13 +5,11 @@ import androidx.paging.PagingState
 import dev.evanchang.somnia.data.Submission
 
 class SubredditSubmissionsPagingSource : PagingSource<String, Submission>() {
-    private val backend: RedditApi = RedditApi.getInstance()
-
     override suspend fun load(
         params: LoadParams<String>
     ): LoadResult<String, Submission> {
         try {
-            val response = backend.getSubmissions(
+            val response = RedditApiInstance.api.getSubredditSubmissions(
                 subreddit = "dreamcatcher",
                 sort = "new",
                 after = params.key,

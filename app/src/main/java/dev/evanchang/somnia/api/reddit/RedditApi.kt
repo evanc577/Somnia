@@ -7,46 +7,53 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RedditApi {
-    @GET("r/{subreddit}/{sort}")
-    suspend fun getSubmissions(
+    @GET("api/v1/me")
+    suspend fun getApiV1Me(
+        @Header("authorization") authorization: String,
+    ): Response<ApiV1MeResponse>
+
+    @GET("r/{subreddit}/{sort}.json")
+    suspend fun getSubredditSubmissions(
+        @Header("authorization") authorization: String? = null,
         @Path("subreddit") subreddit: String,
         @Path("sort") sort: String,
         @Query("after") after: String?,
         @Query("limit") limit: Int?,
-    ): Response<ApiResponse>
+    ): Response<SubredditSubmissionsResponse>
+}
 
-    companion object {
-        var api: RedditApi? = null
-        private const val BASE_URL = "https://api.reddit.com/"
-
-        fun getInstance(): RedditApi {
-            if (api == null) {
-                val retrofit = Retrofit.Builder().baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build()
-                api = retrofit.create(RedditApi::class.java)
-            }
-            return api!!
-        }
+object RedditApiInstance {
+    private const val BASE_URL = "https://oauth.reddit.com/"
+    val api: RedditApi by lazy {
+        Retrofit.Builder().baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(RedditApi::class.java)
     }
 }
 
 @Keep
-data class ApiResponse(
-    @SerializedName("data") var responseData: ResponseData,
-)
+data class SubredditSubmissionsResponse(
+    @SerializedName("data") val responseData: SubredditSubmissionsResponseData,
+) {
+    @Keep
+    data class SubredditSubmissionsResponseData(
+        @SerializedName("after") val after: String,
+        @SerializedName("children") val children: List<SubredditSubmissionsResponseSubmissionWrapper>,
+    ) {
+        @Keep
+        data class SubredditSubmissionsResponseSubmissionWrapper(
+            @SerializedName("data") val submission: Submission,
+        )
+    }
+}
 
 @Keep
-data class ResponseData(
-    @SerializedName("after") var after: String,
-    @SerializedName("children") var children: List<ResponseSubmissionWrapper>,
-)
-
-@Keep
-data class ResponseSubmissionWrapper(
-    @SerializedName("data") var submission: Submission,
+data class ApiV1MeResponse(
+    val name: String,
 )
