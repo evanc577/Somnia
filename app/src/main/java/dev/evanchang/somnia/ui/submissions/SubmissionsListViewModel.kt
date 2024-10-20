@@ -1,6 +1,5 @@
 package dev.evanchang.somnia.ui.submissions
 
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,13 +9,14 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dev.evanchang.somnia.api.reddit.SubredditSubmissionsPagingSourceFactory
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.data.SubmissionSort
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class SubmissionsListViewModel(val subreddit: String) : ViewModel() {
+class SubmissionsListViewModel(val subreddit: String, sort: SubmissionSort) : ViewModel() {
     private var pagingSourceFactory =
-        SubredditSubmissionsPagingSourceFactory(subreddit = subreddit, sort = "new")
+        SubredditSubmissionsPagingSourceFactory(subreddit = subreddit, sort = sort)
     val submissions: Flow<PagingData<Submission>> = Pager(PagingConfig(pageSize = 3)) {
         pagingSourceFactory.invoke()
     }.flow.cachedIn(viewModelScope)
@@ -27,14 +27,18 @@ class SubmissionsListViewModel(val subreddit: String) : ViewModel() {
         _isRefreshing.value = isRefreshing
     }
 
-    fun updateSort(sort: String) {
+    fun updateSort(sort: SubmissionSort) {
         pagingSourceFactory =
             SubredditSubmissionsPagingSourceFactory(subreddit = subreddit, sort = sort)
     }
 }
 
-class SubmissionsListViewModelFactory(val subreddit: String) : ViewModelProvider.NewInstanceFactory() {
+class SubmissionsListViewModelFactory(
+    private val subreddit: String,
+    private val sort: SubmissionSort
+) : ViewModelProvider.NewInstanceFactory() {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return SubmissionsListViewModel(subreddit) as T
+        return SubmissionsListViewModel(subreddit = subreddit, sort = sort) as T
     }
 }

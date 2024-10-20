@@ -4,6 +4,7 @@ import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.RedditHttpClient
 import dev.evanchang.somnia.api.reddit.dto.SubredditSubmissionsResponse
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.data.SubmissionSort
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -17,16 +18,19 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
 
     override suspend fun getSubredditSubmissions(
         subreddit: String,
-        sort: String,
+        sort: SubmissionSort,
         after: String,
         limit: Int,
     ): ApiResult<List<Submission>> {
+        val sortString = sort.toString()
         val response = try {
             client.get {
                 url {
                     protocol = PROTOCOL
                     host = HOST
-                    appendPathSegments("r", subreddit, sort, ".json")
+                    appendPathSegments("r", subreddit, encodeSlash = true)
+                    appendPathSegments(sortString, encodeSlash = false)
+                    appendPathSegments(".json")
                     parameters.append("after", after)
                     parameters.append("limit", limit.toString())
                 }

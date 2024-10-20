@@ -5,10 +5,11 @@ import androidx.paging.PagingSourceFactory
 import androidx.paging.PagingState
 import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.data.SubmissionSort
 
 class SubredditSubmissionsPagingSource(
     private val subreddit: String,
-    private val sort: String
+    private val sort: SubmissionSort,
 ) :
     PagingSource<String, Submission>() {
     override suspend fun load(
@@ -36,7 +37,7 @@ class SubredditSubmissionsPagingSource(
 
 class SubredditSubmissionsPagingSourceFactory(
     private val subreddit: String,
-    private val sort: String
+    private val sort: SubmissionSort,
 ) :
     PagingSourceFactory<String, Submission> {
     override fun invoke(): PagingSource<String, Submission> {

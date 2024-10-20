@@ -13,10 +13,17 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +56,7 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.ui.submissions.SubmissionsList
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModelFactory
@@ -60,7 +68,9 @@ private val BOTTOM_BAR_HEIGHT = 80.dp
 @Composable
 fun SubmissionsScaffold(
     submissionsListViewModel: SubmissionsListViewModel = viewModel(
-        factory = SubmissionsListViewModelFactory("dreamcatcher")
+        factory = SubmissionsListViewModelFactory(
+            subreddit = "dreamcatcher", sort = SubmissionSort.New
+        )
     ),
     onNavigateToSettings: () -> Unit,
 ) {
@@ -100,11 +110,12 @@ fun SubmissionsScaffold(
         }
     }
 
-    // Buttons
+    // 3 dots menu
     var menuExpanded by remember { mutableStateOf(false) }
 
     // Update sort
-    var updateSort: String? by remember { mutableStateOf(null) }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
+    var updateSort: SubmissionSort? by remember { mutableStateOf(null) }
     val lazyPagingItems = submissionsListViewModel.submissions.collectAsLazyPagingItems()
     LaunchedEffect(updateSort) {
         val updateSortVal = updateSort ?: return@LaunchedEffect
@@ -123,10 +134,18 @@ fun SubmissionsScaffold(
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
             actions = {
-                IconButton(onClick = {
-                    updateSort = "hot"
-                }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Sort, contentDescription = "")
+                Box {
+                    IconButton(onClick = { sortMenuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = ""
+                        )
+                    }
+                    SortMenu(expanded = sortMenuExpanded,
+                        onDismissRequest = { sortMenuExpanded = false },
+                        onSortSelected = { sort ->
+                            updateSort = sort
+                        })
                 }
                 Box {
                     IconButton(onClick = { menuExpanded = true }) {
@@ -139,13 +158,11 @@ fun SubmissionsScaffold(
             },
             modifier = Modifier.clickable { scrollToTop = true })
     }, bottomBar = {
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh,
             modifier = Modifier
                 .height(bottomBarHeight)
                 .fillMaxWidth()
-                .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.roundToInt()) }
-        ) {
+                .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.roundToInt()) }) {
             Box(
                 contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
             ) {
@@ -194,6 +211,74 @@ private fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, navigateToSett
         },
             text = { Text("Settings") },
             leadingIcon = { Icon(imageVector = Icons.Default.Settings, contentDescription = "") })
+    }
+}
+
+@Composable
+private fun SortMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onSortSelected: (SubmissionSort) -> Unit,
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        containerColor = MaterialTheme.colorScheme.surfaceBright,
+    ) {
+        DropdownMenuItem(onClick = {
+            onSortSelected(SubmissionSort.Best)
+            onDismissRequest()
+        }, text = { Text("Best") }, leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.StarOutline, contentDescription = ""
+            )
+        })
+        DropdownMenuItem(onClick = {
+            onSortSelected(SubmissionSort.Hot)
+            onDismissRequest()
+        }, text = { Text("Hot") }, leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Whatshot, contentDescription = ""
+            )
+        })
+        DropdownMenuItem(onClick = {
+            onSortSelected(SubmissionSort.New)
+            onDismissRequest()
+        }, text = { Text("New") }, leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.NewReleases, contentDescription = ""
+            )
+        })
+        DropdownMenuItem(onClick = {
+            onSortSelected(SubmissionSort.Rising)
+            onDismissRequest()
+        }, text = { Text("Rising") }, leadingIcon = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.TrendingUp, contentDescription = ""
+            )
+        })
+        DropdownMenuItem(onClick = {
+            onDismissRequest()
+        }, text = { Text("Top") }, leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Leaderboard, contentDescription = ""
+            )
+        }, trailingIcon = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowRight, contentDescription = ""
+            )
+        })
+        DropdownMenuItem(onClick = {
+            onDismissRequest()
+        }, text = { Text("Controversial") }, leadingIcon = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.TrendingDown, contentDescription = ""
+            )
+        }, trailingIcon = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowRight, contentDescription = ""
+            )
+        })
     }
 }
 
