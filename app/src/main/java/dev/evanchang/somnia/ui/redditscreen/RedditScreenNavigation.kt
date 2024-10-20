@@ -13,6 +13,6 @@ fun NavGraphBuilder.homeDestination(
     onNavigateToSettings: () -> Unit,
 ) {
     composable<Home> {
-        HomeScreen(onNavigateToSettings = onNavigateToSettings)
+        SubmissionsScaffold(onNavigateToSettings = onNavigateToSettings)
     }
 }

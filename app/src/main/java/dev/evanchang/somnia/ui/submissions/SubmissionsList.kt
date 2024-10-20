@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,9 +31,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -48,7 +49,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -66,26 +67,26 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubmissionsList(
-    submissionsListViewModel: SubmissionsLIstViewModel = viewModel(),
+    submissionsListViewModel: SubmissionsListViewModel,
     listState: LazyStaggeredGridState,
     topPadding: Dp,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         submissionsListViewModel.submissions.collectAsLazyPagingItems()
+    val isRefreshing by submissionsListViewModel.isRefreshing.collectAsStateWithLifecycle()
 
-    var isRefreshing by remember { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
-        isRefreshing = true
+        submissionsListViewModel.updateIsRefreshing(true)
         coroutineScope.launch {
             lazySubmissionItems.refresh()
         }
     }
 
     LaunchedEffect(lazySubmissionItems.loadState.refresh) {
-        if (isRefreshing && lazySubmissionItems.loadState.refresh != LoadState.Loading) {
-            isRefreshing = false
+        if (lazySubmissionItems.loadState.refresh != LoadState.Loading) {
+            submissionsListViewModel.updateIsRefreshing(false)
             listState.scrollToItem(0)
         }
     }
@@ -107,21 +108,11 @@ fun SubmissionsList(
     ) {
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Adaptive(400.dp),
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                .fillMaxSize(),
             state = listState
         ) {
-            when (val s = lazySubmissionItems.loadState.refresh) {
-                is LoadState.Loading -> item { LinearProgressIndicator() }
-                is LoadState.Error -> item {
-                    ErrorCard(
-                        lazySubmissionItems = lazySubmissionItems,
-                        message = s.error.message,
-                    )
-                }
-
-                else -> Unit
-            }
-
             items(count = lazySubmissionItems.itemCount,
                 key = { index -> lazySubmissionItems[index]!!.id }) { index ->
                 val submission = lazySubmissionItems[index]
@@ -310,10 +301,7 @@ private fun CommentsButton(submission: Submission) {
 
 @Composable
 private fun SubmissionCardPreview(submission: Submission) {
-    val previewImage = submission.previewImage()
-    if (previewImage == null) {
-        return
-    }
+    val previewImage = submission.previewImage() ?: return
 
     val imageRequest =
         ImageRequest.Builder(LocalContext.current).data(previewImage.escapedUrl()).crossfade(true)

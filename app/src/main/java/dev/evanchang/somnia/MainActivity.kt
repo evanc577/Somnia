@@ -39,9 +39,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // Start UI once settings have loaded
-            if (appSettings != null) {
-                SomniaTheme {
+            SomniaTheme {
+                // Start UI once settings have loaded
+                if (appSettings != null) {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,

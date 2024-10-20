@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -46,14 +47,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.ui.submissions.SubmissionsList
+import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
+import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModelFactory
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+fun SubmissionsScaffold(
+    submissionsListViewModel: SubmissionsListViewModel = viewModel(
+        factory = SubmissionsListViewModelFactory("dreamcatcher")
+    ),
     onNavigateToSettings: () -> Unit,
 ) {
     val density = LocalDensity.current
@@ -95,6 +103,16 @@ fun HomeScreen(
     // Buttons
     var menuExpanded by remember { mutableStateOf(false) }
 
+    // Update sort
+    var updateSort: String? by remember { mutableStateOf(null) }
+    val lazyPagingItems = submissionsListViewModel.submissions.collectAsLazyPagingItems()
+    LaunchedEffect(updateSort) {
+        val updateSortVal = updateSort ?: return@LaunchedEffect
+        submissionsListViewModel.updateSort(updateSortVal)
+        submissionsListViewModel.updateIsRefreshing(true)
+        lazyPagingItems.refresh()
+    }
+
     // UI
     Scaffold(modifier = Modifier
         .nestedScroll(nestedScrollConnection)
@@ -105,6 +123,11 @@ fun HomeScreen(
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
             actions = {
+                IconButton(onClick = {
+                    updateSort = "hot"
+                }) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Sort, contentDescription = "")
+                }
                 Box {
                     IconButton(onClick = { menuExpanded = true }) {
                         Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
@@ -121,7 +144,7 @@ fun HomeScreen(
             modifier = Modifier
                 .height(bottomBarHeight)
                 .fillMaxWidth()
-                .offset({ IntOffset(x = 0, y = -bottomBarOffsetHeightPx.roundToInt()) })
+                .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.roundToInt()) }
         ) {
             Box(
                 contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
@@ -149,7 +172,11 @@ fun HomeScreen(
             )
         Column {
             Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
-            SubmissionsList(listState = listState, topPadding = topPadding)
+            SubmissionsList(
+                submissionsListViewModel = submissionsListViewModel,
+                listState = listState,
+                topPadding = topPadding
+            )
         }
     }
 }
@@ -173,5 +200,5 @@ private fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, navigateToSett
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    HomeScreen(onNavigateToSettings = {})
+    SubmissionsScaffold(onNavigateToSettings = {})
 }
