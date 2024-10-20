@@ -24,7 +24,12 @@ object UnauthenticatedHttpClient {
             })
         }
         install(Logging) {
-            level = LogLevel.ALL
+            logger = object : Logger {
+                override fun log(message: String) {
+                    Log.d("ktor", message)
+                }
+            }
+            level = LogLevel.HEADERS
         }
     }
 }
@@ -42,7 +47,10 @@ val BearerAuthPlugin = createClientPlugin("CustomHeaderPlugin", ::BearerAuthPlug
     val refreshTokens = pluginConfig.refreshTokens
 
     onRequest { request, _ ->
-        val tokens = loadTokens()
+        var tokens = loadTokens()
+        if (tokens == null) {
+            tokens = refreshTokens()
+        }
         if (tokens != null) {
             request.headers.append("authorization", "bearer ${tokens.accessToken}")
         }
@@ -124,7 +132,7 @@ object RedditHttpClient {
                     Log.d("ktor", message)
                 }
             }
-            level = LogLevel.ALL
+            level = LogLevel.HEADERS
         }
     }
 }

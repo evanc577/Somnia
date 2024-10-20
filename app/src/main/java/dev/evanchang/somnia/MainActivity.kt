@@ -12,7 +12,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import dev.evanchang.somnia.api.RedditHttpClient
-import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.appSettings.AppSettingsSerializer
 import dev.evanchang.somnia.ui.redditscreen.Home
 import dev.evanchang.somnia.ui.redditscreen.homeDestination
@@ -28,27 +27,31 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            SomniaTheme {
-                val navController = rememberNavController()
-                NavHost(
-                    navController = navController,
-                    startDestination = Home,
-                ) {
-                    homeDestination(onNavigateToSettings = {
-                        navController.navigateToSettings()
-                    })
-                    settingsNavigation(navController)
-                }
-            }
+            val appSettings by dataStore.data.collectAsStateWithLifecycle(initialValue = null)
 
             // Login/logout the current user if app settings have changed
-            val appSettings by dataStore.data.collectAsStateWithLifecycle(initialValue = AppSettings())
             LaunchedEffect(appSettings) {
-                val accountSettings = appSettings.accountSettings.get(appSettings.activeUser)
+                val accountSettings = appSettings?.accountSettings?.get(appSettings?.activeUser)
                 if (accountSettings != null) {
                     RedditHttpClient.login(accountSettings)
                 } else {
                     RedditHttpClient.logout()
+                }
+            }
+
+            // Start UI once settings have loaded
+            if (appSettings != null) {
+                SomniaTheme {
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        startDestination = Home,
+                    ) {
+                        homeDestination(onNavigateToSettings = {
+                            navController.navigateToSettings()
+                        })
+                        settingsNavigation(navController)
+                    }
                 }
             }
         }
