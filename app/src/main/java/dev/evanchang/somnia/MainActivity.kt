@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.datastore.dataStore
@@ -46,6 +48,8 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = Home,
+                        enterTransition = { EnterTransition.None },
+                        exitTransition = { ExitTransition.None },
                     ) {
                         homeDestination(onNavigateToSettings = {
                             navController.navigateToSettings()

@@ -11,30 +11,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Leaderboard
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.filled.Whatshot
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.outlined.ExpandCircleDown
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -60,6 +65,8 @@ import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.ui.submissions.SubmissionsList
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModelFactory
+import dev.evanchang.somnia.ui.util.BottomSheetGridItem
+import dev.evanchang.somnia.ui.util.BottomSheetItem
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
@@ -110,11 +117,9 @@ fun SubmissionsScaffold(
         }
     }
 
-    // 3 dots menu
-    var menuExpanded by remember { mutableStateOf(false) }
-
     // Update sort
-    var sortMenuExpanded by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
     var updateSort: SubmissionSort? by remember { mutableStateOf(null) }
     val lazyPagingItems = submissionsListViewModel.submissions.collectAsLazyPagingItems()
     LaunchedEffect(updateSort) {
@@ -129,33 +134,10 @@ fun SubmissionsScaffold(
         .nestedScroll(nestedScrollConnection)
         .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
         TopAppBar(title = {
-            Text(text = "Somnia")
+            Text(text = "r/${submissionsListViewModel.subreddit}")
         },
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-            actions = {
-                Box {
-                    IconButton(onClick = { sortMenuExpanded = true }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Sort,
-                            contentDescription = ""
-                        )
-                    }
-                    SortMenu(expanded = sortMenuExpanded,
-                        onDismissRequest = { sortMenuExpanded = false },
-                        onSortSelected = { sort ->
-                            updateSort = sort
-                        })
-                }
-                Box {
-                    IconButton(onClick = { menuExpanded = true }) {
-                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
-                    }
-                    Menu(expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false },
-                        navigateToSettings = { onNavigateToSettings() })
-                }
-            },
             modifier = Modifier.clickable { scrollToTop = true })
     }, bottomBar = {
         Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -173,10 +155,24 @@ fun SubmissionsScaffold(
                         .fillMaxWidth()
                         .height(BOTTOM_BAR_HEIGHT)
                 ) {
-                    for (i in 0..4) {
-                        IconButton(onClick = {}) {
-                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                        }
+                    IconButton(onClick = {}) {
+                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                    }
+                    FloatingActionButton(onClick = { showBottomSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.ExpandCircleDown,
+                            contentDescription = "",
+                            modifier = Modifier.scale(scaleX = 1f, scaleY = -1f)
+                        )
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
                     }
                 }
             }
@@ -195,88 +191,123 @@ fun SubmissionsScaffold(
                 topPadding = topPadding
             )
         }
+        if (showBottomSheet) {
+            BottomSheet(onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState,
+                onNavigateToSettings = onNavigateToSettings,
+                onSortSelected = { sort ->
+                    updateSort = sort
+                })
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, navigateToSettings: () -> Unit) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        containerColor = MaterialTheme.colorScheme.surfaceBright,
-    ) {
-        DropdownMenuItem(onClick = {
-            navigateToSettings()
-            onDismissRequest()
-        },
-            text = { Text("Settings") },
-            leadingIcon = { Icon(imageVector = Icons.Default.Settings, contentDescription = "") })
-    }
-}
-
-@Composable
-private fun SortMenu(
-    expanded: Boolean,
+private fun BottomSheet(
     onDismissRequest: () -> Unit,
+    sheetState: SheetState,
+    onNavigateToSettings: () -> Unit,
     onSortSelected: (SubmissionSort) -> Unit,
 ) {
-    DropdownMenu(
-        expanded = expanded,
+    val sortSheetState = rememberModalBottomSheetState()
+    var showSortSheet by remember { mutableStateOf(false) }
+
+    if (showSortSheet) {
+        SortSelectionBottomSheet(onDismissRequest = { showSortSheet = false },
+            sheetState = sortSheetState,
+            onSortSelected = { sort ->
+                onSortSelected(sort)
+                onDismissRequest()
+            })
+    }
+
+    ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        containerColor = MaterialTheme.colorScheme.surfaceBright,
+        sheetState = sheetState,
     ) {
-        DropdownMenuItem(onClick = {
-            onSortSelected(SubmissionSort.Best)
-            onDismissRequest()
-        }, text = { Text("Best") }, leadingIcon = {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 100.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            item {
+                BottomSheetGridItem(
+                    icon = Icons.Default.Settings,
+                    label = "Settings",
+                    onClick = onNavigateToSettings,
+                )
+            }
+            item {
+                BottomSheetGridItem(
+                    icon = Icons.AutoMirrored.Filled.Sort,
+                    label = "Sort",
+                    onClick = { showSortSheet = true },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SortSelectionBottomSheet(
+    onDismissRequest: () -> Unit,
+    sheetState: SheetState,
+    onSortSelected: (SubmissionSort) -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        BottomSheetItem(leadingIcon = {
             Icon(
                 imageVector = Icons.Default.StarOutline, contentDescription = ""
             )
-        })
-        DropdownMenuItem(onClick = {
-            onSortSelected(SubmissionSort.Hot)
+        }, text = "Best", onClick = {
+            onSortSelected(SubmissionSort.Best)
             onDismissRequest()
-        }, text = { Text("Hot") }, leadingIcon = {
+        })
+        BottomSheetItem(leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Whatshot, contentDescription = ""
             )
-        })
-        DropdownMenuItem(onClick = {
-            onSortSelected(SubmissionSort.New)
+        }, text = "Hot", onClick = {
+            onSortSelected(SubmissionSort.Hot)
             onDismissRequest()
-        }, text = { Text("New") }, leadingIcon = {
+        })
+        BottomSheetItem(leadingIcon = {
             Icon(
                 imageVector = Icons.Default.NewReleases, contentDescription = ""
             )
-        })
-        DropdownMenuItem(onClick = {
-            onSortSelected(SubmissionSort.Rising)
+        }, text = "New", onClick = {
+            onSortSelected(SubmissionSort.New)
             onDismissRequest()
-        }, text = { Text("Rising") }, leadingIcon = {
+        })
+        BottomSheetItem(leadingIcon = {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.TrendingUp, contentDescription = ""
             )
-        })
-        DropdownMenuItem(onClick = {
+        }, text = "Rising", onClick = {
+            onSortSelected(SubmissionSort.Rising)
             onDismissRequest()
-        }, text = { Text("Top") }, leadingIcon = {
+        })
+        BottomSheetItem(leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Leaderboard, contentDescription = ""
             )
-        }, trailingIcon = {
+        }, text = "Top", trailingIcon = {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowRight, contentDescription = ""
+                imageVector = Icons.Default.ArrowDropDown, contentDescription = ""
             )
         })
-        DropdownMenuItem(onClick = {
-            onDismissRequest()
-        }, text = { Text("Controversial") }, leadingIcon = {
+        BottomSheetItem(leadingIcon = {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.TrendingDown, contentDescription = ""
             )
-        }, trailingIcon = {
+        }, text = "Controversial", trailingIcon = {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowRight, contentDescription = ""
+                imageVector = Icons.Default.ArrowDropDown, contentDescription = ""
             )
         })
     }
