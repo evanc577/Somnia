@@ -12,6 +12,5 @@ data class AccountSettings(
     // Auth
     val clientId: String,
     val refreshToken: String,
-    val bearerToken: String,
     val redirectUri: String,
 ) : Parcelable

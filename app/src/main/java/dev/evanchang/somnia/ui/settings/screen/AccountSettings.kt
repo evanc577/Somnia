@@ -14,6 +14,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
+import dev.evanchang.somnia.api.RedditHttpClient
+import dev.evanchang.somnia.api.reddit.RedditApiInstance
 import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.dataStore
@@ -91,6 +93,7 @@ private suspend fun addAccountSettings(
 ) {
     context.dataStore.updateData { appSettings ->
         appSettings.copy(
+            activeUser = user,
             accountSettings = appSettings.accountSettings.mutate { accountSettingsMap ->
                 accountSettingsMap[user] = accountSettings
             }

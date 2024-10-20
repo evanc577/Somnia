@@ -372,7 +372,7 @@ fun PreviewPostCard() {
         media = null,
         score = 10,
         numComments = 20,
-        created = 1700000000,
+        created = 1700000000f,
     )
 
     SomniaTheme {

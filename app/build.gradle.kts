@@ -65,7 +65,7 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/{AL2.0,LGPL2.1,INDEX.LIST}"
         }
     }
 }
@@ -94,9 +94,15 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.compose)
     implementation(libs.composeSettings.ui)
-    implementation(libs.converter.gson)
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.client.auth)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.serialization)
+    implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.material.icons.extended)
     implementation(libs.media3.common)
     implementation(libs.media3.datasource)
@@ -105,6 +111,7 @@ dependencies {
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.ui)
     implementation(libs.navigation.compose)
-    implementation(libs.retrofit)
     implementation(libs.telephoto)
+    implementation(libs.slf4j.api)
+    implementation(libs.logback.android)
 }

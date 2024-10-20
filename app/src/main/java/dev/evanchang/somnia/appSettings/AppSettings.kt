@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 @Keep
 @Serializable
 data class AppSettings(
+    val activeUser: String? = null,
     @Serializable(with = MyPersistentMapSerializer::class)
     val accountSettings: PersistentMap<String, AccountSettings> = persistentMapOf(),
     val apiSettings: ApiSettings = ApiSettings(),

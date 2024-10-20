@@ -3,34 +3,44 @@ package dev.evanchang.somnia.data
 import android.text.Html
 import androidx.annotation.Keep
 import androidx.media3.common.MediaItem
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 import java.time.Instant
+import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Keep
+@Serializable
 data class Submission(
-    @SerializedName("name") val id: String,
+    @SerialName("name")
+    val id: String,
     val author: String,
     val subreddit: String,
     private val title: String,
-    @SerializedName("post_hint") val postHint: PostHint?,
-    @SerializedName("is_gallery") val isGallery: Boolean?,
+    @SerialName("post_hint")
+    val postHint: PostHint?,
+    @SerialName("is_gallery")
+    val isGallery: Boolean?,
     val url: String,
     private val preview: SubmissionPreview?,
-    @SerializedName("media_metadata") private val mediaMetadata: Map<String, MediaMetadata>?,
-    @SerializedName("secure_media") private val media: SecureMedia?,
+    @SerialName("media_metadata")
+    private val mediaMetadata: Map<String, MediaMetadata>?,
+    @SerialName("secure_media")
+    private val media: SecureMedia?,
     val score: Int,
-    @SerializedName("num_comments") val numComments: Int,
-    private val created: Int,
+    @SerialName("num_comments")
+    val numComments: Int,
+    private val created: Float,
 ) {
     fun escapedTitle(): String {
         return escapeString(title)
     }
 
     fun elapsedTime(): Duration {
-        return (Instant.now().epochSecond - created).toDuration(DurationUnit.SECONDS)
+        return (Instant.now().epochSecond - created).roundToInt().toDuration(DurationUnit.SECONDS)
     }
 
     fun elapsedTimeString(): String {
@@ -96,20 +106,31 @@ sealed class Media {
 }
 
 @Keep
+@Serializable
 data class SubmissionPreview(
     val images: List<PreviewImages>,
 )
 
 @Keep
+@Serializable
 data class PreviewImages(
     val source: PreviewImage,
 )
 
 @Keep
+@Serializable
 data class PreviewImage(
-    @SerializedName(value = "url", alternate = ["u"]) private val url: String,
-    @SerializedName(value = "width", alternate = ["x"]) val width: Int,
-    @SerializedName(value = "height", alternate = ["y"]) val height: Int,
+    @SerialName(value = "url")
+    @JsonNames("u")
+    private val url: String,
+
+    @SerialName(value = "width")
+    @JsonNames("x")
+    val width: Int,
+
+    @SerialName(value = "height")
+    @JsonNames("y")
+    val height: Int,
 ) {
     fun escapedUrl(): String {
         return escapeString(url)
@@ -117,25 +138,29 @@ data class PreviewImage(
 }
 
 @Keep
+@Serializable
 data class MediaMetadata(
-    @SerializedName("s") val source: PreviewImage,
+    @SerialName("s") val source: PreviewImage,
 )
 
 @Keep
+@Serializable
 data class SecureMedia(
-    @SerializedName("reddit_video") val redditVideo: RedditVideo?
+    @SerialName("reddit_video") val redditVideo: RedditVideo?
 )
 
 @Keep
+@Serializable
 data class RedditVideo(
-    @SerializedName("dash_url") val dashUrl: String,
-    @SerializedName("hls_url") val hlsUrl: String,
+    @SerialName("dash_url") val dashUrl: String,
+    @SerialName("hls_url") val hlsUrl: String,
     val duration: Int,
 )
 
 @Keep
+@Serializable
 enum class PostHint {
-    @SerializedName("image")
+    @SerialName("image")
     IMAGE,
 }
 

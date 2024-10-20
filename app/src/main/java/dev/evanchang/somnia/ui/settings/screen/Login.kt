@@ -18,14 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.viewinterop.AndroidView
-import dev.evanchang.somnia.api.reddit.RedditApiInstance
-import dev.evanchang.somnia.api.reddit.RedditAuthApiInstance
+import dev.evanchang.somnia.api.ApiResult
+import dev.evanchang.somnia.api.reddit.RedditLoginApiInstance
 import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -39,17 +37,10 @@ fun LoginWebView(
 
     // Declare a string that contains a url
     val state = generateRandomString()
-    val endpoint = Uri.Builder()
-        .scheme("https")
-        .authority("reddit.com")
-        .path("api/v1/authorize")
-        .appendQueryParameter("client_id", clientId)
-        .appendQueryParameter("response_type", "code")
-        .appendQueryParameter("state", state)
-        .appendQueryParameter("redirect_uri", redirectUri)
-        .appendQueryParameter("duration", "permanent")
-        .appendQueryParameter("scope", "*")
-        .build()
+    val endpoint = Uri.Builder().scheme("https").authority("reddit.com").path("api/v1/authorize")
+        .appendQueryParameter("client_id", clientId).appendQueryParameter("response_type", "code")
+        .appendQueryParameter("state", state).appendQueryParameter("redirect_uri", redirectUri)
+        .appendQueryParameter("duration", "permanent").appendQueryParameter("scope", "*").build()
 
     // Login return values
     var retrievingAccessToken by remember { mutableStateOf(false) }
@@ -164,48 +155,30 @@ class CustomWebViewClient(
     }
 }
 
-@OptIn(ExperimentalEncodingApi::class)
 private suspend fun login(
-    clientId: String,
-    code: String,
-    redirectUri: String
+    clientId: String, code: String, redirectUri: String
 ): LoginResult {
-    val authorization = "basic ${Base64.encode("${clientId}:".encodeToByteArray())}"
-    val accessTokenResponse = try {
-        RedditAuthApiInstance.api.postAccessToken(
-            authorization = authorization,
-            grantType = "authorization_code",
-            code = code,
+    // Get access and refresh tokens
+    val response = when (val r = RedditLoginApiInstance.api.postAccessToken(
+        clientId = clientId,
+        redirectUri = redirectUri,
+        code = code,
+    )) {
+        is ApiResult.Ok -> r.value
+        is ApiResult.Err -> return LoginResult.Err(r.message)
+    }
+
+    // Get account username
+    val meResponse = when (val r = RedditLoginApiInstance.api.getApiV1Me(response.accessToken)) {
+        is ApiResult.Ok -> r.value
+        is ApiResult.Err -> return LoginResult.Err(r.message)
+    }
+
+    return LoginResult.Ok(
+        user = meResponse.name, accountSettings = AccountSettings(
+            clientId = clientId,
+            refreshToken = response.refreshToken,
             redirectUri = redirectUri,
         )
-    } catch (e: Exception) {
-        return LoginResult.Err("access_token ${e.toString()}")
-    }
-    if (!accessTokenResponse.isSuccessful) {
-        return LoginResult.Err("access_token status code: ${accessTokenResponse.code()}")
-    }
-    val accessTokenBody = accessTokenResponse.body()
-    if (accessTokenBody == null) {
-        return LoginResult.Err("access_token no response body")
-    }
-    val accountSettings = AccountSettings(
-        clientId = clientId,
-        refreshToken = accessTokenBody.refreshToken,
-        bearerToken = accessTokenBody.accessToken,
-        redirectUri = redirectUri,
     )
-
-    // Get username
-    val meResponse = try {
-        RedditApiInstance.api.getApiV1Me(authorization = "bearer ${accountSettings.bearerToken}")
-    } catch (e: Exception) {
-        return LoginResult.Err("me ${e.toString()}")
-    }
-    val meBody = meResponse.body()
-    if (meBody == null) {
-        return LoginResult.Err("me no response body")
-    }
-    val user = meBody.name
-
-    return LoginResult.Ok(user = user, accountSettings = accountSettings)
 }

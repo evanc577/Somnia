@@ -12,12 +12,14 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 kotlin = "2.0.0"
 kotlinxCollectionsImmutable = "0.3.8"
+ktor = "3.0.0"
 lifecycleRuntimeKtx = "2.8.6"
+logbackAndroid = "3.0.0"
 material3Icons = "1.7.4"
 media3 = "1.4.1"
 paging = "3.3.2"
-retrofit = "2.11.0"
 serialization = "1.6.3"
+slf4j = "2.0.7"
 telephoto = "0.13.0"
 
 [libraries]
@@ -41,10 +43,17 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 composeSettings-ui = { group = "com.github.alorma.compose-settings", name = "ui-tiles", version.ref = "composeSettings" }
-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization"}
+ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-serialization = { group = "io.ktor", name = "ktor-client-serialization", version.ref = "ktor" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+logback-android = { group = "com.github.tony19", name = "logback-android", version.ref = "logbackAndroid" }
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material3Icons" }
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 media3-datasource = { group = "androidx.media3", name = "media3-datasource", version.ref = "media3"}
@@ -53,7 +62,7 @@ media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exoplayer-da
 media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 telephoto = { group = "me.saket.telephoto", name = "zoomable-image-coil", version.ref = "telephoto" }
 
 [plugins]
