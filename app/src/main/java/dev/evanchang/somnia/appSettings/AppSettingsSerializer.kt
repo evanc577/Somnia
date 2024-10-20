@@ -1,7 +1,6 @@
 package dev.evanchang.somnia.appSettings
 
 import androidx.datastore.core.Serializer
-import kotlinx.android.parcel.Parcelize
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.serialization.ExperimentalSerializationApi

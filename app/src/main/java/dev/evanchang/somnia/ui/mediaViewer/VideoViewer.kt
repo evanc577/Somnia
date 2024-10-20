@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,7 +39,7 @@ fun VideoViewer(mediaItem: MediaItem) {
 
     // Save current playback state in case screen rotates and configuration is lost
     var isPlaying by rememberSaveable { mutableStateOf(true) }
-    var currentPosition by rememberSaveable { mutableStateOf(0L) }
+    var currentPosition by rememberSaveable { mutableLongStateOf(0L) }
     var immersive by rememberSaveable { mutableStateOf(true) }
 
     // Cache

@@ -5,6 +5,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,8 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
-import dev.evanchang.somnia.api.RedditHttpClient
-import dev.evanchang.somnia.api.reddit.RedditApiInstance
 import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.dataStore
@@ -42,18 +41,24 @@ fun AccountSettingsScreen(
 
     // Set to true after action is taken after login success or error
     var loginFinished by remember { mutableStateOf(false) }
-    if (!loginFinished) {
-        loginFinished = true
-        when (val loginResultValue = loginResult()) {
-            is LoginResult.Ok -> scope.launch {
-                addAccountSettings(context, loginResultValue.user, loginResultValue.accountSettings)
-            }
+    LaunchedEffect(loginFinished) {
+        if (!loginFinished) {
+            loginFinished = true
+            when (val loginResultValue = loginResult()) {
+                is LoginResult.Ok -> scope.launch {
+                    addAccountSettings(
+                        context,
+                        loginResultValue.user,
+                        loginResultValue.accountSettings
+                    )
+                }
 
-            is LoginResult.Err -> scope.launch {
-                snackbarHostState.showSnackbar("Error logging in: ${loginResultValue.error}")
-            }
+                is LoginResult.Err -> scope.launch {
+                    snackbarHostState.showSnackbar("Error logging in: ${loginResultValue.error}")
+                }
 
-            null -> Unit
+                null -> Unit
+            }
         }
     }
 

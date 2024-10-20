@@ -48,10 +48,10 @@ val BearerAuthPlugin = createClientPlugin("CustomHeaderPlugin", ::BearerAuthPlug
         }
     }
     on(Send) { request ->
-        val RETRY_CODES = setOf(HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden)
+        val retryCodes = setOf(HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden)
         val originalCall = proceed(request)
         originalCall.response.run {
-            if (!RETRY_CODES.contains(status)) {
+            if (!retryCodes.contains(status)) {
                 return@run originalCall
             }
             val tokens = refreshTokens() ?: return@run originalCall

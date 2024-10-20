@@ -1,8 +1,8 @@
 [versions]
-activityCompose = "1.9.2"
+activityCompose = "1.9.3"
 agp = "8.5.2"
 coil = "2.6.0"
-composeBom = "2024.09.03"
+composeBom = "2024.10.00"
 composeNavigation = "2.8.3"
 composeSettings = "2.6.0"
 coreKtx = "1.13.1"
@@ -18,8 +18,8 @@ logbackAndroid = "3.0.0"
 material3Icons = "1.7.4"
 media3 = "1.4.1"
 paging = "3.3.2"
-serialization = "1.6.3"
-slf4j = "2.0.7"
+serialization = "1.7.3"
+slf4j = "2.0.16"
 telephoto = "0.13.0"
 
 [libraries]

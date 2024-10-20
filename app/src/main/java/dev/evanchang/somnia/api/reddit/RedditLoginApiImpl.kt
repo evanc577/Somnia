@@ -1,6 +1,5 @@
 package dev.evanchang.somnia.api.reddit
 
-import android.util.Log
 import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.UnauthenticatedHttpClient
 import dev.evanchang.somnia.api.reddit.dto.RedditApiMeResponse

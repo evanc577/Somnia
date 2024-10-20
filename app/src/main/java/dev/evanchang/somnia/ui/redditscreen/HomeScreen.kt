@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -32,6 +31,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -77,8 +77,8 @@ fun HomeScreen(
     val navBarHeightPx = WindowInsets.safeDrawing.getBottom(density)
     val bottomBarHeight = with(density) { navBarHeightPx.toDp() + BOTTOM_BAR_HEIGHT }
     val bottomBarHeightPx = with(density) { bottomBarHeight.roundToPx().toFloat() }
-    var tmpBottomBarOffsetHeightPx by remember { mutableStateOf(0f) }
-    var bottomBarOffsetHeightPx by remember { mutableStateOf(0f) }
+    var tmpBottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
+    var bottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(tmpBottomBarOffsetHeightPx) {
         bottomBarOffsetHeightPx = tmpBottomBarOffsetHeightPx.coerceIn(-(bottomBarHeightPx), 0f)
         tmpBottomBarOffsetHeightPx = bottomBarOffsetHeightPx
