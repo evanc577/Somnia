@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alorma.compose.settings.ui.SettingsGroup
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.dataStore
@@ -24,9 +24,7 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val appSettings by context.dataStore.data.collectAsState(
-        initial = AppSettings()
-    )
+    val appSettings by context.dataStore.data.collectAsStateWithLifecycle(initialValue = null)
 
     var openRedditClientIdDialog by remember { mutableStateOf(false) }
     var openRedditRedirectUriDialog by remember { mutableStateOf(false) }
@@ -39,7 +37,7 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
         SettingsGroup(title = { Text(text = "Reddit") }) {
             SettingsTextEdit(title = "Reddit Client ID",
                 subtitle = {
-                    val text = appSettings.apiSettings.redditClientId
+                    val text = appSettings?.apiSettings?.redditClientId
                     if (text == null) {
                         Text(text = "(Unset)", color = MaterialTheme.colorScheme.error)
                     } else {
@@ -47,7 +45,7 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
                     }
                 },
                 description = "Reddit developed app client ID.",
-                defaultText = appSettings.apiSettings.redditClientId ?: "",
+                defaultText = appSettings?.apiSettings?.redditClientId ?: "",
                 onConfirmRequest = {
                     openRedditClientIdDialog = false
                     coroutineScope.launch {
@@ -56,9 +54,9 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
                 })
 
             SettingsTextEdit(title = "Reddit redirect URI",
-                subtitle = { Text(text = appSettings.apiSettings.redditRedirectUri) },
+                subtitle = { Text(text = appSettings?.apiSettings?.redditRedirectUri ?: "") },
                 description = "Reddit developed app redirect URI.",
-                defaultText = appSettings.apiSettings.redditRedirectUri,
+                defaultText = appSettings?.apiSettings?.redditRedirectUri ?: "",
                 onConfirmRequest = {
                     openRedditRedirectUriDialog = false
                     coroutineScope.launch {
@@ -67,9 +65,9 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
                 })
 
             SettingsTextEdit(title = "Reddit User-Agent",
-                subtitle = { Text(text = appSettings.apiSettings.redditUserAgent) },
+                subtitle = { Text(text = appSettings?.apiSettings?.redditUserAgent ?: "") },
                 description = "User-Agent header sent with all Reddit API requests. Leave empty to return to default User-Agent.",
-                defaultText = appSettings.apiSettings.redditUserAgent,
+                defaultText = appSettings?.apiSettings?.redditUserAgent ?: "",
                 onConfirmRequest = {
                     openRedditUserAgentDialog = false
                     coroutineScope.launch {

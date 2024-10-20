@@ -6,17 +6,16 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.appSettings.AccountSettings
-import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.dataStore
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 import kotlinx.collections.immutable.mutate
@@ -33,11 +32,9 @@ fun AccountSettingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Extract API settings
-    val appSettings by context.dataStore.data.collectAsState(
-        initial = AppSettings()
-    )
-    val clientId = appSettings.apiSettings.redditClientId
-    val redirectUri = appSettings.apiSettings.redditRedirectUri
+    val appSettings by context.dataStore.data.collectAsStateWithLifecycle(initialValue = null)
+    val clientId = appSettings?.apiSettings?.redditClientId
+    val redirectUri = appSettings?.apiSettings?.redditRedirectUri
 
     // Set to true after action is taken after login success or error
     var loginFinished by remember { mutableStateOf(false) }
@@ -47,9 +44,7 @@ fun AccountSettingsScreen(
             when (val loginResultValue = loginResult()) {
                 is LoginResult.Ok -> scope.launch {
                     addAccountSettings(
-                        context,
-                        loginResultValue.user,
-                        loginResultValue.accountSettings
+                        context, loginResultValue.user, loginResultValue.accountSettings
                     )
                 }
 
@@ -74,16 +69,20 @@ fun AccountSettingsScreen(
             onClick = {
                 if (clientId == null) {
                     scope.launch {
-                        snackbarHostState.showSnackbar("No Reddit client ID set")
+                        snackbarHostState.showSnackbar("Client ID not set")
+                    }
+                } else if (redirectUri == null) {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Redirect URI not set")
                     }
                 } else {
                     onNavigateToLogin(clientId, redirectUri)
                 }
             },
         )
-        if (appSettings.accountSettings.isNotEmpty()) {
+        if (appSettings?.accountSettings?.isNotEmpty() == true) {
             SettingsGroup(title = { Text(text = "Saved accounts") }) {
-                for (account in appSettings.accountSettings) {
+                for (account in appSettings?.accountSettings.orEmpty()) {
                     Text(text = account.key)
                 }
             }
@@ -92,16 +91,12 @@ fun AccountSettingsScreen(
 }
 
 private suspend fun addAccountSettings(
-    context: Context,
-    user: String,
-    accountSettings: AccountSettings
+    context: Context, user: String, accountSettings: AccountSettings
 ) {
     context.dataStore.updateData { appSettings ->
-        appSettings.copy(
-            activeUser = user,
+        appSettings.copy(activeUser = user,
             accountSettings = appSettings.accountSettings.mutate { accountSettingsMap ->
                 accountSettingsMap[user] = accountSettings
-            }
-        )
+            })
     }
 }
