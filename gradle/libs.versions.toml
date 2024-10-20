@@ -1,6 +1,6 @@
 [versions]
 activityCompose = "1.9.3"
-agp = "8.5.2"
+agp = "8.7.1"
 coil = "2.6.0"
 composeBom = "2024.10.00"
 composeNavigation = "2.8.3"
