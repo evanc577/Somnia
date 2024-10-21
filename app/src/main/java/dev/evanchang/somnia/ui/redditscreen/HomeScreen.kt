@@ -43,6 +43,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,12 +70,12 @@ import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
 import dev.evanchang.somnia.ui.navigation.NavigationViewModel
 import dev.evanchang.somnia.ui.submissions.SubmissionsList
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
-import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModelFactory
 import dev.evanchang.somnia.ui.util.BottomSheetGridItem
 import dev.evanchang.somnia.ui.util.BottomSheetItem
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,21 +105,32 @@ fun SubmissionsScaffold(
 
     // Bottom bar
     val navBarHeightPx = WindowInsets.safeDrawing.getBottom(density)
-    val bottomBarHeight = with(density) { navBarHeightPx.toDp() + BOTTOM_BAR_HEIGHT }
-    val bottomBarHeightPx = with(density) { bottomBarHeight.roundToPx().toFloat() }
-    var tmpBottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
-    var bottomBarOffsetHeightPx by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(tmpBottomBarOffsetHeightPx) {
-        bottomBarOffsetHeightPx = tmpBottomBarOffsetHeightPx.coerceIn(-(bottomBarHeightPx), 0f)
-        tmpBottomBarOffsetHeightPx = bottomBarOffsetHeightPx
+    val bottomBarHeight by remember(navBarHeightPx) { mutableStateOf(with(density) { navBarHeightPx.toDp() + BOTTOM_BAR_HEIGHT }) }
+    val bottomBarHeightPx by remember(bottomBarHeight) {
+        mutableFloatStateOf(with(density) {
+            bottomBarHeight.roundToPx().toFloat()
+        })
     }
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                tmpBottomBarOffsetHeightPx = (bottomBarOffsetHeightPx + available.y)
-                return Offset.Zero
-            }
+    val bottomBarOffsetHeightPx = remember { mutableFloatStateOf(0f) }
+
+    class BottomBarNestedScrollConnection(
+        var bottomBarOffsetHeightPx: MutableFloatState,
+        var bottomBarHeightPx: Float,
+    ) : NestedScrollConnection {
+        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+            bottomBarOffsetHeightPx.floatValue =
+                (bottomBarOffsetHeightPx.floatValue + available.y).coerceIn(
+                    -bottomBarHeightPx, 0f
+                )
+            return Offset.Zero
         }
+    }
+
+    val nestedScrollConnection = remember(bottomBarHeightPx) {
+        BottomBarNestedScrollConnection(
+            bottomBarOffsetHeightPx = bottomBarOffsetHeightPx,
+            bottomBarHeightPx = bottomBarHeightPx,
+        )
     }
 
     // Update sort
@@ -166,7 +178,11 @@ fun SubmissionsScaffold(
                 modifier = Modifier
                     .height(bottomBarHeight)
                     .fillMaxWidth()
-                    .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.roundToInt()) }) {
+                    .offset {
+                        IntOffset(
+                            x = 0, y = -bottomBarOffsetHeightPx.value.roundToInt()
+                        )
+                    }) {
                 Box(
                     contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
                 ) {
@@ -343,11 +359,9 @@ private fun HomeScreenPreview() {
         onNavigateToSettings = {},
         screenStackIndex = 1,
         navigationViewModel = viewModel(),
-        submissionsListViewModel = viewModel(
-            factory = SubmissionsListViewModelFactory(
-                subreddit = "dreamcatcher",
-                sort = SubmissionSort.New,
-            )
-        ),
+        submissionsListViewModel = SubmissionsListViewModel(
+            subreddit = "dreamcatcher",
+            sort = SubmissionSort.New,
+        )
     )
 }

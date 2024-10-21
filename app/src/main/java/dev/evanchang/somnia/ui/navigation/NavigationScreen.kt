@@ -3,12 +3,12 @@ package dev.evanchang.somnia.ui.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.evanchang.somnia.ui.redditscreen.SubmissionsScaffold
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
@@ -18,7 +18,7 @@ fun NavigationScreen(
     navigationViewModel: NavigationViewModel = viewModel(),
     onNavigateToSettings: () -> Unit,
 ) {
-    val navigationState = navigationViewModel.navigationUIState.collectAsState()
+    val navigationState = navigationViewModel.navigationUIState.collectAsStateWithLifecycle()
     val navigationBackStack = navigationState.value.navigationBackStack
     val screenXOffsetSet = remember { mutableStateOf(false) }
 
@@ -42,6 +42,7 @@ fun NavigationScreen(
                         )
                     }
                 }
+
                 is AppScreen.CommentScreen -> {}
             }
         }

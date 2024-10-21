@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.scope.ProjectInfo.Companion.getBaseName
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -38,7 +40,7 @@ android {
             versionNameSuffix = "-debug"
             applicationIdSuffix = ".debug"
         }
-        create("debugTest") {
+        create("debugProfile") {
             isMinifyEnabled = true
             isDebuggable = false
             isProfileable = true

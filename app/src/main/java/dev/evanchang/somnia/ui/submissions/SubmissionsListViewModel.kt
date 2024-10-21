@@ -1,7 +1,6 @@
 package dev.evanchang.somnia.ui.submissions
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -30,15 +29,5 @@ class SubmissionsListViewModel(val subreddit: String, sort: SubmissionSort) : Vi
     fun updateSort(sort: SubmissionSort) {
         pagingSourceFactory =
             SubredditSubmissionsPagingSourceFactory(subreddit = subreddit, sort = sort)
-    }
-}
-
-class SubmissionsListViewModelFactory(
-    private val subreddit: String,
-    private val sort: SubmissionSort
-) : ViewModelProvider.NewInstanceFactory() {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return SubmissionsListViewModel(subreddit = subreddit, sort = sort) as T
     }
 }

@@ -2,6 +2,7 @@ package dev.evanchang.somnia.data
 
 import android.text.Html
 import androidx.annotation.Keep
+import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
@@ -94,7 +95,7 @@ data class Submission(
         return if (preview != null) {
             preview.images[0].source
         } else {
-            mediaMetadata?.values?.first()?.source
+            mediaMetadata?.values?.firstOrNull()?.source
         }
     }
 

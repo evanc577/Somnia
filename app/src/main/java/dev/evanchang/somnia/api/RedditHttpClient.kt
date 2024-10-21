@@ -29,7 +29,7 @@ object UnauthenticatedHttpClient {
                     Log.d("ktor", message)
                 }
             }
-            level = LogLevel.ALL
+            level = LogLevel.HEADERS
         }
     }
 }
@@ -63,7 +63,7 @@ val BearerAuthPlugin = createClientPlugin("CustomHeaderPlugin", ::BearerAuthPlug
                 return@run originalCall
             }
             val tokens = refreshTokens() ?: return@run originalCall
-            request.headers.set("authorization", "bearer ${tokens.accessToken}")
+            request.headers["authorization"] = "bearer ${tokens.accessToken}"
             proceed(request)
         }
     }
@@ -104,11 +104,7 @@ object RedditHttpClient {
                 }
             }
             refreshTokens = refreshTokens@{
-                val accountVal = account
-                if (accountVal == null) {
-                    Log.w("RedditHttpClient", "account is null")
-                    return@refreshTokens null
-                }
+                val accountVal = account ?: return@refreshTokens null
 
                 // Call API for new access token
                 val response = when (val r = RedditLoginApiInstance.api.postRefreshAccessToken(
@@ -132,7 +128,7 @@ object RedditHttpClient {
                     Log.d("ktor", message)
                 }
             }
-            level = LogLevel.ALL
+            level = LogLevel.HEADERS
         }
     }
 }
