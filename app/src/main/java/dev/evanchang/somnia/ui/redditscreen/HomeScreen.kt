@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.NewReleases
@@ -63,6 +64,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.data.SubmissionSort
+import dev.evanchang.somnia.ui.navigation.AppScreen
+import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
+import dev.evanchang.somnia.ui.navigation.NavigationViewModel
 import dev.evanchang.somnia.ui.submissions.SubmissionsList
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModelFactory
@@ -75,11 +79,9 @@ private val BOTTOM_BAR_HEIGHT = 80.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubmissionsScaffold(
-    submissionsListViewModel: SubmissionsListViewModel = viewModel(
-        factory = SubmissionsListViewModelFactory(
-            subreddit = "dreamcatcher", sort = SubmissionSort.New
-        )
-    ),
+    screenStackIndex: Int,
+    navigationViewModel: NavigationViewModel,
+    submissionsListViewModel: SubmissionsListViewModel,
     onNavigateToSettings: () -> Unit,
 ) {
     val density = LocalDensity.current
@@ -131,74 +133,91 @@ fun SubmissionsScaffold(
     }
 
     // UI
-    Scaffold(modifier = Modifier
-        .nestedScroll(nestedScrollConnection)
-        .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
-        TopAppBar(title = {
-            Text(text = "r/${submissionsListViewModel.subreddit}")
-        },
-            scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-            modifier = Modifier.clickable { scrollToTop = true })
-    }, bottomBar = {
-        Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier
-                .height(bottomBarHeight)
-                .fillMaxWidth()
-                .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.roundToInt()) }) {
-            Box(
-                contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(BOTTOM_BAR_HEIGHT)
-                ) {
-                    IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                    }
-                    FloatingActionButton(onClick = { showBottomSheet = true }) {
-                        Icon(
-                            imageVector = Icons.Outlined.ExpandCircleDown,
-                            contentDescription = "",
-                            modifier = Modifier.scale(scaleX = 1f, scaleY = -1f)
+    HorizontalDraggableScreen(
+        screenStackIndex = screenStackIndex,
+        navigationViewModel = navigationViewModel,
+    ) {
+        Scaffold(modifier = Modifier
+            .nestedScroll(nestedScrollConnection)
+            .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = "r/${submissionsListViewModel.subreddit}")
+                },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                modifier = Modifier.clickable { scrollToTop = true },
+                actions = {
+                    IconButton(onClick = {
+                        navigationViewModel.pushToBackStack(
+                            AppScreen.SubredditScreen,
+                            SubmissionsListViewModel("all", SubmissionSort.Best)
                         )
+                    }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "")
                     }
-                    IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                },
+            )
+        }, bottomBar = {
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier
+                    .height(bottomBarHeight)
+                    .fillMaxWidth()
+                    .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.roundToInt()) }) {
+                Box(
+                    contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(BOTTOM_BAR_HEIGHT)
+                    ) {
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }
+                        FloatingActionButton(onClick = { showBottomSheet = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.ExpandCircleDown,
+                                contentDescription = "",
+                                modifier = Modifier.scale(scaleX = 1f, scaleY = -1f)
+                            )
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }
                     }
                 }
             }
-        }
-    }) { padding ->
-        // Only use top bar padding without status bar
-        topPadding =
-            (padding.calculateTopPadding() - with(density) { statusBarHeightPx.toDp() }).coerceAtLeast(
-                0.dp
-            )
-        Column {
-            Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
-            SubmissionsList(
-                submissionsListViewModel = submissionsListViewModel,
-                listState = listState,
-                topPadding = topPadding
-            )
-        }
-        if (showBottomSheet) {
-            BottomSheet(onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState,
-                onNavigateToSettings = onNavigateToSettings,
-                onSortSelected = { sort ->
-                    updateSort = sort
-                })
+        }) { padding ->
+            // Only use top bar padding without status bar
+            topPadding =
+                (padding.calculateTopPadding() - with(density) { statusBarHeightPx.toDp() }).coerceAtLeast(
+                    0.dp
+                )
+            Column {
+                Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
+                SubmissionsList(
+                    submissionsListViewModel = submissionsListViewModel,
+                    listState = listState,
+                    topPadding = topPadding
+                )
+            }
+            if (showBottomSheet) {
+                BottomSheet(onDismissRequest = { showBottomSheet = false },
+                    sheetState = sheetState,
+                    onNavigateToSettings = onNavigateToSettings,
+                    onSortSelected = { sort ->
+                        updateSort = sort
+                    })
+            }
         }
     }
 }
@@ -317,5 +336,15 @@ private fun SortSelectionBottomSheet(
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    SubmissionsScaffold(onNavigateToSettings = {})
+    SubmissionsScaffold(
+        onNavigateToSettings = {},
+        screenStackIndex = 1,
+        navigationViewModel = viewModel(),
+        submissionsListViewModel = viewModel(
+            factory = SubmissionsListViewModelFactory(
+                subreddit = "dreamcatcher",
+                sort = SubmissionSort.New,
+            )
+        ),
+    )
 }

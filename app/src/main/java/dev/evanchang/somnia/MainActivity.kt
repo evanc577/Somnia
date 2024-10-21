@@ -15,7 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import dev.evanchang.somnia.api.RedditHttpClient
 import dev.evanchang.somnia.appSettings.AppSettingsSerializer
-import dev.evanchang.somnia.ui.redditscreen.Home
+import dev.evanchang.somnia.ui.navigation.AppScreen
 import dev.evanchang.somnia.ui.redditscreen.homeDestination
 import dev.evanchang.somnia.ui.settings.navigateToSettings
 import dev.evanchang.somnia.ui.settings.settingsNavigation
@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = Home,
+                        startDestination = AppScreen.SubredditScreen,
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None },
                     ) {

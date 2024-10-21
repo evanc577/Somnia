@@ -1,18 +1,14 @@
 package dev.evanchang.somnia.ui.redditscreen
 
-import androidx.annotation.Keep
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import kotlinx.serialization.Serializable
-
-@Keep
-@Serializable
-object Home
+import dev.evanchang.somnia.ui.navigation.AppScreen
+import dev.evanchang.somnia.ui.navigation.NavigationScreen
 
 fun NavGraphBuilder.homeDestination(
     onNavigateToSettings: () -> Unit,
 ) {
-    composable<Home> {
-        SubmissionsScaffold(onNavigateToSettings = onNavigateToSettings)
+    composable<AppScreen.SubredditScreen> {
+        NavigationScreen(onNavigateToSettings = onNavigateToSettings)
     }
 }
