@@ -1,5 +1,6 @@
 package dev.evanchang.somnia.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -26,6 +27,10 @@ fun HorizontalDraggableScreen(
     val navigationBackStack = navigationUiState.value.navigationBackStack
     val isTopScreen = screenStackIndex == navigationBackStack.lastIndex
 
+    BackHandler(enabled = screenStackIndex != 0) {
+        navigationViewModel.popBackStack()
+    }
+
     Box(modifier = Modifier
         .then(if (isTopScreen) {
             Modifier.offset { IntOffset(x = screenXOffset.floatValue.roundToInt(), y = 0) }
@@ -48,6 +53,8 @@ fun HorizontalDraggableScreen(
                 navigationViewModel.updateScreenXOffset(delta)
             })
     ) {
-        content()
+        if (isTopScreen || screenXOffset.floatValue > 0) {
+            content()
+        }
     }
 }

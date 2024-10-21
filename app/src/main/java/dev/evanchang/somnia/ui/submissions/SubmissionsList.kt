@@ -31,7 +31,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -196,24 +195,28 @@ private fun SubmissionCard(submission: Submission) {
 private fun SubmissionCardHeader(submission: Submission) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.align(Alignment.CenterVertically)) {
-            Text(text = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(color = MaterialTheme.colorScheme.onSurface)
-                ) {
-                    append("r/")
-                }
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold
-                    )
-                ) {
-                    append(submission.subreddit)
-                }
-            }, style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(color = MaterialTheme.colorScheme.onSurface)
+                    ) {
+                        append("r/")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        append(submission.subreddit)
+                    }
+                },
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "u/${submission.author}",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         Spacer(modifier = Modifier.weight(1.0f))

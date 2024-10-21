@@ -25,7 +25,7 @@ class NavigationViewModel : ViewModel() {
         _navigationUIState.value.screenXOffset.floatValue = 0f
     }
 
-    private fun popBackStack() {
+    fun popBackStack() {
         _navigationUIState.value.navigationBackStack.removeLastOrNull()
         _navigationUIState.value.screenXOffset.floatValue = 0f
     }
