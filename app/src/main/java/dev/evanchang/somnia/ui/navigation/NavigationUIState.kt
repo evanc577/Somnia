@@ -23,7 +23,7 @@ data class NavigationUIState(
 
     //--Horizontal Draggable Screen offsets--
     val screenWidth: Float = 0f,
-    var screenXOffset: MutableFloatState = mutableFloatStateOf(0f),
+    val screenXOffset: MutableFloatState = mutableFloatStateOf(0f),
 )
 
 data class NavigationBackStackEntry(

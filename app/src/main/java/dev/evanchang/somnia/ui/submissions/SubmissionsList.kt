@@ -61,6 +61,7 @@ import dev.evanchang.somnia.data.SubmissionPreview
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 import dev.evanchang.somnia.ui.util.ImageLoading
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -351,7 +352,7 @@ fun PreviewPostCard() {
         isGallery = null,
         url = "",
         preview = SubmissionPreview(
-            listOf(
+            persistentListOf(
                 PreviewImages(
                     source = PreviewImage(
                         url = "https://i.imgur.com/c10Qvha.jpg", 1800, 1200

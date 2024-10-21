@@ -14,12 +14,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import coil.request.ImageRequest
 import dev.evanchang.somnia.ui.util.ImageLoading
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import me.saket.telephoto.zoomable.coil.ZoomableAsyncImage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GalleryViewer(
-    images: List<String>,
+    images: PersistentList<String>,
 ) {
     val pagerState = rememberPagerState { images.size }
     val loaded = remember { images.map({ _ -> false }).toMutableStateList() }
@@ -47,6 +49,6 @@ fun GalleryViewer(
 @Preview
 @Composable
 private fun PreviewGalleryViewer() {
-    val images = arrayListOf("https://i.redd.it/yrjzzr5st6ud1.jpeg")
+    val images = persistentListOf("https://i.redd.it/yrjzzr5st6ud1.jpeg")
     GalleryViewer(images = images)
 }

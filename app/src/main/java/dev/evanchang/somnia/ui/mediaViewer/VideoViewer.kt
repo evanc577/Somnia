@@ -33,7 +33,7 @@ import java.io.File
 
 @OptIn(UnstableApi::class)
 @Composable
-fun VideoViewer(mediaItem: MediaItem) {
+fun VideoViewer(videoUrl: String) {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
@@ -41,6 +41,7 @@ fun VideoViewer(mediaItem: MediaItem) {
     var isPlaying by rememberSaveable { mutableStateOf(true) }
     var currentPosition by rememberSaveable { mutableLongStateOf(0L) }
     var immersive by rememberSaveable { mutableStateOf(true) }
+    val mediaItem = remember { MediaItem.fromUri(videoUrl) }
 
     // Cache
     MediaCache.initialize(context)

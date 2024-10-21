@@ -29,7 +29,7 @@ object UnauthenticatedHttpClient {
                     Log.d("ktor", message)
                 }
             }
-            level = LogLevel.HEADERS
+            level = LogLevel.ALL
         }
     }
 }
@@ -132,7 +132,7 @@ object RedditHttpClient {
                     Log.d("ktor", message)
                 }
             }
-            level = LogLevel.HEADERS
+            level = LogLevel.ALL
         }
     }
 }

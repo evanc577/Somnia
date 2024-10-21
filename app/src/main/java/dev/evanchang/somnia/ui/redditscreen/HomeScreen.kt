@@ -132,6 +132,14 @@ fun SubmissionsScaffold(
         lazyPagingItems.refresh()
     }
 
+    val allOnClick = remember {
+        {
+            navigationViewModel.pushToBackStack(
+                AppScreen.SubredditScreen, SubmissionsListViewModel("all", SubmissionSort.Best)
+            )
+        }
+    }
+
     // UI
     HorizontalDraggableScreen(
         screenStackIndex = screenStackIndex,
@@ -148,12 +156,7 @@ fun SubmissionsScaffold(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                 modifier = Modifier.clickable { scrollToTop = true },
                 actions = {
-                    IconButton(onClick = {
-                        navigationViewModel.pushToBackStack(
-                            AppScreen.SubredditScreen,
-                            SubmissionsListViewModel("all", SubmissionSort.Best)
-                        )
-                    }) {
+                    IconButton(onClick = allOnClick) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = "")
                     }
                 },
