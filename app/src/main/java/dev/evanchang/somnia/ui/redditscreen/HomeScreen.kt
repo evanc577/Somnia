@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,8 +85,9 @@ fun SubmissionsScaffold(
     val density = LocalDensity.current
 
     // Scrolling
+    val lazyPagingItems = submissionsListViewModel.submissions.collectAsLazyPagingItems()
     val listState = rememberLazyStaggeredGridState()
-    var scrollToTop by remember { mutableStateOf(false) }
+    var scrollToTop by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(scrollToTop) {
         if (scrollToTop) {
             listState.scrollToItem(0)
@@ -121,7 +123,6 @@ fun SubmissionsScaffold(
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
     var updateSort: SubmissionSort? by remember { mutableStateOf(null) }
-    val lazyPagingItems = submissionsListViewModel.submissions.collectAsLazyPagingItems()
     LaunchedEffect(updateSort) {
         val updateSortVal = updateSort ?: return@LaunchedEffect
         submissionsListViewModel.updateSort(updateSortVal)

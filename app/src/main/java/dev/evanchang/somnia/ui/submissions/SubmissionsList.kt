@@ -84,8 +84,8 @@ fun SubmissionsList(
         }
     }
 
-    LaunchedEffect(lazySubmissionItems.loadState.refresh) {
-        if (lazySubmissionItems.loadState.refresh != LoadState.Loading) {
+    LaunchedEffect(lazySubmissionItems.loadState.refresh, isRefreshing) {
+        if (isRefreshing && lazySubmissionItems.loadState.refresh != LoadState.Loading) {
             submissionsListViewModel.updateIsRefreshing(false)
             listState.scrollToItem(0)
         }
