@@ -18,19 +18,17 @@ data class NavigationUIState(
                 subreddit = "dreamcatcher",
                 sort = SubmissionSort.New,
             ),
-            screenXOffset = mutableFloatStateOf(0f),
         )
     ),
 
     //--Horizontal Draggable Screen offsets--
     val screenWidth: Float = 0f,
+    var screenXOffset: MutableFloatState = mutableFloatStateOf(0f),
 )
 
 data class NavigationBackStackEntry(
     val screen: AppScreen,
     val viewModel: ViewModel,
-
-    var screenXOffset: MutableFloatState = mutableFloatStateOf(0f),
 )
 
 

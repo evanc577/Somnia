@@ -3,8 +3,7 @@ package dev.evanchang.somnia.ui.navigation
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -19,46 +18,26 @@ import kotlin.math.roundToInt
 fun HorizontalDraggableScreen(
     screenStackIndex: Int = 0,
     navigationViewModel: NavigationViewModel,
-    content: @Composable (ColumnScope.() -> Unit),
+    content: @Composable () -> Unit,
 ) {
-
     val navigationUiState = navigationViewModel.navigationUIState.collectAsState()
-    val navStackSize = navigationUiState.value.navigationBackStack.size
     val screenWidth = navigationUiState.value.screenWidth
-//    val topScreenXOffset =
-//        navigationUiState.value.navigationBackStack.lastOrNull()?.screenXOffset ?: return
-//    val prevScreenXOffset =
-//        navigationUiState.value.navigationBackStack.getOrNull(navStackSize - 2)?.screenXOffset ?: 0f
-//
-//    val animatedTopXOffset = animateFloatAsState(targetValue = topScreenXOffset)
-//    val animatedPrevXOffset = animateFloatAsState(targetValue = prevScreenXOffset)
+    val screenXOffset = navigationUiState.value.screenXOffset
     val navigationBackStack = navigationUiState.value.navigationBackStack
     val isTopScreen = screenStackIndex == navigationBackStack.lastIndex
 
-    Column(content = content, modifier = Modifier
-        .offset {
-            if (isTopScreen) {
-                IntOffset(
-                    navigationUiState.value.navigationBackStack.lastOrNull()?.screenXOffset?.value?.roundToInt()
-                        ?: 0, 0
-                )
-            } else {
-//                IntOffset(animatedPrevXOffset.value.roundToInt(), 0)
-                IntOffset(0, 0)
-            }
-        }
-        .then(if (!isTopScreen) {
+    Box(modifier = Modifier
+        .then(if (isTopScreen) {
+            Modifier.offset { IntOffset(x = screenXOffset.floatValue.roundToInt(), y = 0) }
+        } else {
             Modifier.drawWithContent {
                 drawContent()
                 drawRect(
                     color = Color.Black.copy(
-                        alpha = ((screenWidth - (navigationUiState.value.navigationBackStack.lastOrNull()?.screenXOffset?.floatValue
-                            ?: 0f))) / screenWidth * 0.8f
+                        alpha = (screenWidth - screenXOffset.floatValue) / screenWidth * 0.8f
                     )
                 )
             }
-        } else {
-            Modifier
         })
         .draggable(enabled = (screenStackIndex != 0),
             orientation = Orientation.Horizontal,
@@ -66,8 +45,9 @@ fun HorizontalDraggableScreen(
                 navigationViewModel.horizontalScreenDragEnded()
             },
             state = rememberDraggableState { delta ->
-                navigationViewModel.updateTopScreenXOffset(delta)
+                navigationViewModel.updateScreenXOffset(delta)
             })
-    )
-
+    ) {
+        content()
+    }
 }
