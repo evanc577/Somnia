@@ -26,18 +26,18 @@ fun NavigationScreen(
         //--Set screenXOffset if not set--
         if (!screenXOffsetSet.value) {
             val rect = layoutCoordinates.boundsInRoot()
-            navigationViewModel.setScreenXOffset(rect.topRight.x)
+            navigationViewModel.setScreenWidth(rect.topRight.x)
             screenXOffsetSet.value = true
         }
     }) {
         for ((index, entry) in navigationBackStack.withIndex()) {
-            when (entry.first) {
+            when (entry.screen) {
                 is AppScreen.SubredditScreen -> {
                     AnimatedVisibility(visible = index >= navigationBackStack.size - 2) {
                         SubmissionsScaffold(
                             screenStackIndex = index,
                             navigationViewModel = navigationViewModel,
-                            submissionsListViewModel = entry.second as SubmissionsListViewModel,
+                            submissionsListViewModel = entry.viewModel as SubmissionsListViewModel,
                             onNavigateToSettings = onNavigateToSettings
                         )
                     }

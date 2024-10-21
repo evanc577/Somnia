@@ -1,6 +1,8 @@
 package dev.evanchang.somnia.ui.navigation
 
 import androidx.annotation.Keep
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
@@ -9,33 +11,26 @@ import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
 import kotlinx.serialization.Serializable
 
 data class NavigationUIState(
-    //--Back Stack for navigation--
-    val navigationBackStack: SnapshotStateList<Pair<AppScreen, ViewModel>> = mutableStateListOf(
-        Pair(
-            first = AppScreen.SubredditScreen,
-            second = SubmissionsListViewModel(
+    val navigationBackStack: SnapshotStateList<NavigationBackStackEntry> = mutableStateListOf(
+        NavigationBackStackEntry(
+            screen = AppScreen.SubredditScreen,
+            viewModel = SubmissionsListViewModel(
                 subreddit = "dreamcatcher",
                 sort = SubmissionSort.New,
             ),
+            screenXOffset = mutableFloatStateOf(0f),
         )
     ),
 
     //--Horizontal Draggable Screen offsets--
-    val screenXOffset: Float = 0.0f,
-    val topScreenXOffset: Float = 0.0f,
-    val prevScreenXOffset: Float = 0.0f,
-
-    //-- Index of previous screen, this is used to fine tune animations.--
-    val prevScreenIndex: Int = -1,
+    val screenWidth: Float = 0f,
 )
 
 data class NavigationBackStackEntry(
     val screen: AppScreen,
     val viewModel: ViewModel,
-    
-    val screenXOffset: Float = 0.0f,
-    val topScreenXOffset: Float = 0.0f,
-    val prevScreenXOffset: Float = 0.0f,
+
+    var screenXOffset: MutableFloatState = mutableFloatStateOf(0f),
 )
 
 
