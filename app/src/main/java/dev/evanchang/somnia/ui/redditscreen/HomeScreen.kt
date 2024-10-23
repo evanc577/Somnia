@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
@@ -43,6 +43,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -75,6 +76,18 @@ import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
 
+class BottomBarNestedScrollConnection(
+    private val bottomBarOffsetHeightPx: MutableFloatState,
+    private val bottomBarHeightPx: Float,
+) : NestedScrollConnection {
+    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        bottomBarOffsetHeightPx.floatValue =
+            (bottomBarOffsetHeightPx.floatValue + available.y).coerceIn(
+                -bottomBarHeightPx, 0f
+            )
+        return Offset.Zero
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +101,7 @@ fun SubmissionsScaffold(
 
     // Scrolling
     val lazyPagingItems = submissionsListViewModel.submissions.collectAsLazyPagingItems()
-    val listState = rememberLazyStaggeredGridState()
+    val listState = rememberLazyListState()
     var scrollToTop by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(scrollToTop) {
         if (scrollToTop) {
@@ -112,18 +125,8 @@ fun SubmissionsScaffold(
     }
     val bottomBarOffsetHeightPx = remember { mutableFloatStateOf(0f) }
 
-    class BottomBarNestedScrollConnection : NestedScrollConnection {
-        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            bottomBarOffsetHeightPx.floatValue =
-                (bottomBarOffsetHeightPx.floatValue + available.y).coerceIn(
-                    -bottomBarHeightPx, 0f
-                )
-            return Offset.Zero
-        }
-    }
-
     val nestedScrollConnection = remember(bottomBarHeightPx) {
-        BottomBarNestedScrollConnection()
+        BottomBarNestedScrollConnection(bottomBarOffsetHeightPx, bottomBarHeightPx)
     }
 
     // Update sort
@@ -150,70 +153,75 @@ fun SubmissionsScaffold(
         screenStackIndex = screenStackIndex,
         navigationViewModel = navigationViewModel,
     ) {
-        Scaffold(modifier = Modifier
-            .nestedScroll(nestedScrollConnection)
-            .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = "r/${submissionsListViewModel.subreddit}")
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                modifier = Modifier.clickable { scrollToTop = true },
-                actions = {
-                    IconButton(onClick = allOnClick) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "")
-                    }
-                },
-            )
-        }, bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier
-                    .height(bottomBarHeight)
-                    .fillMaxWidth()
-                    .offset {
-                        IntOffset(
-                            x = 0, y = -bottomBarOffsetHeightPx.floatValue.roundToInt()
-                        )
-                    }) {
-                Box(
-                    contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(BOTTOM_BAR_HEIGHT)
-                    ) {
-                        IconButton(onClick = {}) {
-                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+        Scaffold(
+            modifier = Modifier
+                .nestedScroll(nestedScrollConnection)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(text = "r/${submissionsListViewModel.subreddit}")
+                    },
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                    modifier = Modifier.clickable { scrollToTop = true },
+                    actions = {
+                        IconButton(onClick = allOnClick) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = "")
                         }
-                        IconButton(onClick = {}) {
-                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                        }
-                        FloatingActionButton(onClick = { showBottomSheet = true }) {
-                            Icon(
-                                imageVector = Icons.Outlined.ExpandCircleDown,
-                                contentDescription = "",
-                                modifier = Modifier.scale(scaleX = 1f, scaleY = -1f)
+                    },
+                )
+            },
+            bottomBar = {
+                Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier
+                        .height(bottomBarHeight)
+                        .fillMaxWidth()
+                        .offset {
+                            IntOffset(
+                                x = 0, y = -bottomBarOffsetHeightPx.floatValue.roundToInt()
                             )
-                        }
-                        IconButton(onClick = {}) {
-                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                        }
-                        IconButton(onClick = {}) {
-                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }) {
+                    Box(
+                        contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(BOTTOM_BAR_HEIGHT)
+                        ) {
+                            IconButton(onClick = {}) {
+                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                            }
+                            IconButton(onClick = {}) {
+                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                            }
+                            FloatingActionButton(onClick = { showBottomSheet = true }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ExpandCircleDown,
+                                    contentDescription = "",
+                                    modifier = Modifier.scale(scaleX = 1f, scaleY = -1f)
+                                )
+                            }
+                            IconButton(onClick = {}) {
+                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                            }
+                            IconButton(onClick = {}) {
+                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                            }
                         }
                     }
                 }
-            }
-        }) { padding ->
+            },
+        ) { padding ->
             // Only use top bar padding without status bar
-            topPadding =
+            topPadding = remember(padding) {
                 (padding.calculateTopPadding() - with(density) { statusBarHeightPx.toDp() }).coerceAtLeast(
                     0.dp
                 )
+            }
             Column {
                 Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
                 SubmissionsList(

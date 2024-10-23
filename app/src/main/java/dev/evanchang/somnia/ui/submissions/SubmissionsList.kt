@@ -14,9 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -77,7 +76,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SubmissionsList(
     submissionsListViewModel: SubmissionsListViewModel,
-    listState: LazyStaggeredGridState,
+    listState: LazyListState,
     topPadding: Dp,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
@@ -117,8 +116,7 @@ fun SubmissionsList(
         },
         modifier = Modifier.padding(top = topPadding)
     ) {
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Adaptive(400.dp),
+        LazyColumn(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                 .fillMaxSize(),
