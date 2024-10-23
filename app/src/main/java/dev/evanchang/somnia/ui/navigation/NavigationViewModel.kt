@@ -1,18 +1,19 @@
 package dev.evanchang.somnia.ui.navigation
 
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 
 class NavigationViewModel : ViewModel() {
     private val _navigationUIState = MutableStateFlow(NavigationUIState())
     val navigationUIState = _navigationUIState.asStateFlow()
+    val screenWidth = mutableFloatStateOf(0f)
+    val renderSecondScreen = mutableStateOf(false)
 
     fun setScreenWidth(width: Float) {
-        _navigationUIState.update { state ->
-            state.copy(screenWidth = width)
-        }
+        screenWidth.floatValue = width
     }
 
     fun pushToBackStack(screen: AppScreen, viewModel: ViewModel) {
@@ -20,31 +21,11 @@ class NavigationViewModel : ViewModel() {
             NavigationBackStackEntry(
                 screen = screen,
                 viewModel = viewModel,
-            )
+            ),
         )
-        _navigationUIState.value.screenXOffset.floatValue = 0f
     }
 
     fun popBackStack() {
         _navigationUIState.value.navigationBackStack.removeLastOrNull()
-        _navigationUIState.value.screenXOffset.floatValue = 0f
-    }
-
-    fun updateScreenXOffset(delta: Float) {
-        if (_navigationUIState.value.screenXOffset.floatValue + delta < 0) {
-            _navigationUIState.value.screenXOffset.floatValue = 0f
-        } else {
-            _navigationUIState.value.screenXOffset.floatValue += delta
-        }
-    }
-
-    fun horizontalScreenDragEnded() {
-        val screenWidth = _navigationUIState.value.screenWidth
-        if (_navigationUIState.value.screenXOffset.floatValue > screenWidth / 3) {
-            popBackStack()
-        } else {
-            // Reset the drag position
-            _navigationUIState.value.screenXOffset.floatValue = 0f
-        }
     }
 }

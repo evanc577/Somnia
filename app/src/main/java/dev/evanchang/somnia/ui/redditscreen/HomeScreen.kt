@@ -43,7 +43,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -113,10 +112,7 @@ fun SubmissionsScaffold(
     }
     val bottomBarOffsetHeightPx = remember { mutableFloatStateOf(0f) }
 
-    class BottomBarNestedScrollConnection(
-        var bottomBarOffsetHeightPx: MutableFloatState,
-        var bottomBarHeightPx: Float,
-    ) : NestedScrollConnection {
+    class BottomBarNestedScrollConnection : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
             bottomBarOffsetHeightPx.floatValue =
                 (bottomBarOffsetHeightPx.floatValue + available.y).coerceIn(
@@ -127,10 +123,7 @@ fun SubmissionsScaffold(
     }
 
     val nestedScrollConnection = remember(bottomBarHeightPx) {
-        BottomBarNestedScrollConnection(
-            bottomBarOffsetHeightPx = bottomBarOffsetHeightPx,
-            bottomBarHeightPx = bottomBarHeightPx,
-        )
+        BottomBarNestedScrollConnection()
     }
 
     // Update sort
@@ -180,7 +173,7 @@ fun SubmissionsScaffold(
                     .fillMaxWidth()
                     .offset {
                         IntOffset(
-                            x = 0, y = -bottomBarOffsetHeightPx.value.roundToInt()
+                            x = 0, y = -bottomBarOffsetHeightPx.floatValue.roundToInt()
                         )
                     }) {
                 Box(
