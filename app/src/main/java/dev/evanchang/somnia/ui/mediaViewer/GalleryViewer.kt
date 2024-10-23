@@ -37,6 +37,10 @@ import dev.evanchang.somnia.ui.util.ImageLoading
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import me.saket.telephoto.zoomable.DoubleClickToZoomListener
+import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.rememberZoomableState
+import me.saket.telephoto.zoomable.zoomable
 
 @Composable
 fun GalleryViewer(
@@ -44,6 +48,8 @@ fun GalleryViewer(
 ) {
     val context = LocalPlatformContext.current
     val pagerState = rememberPagerState { images.size }
+    val zoomListener = remember { DoubleClickToZoomListener.cycle(maxZoomFactor = 3f) }
+
     val painters = images.map { image ->
         rememberAsyncImagePainter(model = remember {
             ImageRequest.Builder(context).data(image).crossfade(true).build()
@@ -52,6 +58,9 @@ fun GalleryViewer(
     val states = painters.map { painter ->
         painter.state.collectAsStateWithLifecycle(context)
     }.toImmutableList()
+    val zoomableStates =
+        images.map { _ -> rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 50f)) }
+            .toImmutableList()
 
     HorizontalPager(state = pagerState, beyondViewportPageCount = 1) { idx ->
         when (states[idx].value) {
@@ -60,7 +69,9 @@ fun GalleryViewer(
                     painter = painters[idx],
                     contentDescription = "gallery image $idx",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zoomable(state = zoomableStates[idx], onDoubleClick = zoomListener),
                 )
             }
 
