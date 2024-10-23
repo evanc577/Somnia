@@ -1,7 +1,9 @@
 package dev.evanchang.somnia.ui.submissions
 
 import android.content.res.Configuration
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +18,12 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.ModeComment
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,8 +45,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,8 +59,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImagePainter
+import coil3.compose.LocalPlatformContext
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
@@ -188,7 +196,7 @@ private fun SubmissionCard(submission: Submission) {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(8.dp))
-            SubmissionCardPreview(submission = submission)
+            PreviewImage(submission = submission)
             Spacer(modifier = Modifier.height(8.dp))
             SubmissionCardFooter(submission = submission)
         }
@@ -307,31 +315,51 @@ private fun CommentsButton(submission: Submission) {
 }
 
 @Composable
-private fun SubmissionCardPreview(submission: Submission) {
-    val previewImage = submission.previewImage() ?: return
-
-    val imageRequest =
-        ImageRequest.Builder(LocalContext.current).data(previewImage.escapedUrl()).crossfade(true)
-            .build()
+private fun PreviewImage(submission: Submission) {
+    val previewImage = remember { submission.previewImage() } ?: return
+    val previewImageUrl = remember { previewImage.escapedUrl() }
 
     var showMediaViewer by rememberSaveable { mutableStateOf(false) }
     if (showMediaViewer) {
         MediaViewer(submission = submission, onClose = { showMediaViewer = false })
     }
 
+    val context = LocalPlatformContext.current
+    val painter = rememberAsyncImagePainter(model = remember {
+        ImageRequest.Builder(context).data(previewImageUrl).build()
+    })
+    val state = painter.state.collectAsStateWithLifecycle(context)
+
     Card(onClick = { showMediaViewer = true }) {
-        SubcomposeAsyncImage(
-            model = imageRequest,
-            contentDescription = "Submission image",
-            contentScale = ContentScale.FillWidth,
-            loading = { PreviewLoading(width = previewImage.width, height = previewImage.height) },
-            modifier = Modifier.fillMaxWidth()
-        )
+        when (state.value) {
+            is AsyncImagePainter.State.Success -> {
+                Image(
+                    painter = painter,
+                    contentDescription = "submission image",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(previewImage.width.toFloat() / previewImage.height.toFloat()),
+                )
+            }
+
+            is AsyncImagePainter.State.Error -> {
+                PreviewImageError(
+                    width = previewImage.width,
+                    height = previewImage.height,
+                    onRetry = { painter.restart() },
+                )
+            }
+
+            else -> {
+                PreviewImageLoading(width = previewImage.width, height = previewImage.height)
+            }
+        }
     }
 }
 
 @Composable
-private fun PreviewLoading(width: Int, height: Int) {
+private fun PreviewImageLoading(width: Int, height: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -340,6 +368,50 @@ private fun PreviewLoading(width: Int, height: Int) {
     ) {
         ImageLoading()
     }
+}
+
+@Composable
+private fun PreviewImageError(width: Int, height: Int, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(width.toFloat() / height)
+            .background(color = MaterialTheme.colorScheme.errorContainer),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Image failed to load",
+                style = TextStyle(
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Button(
+            onClick = onRetry,
+            colors = ButtonDefaults.buttonColors().copy(
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError,
+            ),
+        ) {
+            Text(text = "Retry")
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewImageErrorPreview() {
+    PreviewImageError(1000, 1000, onRetry = {})
 }
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)

@@ -100,6 +100,7 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     implementation(libs.coil)
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.ktor3)
     implementation(libs.composeSettings.ui)
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.serialization.json)
