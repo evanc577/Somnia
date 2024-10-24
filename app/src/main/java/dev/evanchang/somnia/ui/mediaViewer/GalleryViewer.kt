@@ -59,6 +59,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.ZoomableContentLocation
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 
@@ -84,6 +85,22 @@ fun GalleryViewer(
     val zoomableStates =
         images.map { _ -> rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 50f)) }
             .toImmutableList()
+    // Set zoom state edge detection after image has loaded
+    for ((state, zoomableState) in states.zip(zoomableStates)) {
+        LaunchedEffect(state.value) {
+            if (state.value is AsyncImagePainter.State.Success) {
+                val image = (state.value as AsyncImagePainter.State.Success).result.image
+                zoomableState.setContentLocation(
+                    ZoomableContentLocation.scaledInsideAndCenterAligned(
+                        androidx.compose.ui.geometry.Size(
+                            image.width.toFloat(),
+                            image.height.toFloat()
+                        )
+                    )
+                )
+            }
+        }
+    }
 
     // Header
     val density = LocalDensity.current
