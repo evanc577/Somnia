@@ -58,11 +58,33 @@ data class Submission(
     }
 
     fun previewImage(): PreviewImage? {
-        return if (preview != null) {
-            preview.images[0].source
-        } else {
-            mediaMetadata?.values?.firstOrNull()?.source
+        val images: ArrayList<PreviewImage> = arrayListOf()
+        if (preview != null) {
+            for (image in preview.images) {
+                images.addAll(image.resolutions)
+            }
         }
+        if (mediaMetadata?.values?.firstOrNull() != null) {
+            images.addAll(mediaMetadata.values.first().resolutions)
+        }
+
+        images.sortByDescending {
+            it.numPixels()
+        }
+
+        val candidate = images.find {
+            it.numPixels() <= 1000 * 1000
+        }
+
+        if (candidate != null) {
+            return candidate
+        }
+
+        if (images.isNotEmpty()) {
+            return images.first()
+        }
+
+        return null
     }
 
     fun media(): Media? {
@@ -131,6 +153,10 @@ data class PreviewImage @OptIn(ExperimentalSerializationApi::class) constructor(
 ) {
     fun escapedUrl(): String {
         return escapeString(url)
+    }
+
+    fun numPixels(): Int {
+        return width * height
     }
 }
 
