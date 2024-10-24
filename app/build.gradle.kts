@@ -26,27 +26,12 @@ android {
     }
 
     buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            )
-        }
         getByName("debug") {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            )
             versionNameSuffix = "-debug"
             applicationIdSuffix = ".debug"
         }
         create("debugProfile") {
-            isMinifyEnabled = true
-            isDebuggable = false
-            isProfileable = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            )
+            initWith(buildTypes.getByName("release"))
             versionNameSuffix = "-debug"
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("debug")
