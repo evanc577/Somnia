@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Settings
@@ -233,12 +234,18 @@ fun SubmissionsScaffold(
                 )
             }
             if (showBottomSheet) {
-                BottomSheet(onDismissRequest = { showBottomSheet = false },
+                BottomSheet(
+                    onDismissRequest = { showBottomSheet = false },
                     sheetState = sheetState,
                     onNavigateToSettings = onNavigateToSettings,
                     onSortSelected = { sort ->
                         updateSort = sort
-                    })
+                    },
+                    onScrollToTop = {
+                        scrollToTop = true
+                        showBottomSheet = false
+                    },
+                )
             }
         }
     }
@@ -251,6 +258,7 @@ private fun BottomSheet(
     sheetState: SheetState,
     onNavigateToSettings: () -> Unit,
     onSortSelected: (SubmissionSort) -> Unit,
+    onScrollToTop: () -> Unit,
 ) {
     val sortSheetState = rememberModalBottomSheetState()
     var showSortSheet by remember { mutableStateOf(false) }
@@ -284,6 +292,13 @@ private fun BottomSheet(
                     icon = Icons.AutoMirrored.Filled.Sort,
                     label = "Sort",
                     onClick = { showSortSheet = true },
+                )
+            }
+            item {
+                BottomSheetGridItem(
+                    icon = Icons.Default.KeyboardDoubleArrowUp,
+                    label = "Scroll to top",
+                    onClick = onScrollToTop,
                 )
             }
         }
