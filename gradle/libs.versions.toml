@@ -5,6 +5,8 @@ coil = "3.0.0-rc01"
 composeBom = "2024.10.00"
 composeNavigation = "2.8.3"
 composeSettings = "2.6.0"
+constraintlayout = "2.1.4"
+constraintlayoutCompose = "1.0.1"
 coreKtx = "1.13.1"
 datastore = "1.1.1"
 espressoCore = "3.6.1"
@@ -25,6 +27,8 @@ telephoto = "0.13.0"
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

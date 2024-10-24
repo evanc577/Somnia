@@ -79,6 +79,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.paging.compose)
@@ -96,6 +98,7 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.serialization)
     implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.logback.android)
     implementation(libs.material.icons.extended)
     implementation(libs.media3.common)
     implementation(libs.media3.datasource)
@@ -104,7 +107,6 @@ dependencies {
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.ui)
     implementation(libs.navigation.compose)
-    implementation(libs.telephoto)
     implementation(libs.slf4j.api)
-    implementation(libs.logback.android)
+    implementation(libs.telephoto)
 }
