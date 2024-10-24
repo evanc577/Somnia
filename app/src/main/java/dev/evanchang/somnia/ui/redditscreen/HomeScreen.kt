@@ -40,7 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
@@ -111,7 +110,10 @@ fun SubmissionsScaffold(
     }
 
     // Top bar
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+        snapAnimationSpec = null,
+        flingAnimationSpec = null,
+    )
     var topPadding by remember { mutableStateOf(0.dp) }
     val statusBarHeightPx = WindowInsets.safeDrawing.getTop(density)
 
