@@ -33,6 +33,9 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import coil3.request.maxBitmapSize
+import coil3.size.Dimension
+import coil3.size.Size
 import dev.evanchang.somnia.ui.util.ImageLoading
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -51,7 +54,8 @@ fun GalleryViewer(
 
     val painters = images.map { image ->
         rememberAsyncImagePainter(model = remember {
-            ImageRequest.Builder(context).data(image).crossfade(true).build()
+            ImageRequest.Builder(context).data(image).crossfade(true)
+                .maxBitmapSize(Size(Dimension.Undefined, Dimension.Undefined)).build()
         })
     }.toImmutableList()
     val states = painters.map { painter ->

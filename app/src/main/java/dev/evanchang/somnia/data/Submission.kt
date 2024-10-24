@@ -1,6 +1,7 @@
 package dev.evanchang.somnia.data
 
 import android.text.Html
+import android.webkit.MimeTypeMap
 import androidx.annotation.Keep
 import dev.evanchang.somnia.serializer.SerializableImmutableList
 import dev.evanchang.somnia.serializer.SerializableImmutableMap
@@ -82,7 +83,13 @@ data class Submission(
         if (postHint == PostHint.IMAGE) {
             return listOf(url).toImmutableList()
         } else if (isGallery == true) {
-            return mediaMetadata?.map { (k, _) -> "https://i.redd.it/${k}.jpg" }?.toImmutableList()
+            return mediaMetadata?.map { (id, metadata) ->
+                run {
+                    val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(metadata.mimeType)
+                        ?: "jpg"
+                    "https://i.redd.it/${id}.${ext}"
+                }
+            }?.toImmutableList()
         }
         return null
     }
@@ -132,6 +139,7 @@ data class PreviewImage @OptIn(ExperimentalSerializationApi::class) constructor(
 data class MediaMetadata(
     @SerialName("s") val source: PreviewImage,
     @SerialName("p") val resolutions: SerializableImmutableList<PreviewImage>,
+    @SerialName("m") val mimeType: String,
 )
 
 @Keep
