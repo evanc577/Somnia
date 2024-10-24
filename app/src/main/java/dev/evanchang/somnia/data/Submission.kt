@@ -2,54 +2,20 @@ package dev.evanchang.somnia.data
 
 import android.text.Html
 import androidx.annotation.Keep
-import androidx.compose.runtime.Immutable
+import dev.evanchang.somnia.serializer.SerializableImmutableList
+import dev.evanchang.somnia.serializer.SerializableImmutableMap
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.serialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonNames
 import java.time.Instant
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
-
-@Suppress("EXTERNAL_SERIALIZER_USELESS")
-@OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = PersistentMap::class)
-class MediaMetadataPersistentMapSerializer(
-    private val keySerializer: KSerializer<String?>,
-    private val valueSerializer: KSerializer<MediaMetadata?>,
-) : KSerializer<PersistentMap<String, MediaMetadata>> {
-    private class PersistentMapDescriptor :
-        SerialDescriptor by serialDescriptor<Map<String, MediaMetadata>>() {
-        @ExperimentalSerializationApi
-        override val serialName: String = "kotlinx.serialization.immutable.persistentMap"
-    }
-
-    override val descriptor: SerialDescriptor = PersistentMapDescriptor()
-    override fun serialize(encoder: Encoder, value: PersistentMap<String, MediaMetadata>) {
-        return MapSerializer(keySerializer, valueSerializer).serialize(encoder, value.toMap())
-    }
-
-    override fun deserialize(decoder: Decoder): PersistentMap<String, MediaMetadata> {
-        return MapSerializer(keySerializer, valueSerializer).deserialize(decoder)
-            .filter { (k, v) -> k != null && v != null }.map { (k, v) -> Pair(k!!, v!!) }
-            .associate { it.first to it.second }.toPersistentMap()
-    }
-}
 
 @Keep
 @Serializable
@@ -62,7 +28,7 @@ data class Submission(
     @SerialName("is_gallery") val isGallery: Boolean?,
     val url: String,
     private val preview: SubmissionPreview?,
-    @Serializable(MediaMetadataPersistentMapSerializer::class) @SerialName("media_metadata") private val mediaMetadata: PersistentMap<String, MediaMetadata>?,
+    @SerialName("media_metadata") private val mediaMetadata: SerializableImmutableMap<String, MediaMetadata>?,
     @SerialName("secure_media") private val media: SecureMedia?,
     val score: Int,
     @SerialName("num_comments") val numComments: Int,
@@ -117,8 +83,7 @@ data class Submission(
         if (postHint == PostHint.IMAGE) {
             return persistentListOf(url)
         } else if (isGallery == true) {
-            return mediaMetadata?.map { (k, _) -> "https://i.redd.it/${k}.jpg" }
-                ?.toPersistentList()
+            return mediaMetadata?.map { (k, _) -> "https://i.redd.it/${k}.jpg" }?.toPersistentList()
         }
         return null
     }
@@ -136,39 +101,17 @@ sealed class Media {
     class RedditVideo(val video: String) : Media()
 }
 
-@Suppress("EXTERNAL_SERIALIZER_USELESS")
-@OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = PersistentList::class)
-class PreviewImagePersistentListSerializer(private val dataSerializer: KSerializer<PreviewImage?>) :
-    KSerializer<PersistentList<PreviewImage>> {
-    private class PersistentListDescriptor :
-        SerialDescriptor by serialDescriptor<List<PreviewImage>>() {
-        @ExperimentalSerializationApi
-        override val serialName: String = "kotlinx.serialization.immutable.persistentList"
-    }
-
-    override val descriptor: SerialDescriptor = PersistentListDescriptor()
-
-    override fun serialize(encoder: Encoder, value: PersistentList<PreviewImage>) {
-        return ListSerializer(dataSerializer).serialize(encoder, value.toList())
-    }
-
-    override fun deserialize(decoder: Decoder): PersistentList<PreviewImage> {
-        return ListSerializer(dataSerializer).deserialize(decoder).filterNotNull()
-            .toPersistentList()
-    }
-}
-
 @Keep
 @Serializable
 data class SubmissionPreview(
-    @Serializable(with = PreviewImagePersistentListSerializer::class) val images: PersistentList<PreviewImages>,
+    val images: SerializableImmutableList<PreviewImages>,
 )
 
 @Keep
 @Serializable
 data class PreviewImages(
     val source: PreviewImage,
+//    val resolutions: PersistentList<PreviewImage>,
 )
 
 @Keep

@@ -1,7 +1,7 @@
 package dev.evanchang.somnia.appSettings
 
 import androidx.annotation.Keep
-import kotlinx.collections.immutable.PersistentMap
+import dev.evanchang.somnia.serializer.SerializablePersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
 
@@ -9,8 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AppSettings(
     val activeUser: String? = null,
-    @Serializable(with = MyPersistentMapSerializer::class)
-    val accountSettings: PersistentMap<String, AccountSettings> = persistentMapOf(),
+    val accountSettings: SerializablePersistentMap<String, AccountSettings> = persistentMapOf(),
     val apiSettings: ApiSettings = ApiSettings(),
 )
 
