@@ -26,6 +26,14 @@ android {
     }
 
     buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro"
+            )
+        }
         getByName("debug") {
             versionNameSuffix = "-debug"
             applicationIdSuffix = ".debug"
