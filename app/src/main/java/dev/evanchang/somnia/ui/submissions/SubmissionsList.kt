@@ -70,6 +70,7 @@ import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 import dev.evanchang.somnia.ui.util.ImageLoading
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,8 +120,7 @@ fun SubmissionsList(
         LazyColumn(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                .fillMaxSize(),
-            state = listState
+                .fillMaxSize(), state = listState
         ) {
             items(count = lazySubmissionItems.itemCount,
                 key = { index -> lazySubmissionItems[index]!!.id }) { index ->
@@ -429,7 +429,8 @@ fun PreviewPostCard() {
                 PreviewImages(
                     source = PreviewImage(
                         url = "https://i.imgur.com/c10Qvha.jpg", 1800, 1200
-                    )
+                    ),
+                    resolutions = listOf<PreviewImage>().toImmutableList(),
                 )
             )
         ),

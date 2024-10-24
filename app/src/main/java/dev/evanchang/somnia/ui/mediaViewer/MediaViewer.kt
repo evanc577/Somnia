@@ -7,13 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.evanchang.somnia.data.Media
 import dev.evanchang.somnia.data.Submission
 
 @Composable
 fun MediaViewer(
-    viewModel: MediaViewerViewModel = viewModel(),
     submission: Submission,
     onClose: () -> Unit,
 ) {

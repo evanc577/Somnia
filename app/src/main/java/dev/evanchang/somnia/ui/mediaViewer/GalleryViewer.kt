@@ -34,8 +34,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import dev.evanchang.somnia.ui.util.ImageLoading
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
@@ -44,7 +43,7 @@ import me.saket.telephoto.zoomable.zoomable
 
 @Composable
 fun GalleryViewer(
-    images: PersistentList<String>,
+    images: ImmutableList<String>,
 ) {
     val context = LocalPlatformContext.current
     val pagerState = rememberPagerState { images.size }
@@ -127,6 +126,6 @@ private fun ImageError(onRetry: () -> Unit = {}) {
 @Preview
 @Composable
 private fun PreviewGalleryViewer() {
-    val images = persistentListOf("https://i.redd.it/yrjzzr5st6ud1.jpeg")
+    val images = listOf("https://i.redd.it/yrjzzr5st6ud1.jpeg").toImmutableList()
     GalleryViewer(images = images)
 }

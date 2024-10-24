@@ -4,9 +4,8 @@ import android.text.Html
 import androidx.annotation.Keep
 import dev.evanchang.somnia.serializer.SerializableImmutableList
 import dev.evanchang.somnia.serializer.SerializableImmutableMap
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -79,11 +78,11 @@ data class Submission(
         return null
     }
 
-    private fun images(): PersistentList<String>? {
+    private fun images(): ImmutableList<String>? {
         if (postHint == PostHint.IMAGE) {
-            return persistentListOf(url)
+            return listOf(url).toImmutableList()
         } else if (isGallery == true) {
-            return mediaMetadata?.map { (k, _) -> "https://i.redd.it/${k}.jpg" }?.toPersistentList()
+            return mediaMetadata?.map { (k, _) -> "https://i.redd.it/${k}.jpg" }?.toImmutableList()
         }
         return null
     }
@@ -97,7 +96,7 @@ data class Submission(
 }
 
 sealed class Media {
-    class Images(val images: PersistentList<String>) : Media()
+    class Images(val images: ImmutableList<String>) : Media()
     class RedditVideo(val video: String) : Media()
 }
 
@@ -111,7 +110,7 @@ data class SubmissionPreview(
 @Serializable
 data class PreviewImages(
     val source: PreviewImage,
-//    val resolutions: PersistentList<PreviewImage>,
+    val resolutions: SerializableImmutableList<PreviewImage>,
 )
 
 @Keep
@@ -132,6 +131,7 @@ data class PreviewImage @OptIn(ExperimentalSerializationApi::class) constructor(
 @Serializable
 data class MediaMetadata(
     @SerialName("s") val source: PreviewImage,
+    @SerialName("p") val resolutions: SerializableImmutableList<PreviewImage>,
 )
 
 @Keep
