@@ -10,5 +10,5 @@ interface RedditApi {
         sort: SubmissionSort,
         after: String = "",
         limit: Int = 100,
-    ): ApiResult<List<Submission>>
+    ): ApiResult<Pair<List<Submission>, String?>>
 }

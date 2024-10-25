@@ -16,7 +16,7 @@ sealed class RedditResponse {
     @Keep
     @Serializable
     @SerialName("Listing")
-    class Listing(@SerialName("data") val data: ListingData) : RedditResponse()
+    class Listing(@SerialName("data") val data: ListingData, val after: String?) : RedditResponse()
 }
 
 @Keep

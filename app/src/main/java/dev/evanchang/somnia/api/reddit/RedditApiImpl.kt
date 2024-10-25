@@ -23,7 +23,7 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
         sort: SubmissionSort,
         after: String,
         limit: Int,
-    ): ApiResult<List<Submission>> {
+    ): ApiResult<Pair<List<Submission>, String?>> {
         val sortString = sort.toString()
         val response = doRequest<RedditResponse> {
             client.get {
@@ -42,10 +42,12 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
         return when (response) {
             is ApiResult.Ok -> {
                 if (response.value is RedditResponse.Listing) {
-                    ApiResult.Ok(response.value.data.children.filterIsInstance<Thing.SubmissionThing>()
-                        .map { it.submission })
+                    val submissions =
+                        response.value.data.children.filterIsInstance<Thing.SubmissionThing>()
+                            .map { it.submission }
+                    ApiResult.Ok(Pair(submissions, response.value.after))
                 } else {
-                    ApiResult.Ok(listOf())
+                    ApiResult.Ok(Pair(listOf(), null))
                 }
             }
 
