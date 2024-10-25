@@ -4,7 +4,7 @@ import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.RedditHttpClient
 import dev.evanchang.somnia.api.reddit.dto.RedditResponse
 import dev.evanchang.somnia.api.reddit.dto.Thing
-import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.SubmissionSort
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -23,15 +23,14 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
         sort: SubmissionSort,
         after: String,
         limit: Int,
-    ): ApiResult<Pair<List<Submission>, String?>> {
-        val sortString = sort.toString()
+    ): ApiResult<RedditApi.SubredditSubmissionsResponse> {
         val response = doRequest<RedditResponse> {
             client.get {
                 url {
                     protocol = this@RedditApiImpl.protocol
                     host = this@RedditApiImpl.host
                     appendPathSegments("r", subreddit, encodeSlash = true)
-                    appendPathSegments(sortString, encodeSlash = false)
+                    appendPathSegments(sort.toString())
                     appendPathSegments(".json")
                     parameters.append("after", after)
                     parameters.append("limit", limit.toString())
@@ -40,18 +39,75 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
         }
 
         return when (response) {
+            is ApiResult.Err -> response
+
             is ApiResult.Ok -> {
                 if (response.value is RedditResponse.Listing) {
                     val submissions =
                         response.value.data.children.filterIsInstance<Thing.SubmissionThing>()
                             .map { it.submission }
-                    ApiResult.Ok(Pair(submissions, response.value.after))
+                    ApiResult.Ok(
+                        RedditApi.SubredditSubmissionsResponse(
+                            submissions = submissions, after = response.value.after
+                        )
+                    )
                 } else {
-                    ApiResult.Ok(Pair(listOf(), null))
+                    ApiResult.Ok(
+                        RedditApi.SubredditSubmissionsResponse(
+                            submissions = listOf(), after = null
+                        )
+                    )
                 }
             }
+        }
+    }
 
+    override suspend fun getSubmission(
+        subreddit: String,
+        submissionId: String,
+        commentSort: CommentSort,
+        after: String,
+        limit: Int,
+    ): ApiResult<RedditApi.SubmissionResponse> {
+        val response = doRequest<List<RedditResponse>> {
+            client.get {
+                url {
+                    protocol = this@RedditApiImpl.protocol
+                    host = this@RedditApiImpl.host
+                    appendPathSegments("r", subreddit, "comments", submissionId, encodeSlash = true)
+                    appendPathSegments(".json")
+                    parameters.append("sort", commentSort.toString())
+                    parameters.append("after", after)
+                    parameters.append("limit", limit.toString())
+                }
+            }
+        }
+
+        return when (response) {
             is ApiResult.Err -> response
+
+            is ApiResult.Ok -> {
+                // Find submission
+                val submission = response.value.filterIsInstance<RedditResponse.Listing>()
+                    .firstOrNull()?.data?.children?.filterIsInstance<Thing.SubmissionThing>()
+                    ?.firstOrNull()?.submission ?: return ApiResult.Err("no submission found")
+
+                // Find comments
+                val commentsListing =
+                    response.value.filterIsInstance<RedditResponse.Listing>().getOrNull(1)
+                        ?: return ApiResult.Err("no comments found")
+                val commentsAfter = commentsListing.after
+                val comments = commentsListing.data.children.filterIsInstance<Thing.CommentThing>()
+                    .map { it.comment }
+
+                ApiResult.Ok(
+                    RedditApi.SubmissionResponse(
+                        submission = submission,
+                        comments = comments,
+                        commentsAfter = commentsAfter,
+                    )
+                )
+            }
         }
     }
 }

@@ -21,9 +21,9 @@ class SubredditSubmissionsPagingSource(
             after = params.key ?: "",
         )) {
             is ApiResult.Ok -> LoadResult.Page(
-                data = r.value.first,
+                data = r.value.submissions,
                 prevKey = null,
-                nextKey = r.value.second,
+                nextKey = r.value.after,
             )
 
             is ApiResult.Err -> LoadResult.Error(Exception(r.message))
