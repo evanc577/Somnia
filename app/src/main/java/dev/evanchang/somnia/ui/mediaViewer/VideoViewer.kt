@@ -10,10 +10,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -168,7 +166,9 @@ fun VideoViewer(videoUrl: String) {
             .fillMaxSize()
             .constrainAs(video) {
                 top.linkTo(parent.top)
+                bottom.linkTo(parent.bottom)
                 start.linkTo(parent.start)
+                end.linkTo(parent.end)
             }, factory = {
             PlayerView(context).apply {
                 player = exoPlayer
@@ -187,6 +187,8 @@ fun VideoViewer(videoUrl: String) {
             exit = fadeOut(),
             modifier = Modifier.constrainAs(controls) {
                 bottom.linkTo(parent.bottom)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
             },
         ) {
             VideoViewerControls(
@@ -301,7 +303,27 @@ private fun VideoViewerControls(
             VideoTimeText(text = currentPositionString)
 
             // Progress bar
-            Box(modifier = Modifier.weight(1.0f)) {
+            Box(
+                modifier = Modifier
+                    .weight(1.0f)
+                    .onGloballyPositioned {
+                        with (density) {
+                            barWidth = it.size.width - circleSize.toPx().roundToInt()
+                        }
+                    }
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(onDragStart = { offset ->
+                            playbackOffsetPx = offset.x.roundToInt()
+                            dragState = DragState.DRAGGING
+                        },
+                            onDragEnd = { dragState = DragState.DRAG_FINISHED },
+                            onHorizontalDrag = { _, delta ->
+                                playbackOffsetPx = (playbackOffsetPx + delta.roundToInt()).coerceIn(
+                                    0, barWidth
+                                )
+                            })
+                    },
+            ) {
                 Box(
                     modifier = Modifier
                         .padding(vertical = (circleSize - barHeight) / 2)
@@ -312,10 +334,7 @@ private fun VideoViewerControls(
                             .clip(clipShape)
                             .background(backgroundColor)
                             .height(barHeight)
-                            .fillMaxWidth()
-                            .onGloballyPositioned {
-                                barWidth = it.size.width
-                            },
+                            .fillMaxWidth(),
                     )
 
                     Box(
@@ -325,27 +344,24 @@ private fun VideoViewerControls(
                             .height(barHeight)
                             .fillMaxWidth(bufferProgress),
                     )
+
+                    Box(
+                        modifier = Modifier
+                            .clip(clipShape)
+                            .background(primaryColor)
+                            .height(barHeight)
+                            .fillMaxWidth(playbackOffsetPx.toFloat() / barWidth),
+                    )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .size(circleSize)
-                        .offset {
-                            IntOffset(x = playbackOffsetPx, y = 0)
-                        }
-                        .drawWithCache {
-                            onDrawBehind { drawCircle(color = primaryColor) }
-                        }
-                        .draggable(
-                            orientation = Orientation.Horizontal,
-                            state = rememberDraggableState { delta ->
-                                playbackOffsetPx =
-                                    (playbackOffsetPx + delta.roundToInt()).coerceIn(0, barWidth)
-                            },
-                            onDragStarted = { dragState = DragState.DRAGGING },
-                            onDragStopped = { dragState = DragState.DRAG_FINISHED },
-                        ),
-                )
+                Box(modifier = Modifier
+                    .size(circleSize)
+                    .offset {
+                        IntOffset(x = playbackOffsetPx, y = 0)
+                    }
+                    .drawWithCache {
+                        onDrawBehind { drawCircle(color = primaryColor) }
+                    })
             }
 
             // Total duration
