@@ -91,7 +91,7 @@ fun GalleryViewer(
             if (state.value is AsyncImagePainter.State.Success) {
                 val image = (state.value as AsyncImagePainter.State.Success).result.image
                 zoomableState.setContentLocation(
-                    ZoomableContentLocation.scaledInsideAndCenterAligned(
+                    ZoomableContentLocation.scaledToFitAndCenterAligned(
                         androidx.compose.ui.geometry.Size(
                             image.width.toFloat(),
                             image.height.toFloat()

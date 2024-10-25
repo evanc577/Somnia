@@ -26,6 +26,7 @@ data class Submission(
     private val title: String,
     @SerialName("post_hint") val postHint: PostHint?,
     @SerialName("is_gallery") val isGallery: Boolean?,
+    @SerialName("gallery_data") val galleryData: GalleryData?,
     val url: String,
     private val preview: SubmissionPreview?,
     @SerialName("media_metadata") private val mediaMetadata: SerializableImmutableMap<String, MediaMetadata>?,
@@ -58,16 +59,7 @@ data class Submission(
     }
 
     fun previewImage(): PreviewImage? {
-        val images: ArrayList<PreviewImage> = arrayListOf()
-        if (preview != null) {
-            for (image in preview.images) {
-                images.addAll(image.resolutions)
-            }
-        }
-        if (mediaMetadata?.values?.firstOrNull() != null) {
-            images.addAll(mediaMetadata.values.first().resolutions)
-        }
-
+        val images = ArrayList(previewImages())
         images.sortByDescending {
             it.numPixels()
         }
@@ -87,6 +79,25 @@ data class Submission(
         return null
     }
 
+    private fun previewImages(): List<PreviewImage> {
+        val previewImages = preview?.images?.map { previewImages ->
+            val images = arrayListOf(previewImages.source)
+            images.addAll(previewImages.resolutions)
+            images
+        }?.flatten()
+        val galleryPreviewImages = galleryData?.items?.map { item ->
+            val metadata = mediaMetadata?.get(item.mediaId) ?: return@map null
+            val images = arrayListOf(metadata.source)
+            images.addAll(metadata.resolutions)
+            images
+        }?.filterNotNull()?.flatten()
+
+        return sequenceOf(
+            previewImages.orEmpty(),
+            galleryPreviewImages.orEmpty(),
+        ).flatten().toList()
+    }
+
     fun media(): Media? {
         val images = images()
         if (images != null) {
@@ -104,16 +115,14 @@ data class Submission(
     private fun images(): ImmutableList<String>? {
         if (postHint == PostHint.IMAGE) {
             return listOf(url).toImmutableList()
-        } else if (isGallery == true) {
-            return mediaMetadata?.map { (id, metadata) ->
-                run {
-                    val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(metadata.mimeType)
-                        ?: "jpg"
-                    "https://i.redd.it/${id}.${ext}"
-                }
-            }?.toImmutableList()
         }
-        return null
+
+        return galleryData?.items?.map { item ->
+            val metadata = mediaMetadata?.get(item.mediaId) ?: return@map null
+            val ext =
+                MimeTypeMap.getSingleton().getExtensionFromMimeType(metadata.mimeType) ?: "jpg"
+            "https://i.redd.it/${item.mediaId}.${ext}"
+        }?.filterNotNull()?.toImmutableList()
     }
 
     private fun video(): String? {
@@ -192,3 +201,16 @@ enum class PostHint {
 private fun escapeString(s: String): String {
     return Html.fromHtml(s, Html.FROM_HTML_MODE_LEGACY).toString()
 }
+
+@Keep
+@Serializable
+data class GalleryData(
+    val items: SerializableImmutableList<GalleryDataItem>,
+)
+
+@Keep
+@Serializable
+data class GalleryDataItem(
+    @SerialName("media_id") val mediaId: String,
+    @SerialName("id") val id: Int,
+)
