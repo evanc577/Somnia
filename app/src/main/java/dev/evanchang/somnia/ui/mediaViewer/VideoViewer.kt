@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +70,7 @@ import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.SeekParameters
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.delay
@@ -97,10 +99,11 @@ fun VideoViewer(videoUrl: String) {
     val exoPlayer = remember {
         ExoPlayer.Builder(context).setMediaSourceFactory(
             DefaultMediaSourceFactory(context).setDataSourceFactory(MediaCache.getCacheDataStoreFactory())
-        ).build().apply {
+        ).setSeekForwardIncrementMs(5000).setSeekBackIncrementMs(5000).build().apply {
             setMediaItem(mediaItem)
             repeatMode = ExoPlayer.REPEAT_MODE_ONE
             playWhenReady = savedIsPlaying
+            setSeekParameters(SeekParameters.EXACT)
             seekTo(savedCurrentPosition)
             prepare()
         }
@@ -153,12 +156,28 @@ fun VideoViewer(videoUrl: String) {
         }
     }
 
+    // Viewer dimensions
+    var viewerWidth by remember { mutableFloatStateOf(0f) }
+
     ConstraintLayout(
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(
-                onTap = { immersive = !immersive },
-            )
-        },
+        modifier = Modifier
+            .fillMaxSize()
+            .onGloballyPositioned {
+                viewerWidth = it.size.width.toFloat()
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    // Toggle immersive mode on single tap
+                    immersive = !immersive
+                }, onDoubleTap = { offset ->
+                    // Fast-forward/rewind on double tap
+                    if (offset.x < viewerWidth / 2) {
+                        exoPlayer.seekBack()
+                    } else {
+                        exoPlayer.seekForward()
+                    }
+                })
+            },
     ) {
         val (controls, video) = createRefs()
 
@@ -307,21 +326,34 @@ private fun VideoViewerControls(
                 modifier = Modifier
                     .weight(1.0f)
                     .onGloballyPositioned {
-                        with (density) {
-                            barWidth = it.size.width - circleSize.toPx().roundToInt()
+                        with(density) {
+                            barWidth = it.size.width - circleSize
+                                .toPx()
+                                .roundToInt()
                         }
                     }
                     .pointerInput(Unit) {
-                        detectHorizontalDragGestures(onDragStart = { offset ->
+                        detectTapGestures(onPress = { offset ->
                             playbackOffsetPx = offset.x.roundToInt()
                             dragState = DragState.DRAGGING
-                        },
+                            if (tryAwaitRelease()) {
+                                dragState = DragState.DRAG_FINISHED
+                            }
+                        })
+                    }
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { offset ->
+                                playbackOffsetPx = offset.x.roundToInt()
+                                dragState = DragState.DRAGGING
+                            },
                             onDragEnd = { dragState = DragState.DRAG_FINISHED },
                             onHorizontalDrag = { _, delta ->
                                 playbackOffsetPx = (playbackOffsetPx + delta.roundToInt()).coerceIn(
                                     0, barWidth
                                 )
-                            })
+                            },
+                        )
                     },
             ) {
                 Box(
