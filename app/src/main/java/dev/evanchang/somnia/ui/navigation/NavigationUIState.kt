@@ -1,43 +1,23 @@
 package dev.evanchang.somnia.ui.navigation
 
-import androidx.annotation.Keep
-import androidx.compose.runtime.MutableFloatState
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.lifecycle.ViewModel
 import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
-import kotlinx.serialization.Serializable
 
 data class NavigationUIState(
     val navigationBackStack: SnapshotStateList<NavigationBackStackEntry> = mutableStateListOf(
-        NavigationBackStackEntry(
-            screen = AppScreen.SubredditScreen,
+        NavigationBackStackEntry.SubredditBackStackEntry(
             viewModel = SubmissionsListViewModel(
                 subreddit = "dreamcatcher",
                 sort = SubmissionSort.New,
-            ),
-//            screenXOffset = mutableFloatStateOf(0f),
+            )
         )
     ),
 )
 
-data class NavigationBackStackEntry(
-    val screen: AppScreen,
-    val viewModel: ViewModel,
-//    val screenXOffset: MutableFloatState,
-)
-
-
-@Keep
-@Serializable
-sealed class AppScreen {
-    @Keep
-    @Serializable
-    object SubredditScreen : AppScreen()
-
-    @Keep
-    @Serializable
-    object CommentScreen : AppScreen()
+sealed class NavigationBackStackEntry {
+    class SubredditBackStackEntry(
+        val viewModel: SubmissionsListViewModel
+    ) : NavigationBackStackEntry()
 }
