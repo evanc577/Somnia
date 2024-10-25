@@ -28,10 +28,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.VideoSettings
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -58,10 +63,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.database.StandaloneDatabaseProvider
@@ -73,6 +80,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.SeekParameters
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import java.io.File
 import kotlin.math.roundToInt
@@ -104,6 +113,9 @@ fun VideoViewer(videoUrl: String) {
             repeatMode = ExoPlayer.REPEAT_MODE_ONE
             playWhenReady = savedIsPlaying
             setSeekParameters(SeekParameters.EXACT)
+            trackSelectionParameters =
+                this.trackSelectionParameters.buildUpon().setForceHighestSupportedBitrate(true)
+                    .build()
             seekTo(savedCurrentPosition)
             prepare()
         }
@@ -115,6 +127,7 @@ fun VideoViewer(videoUrl: String) {
     var currentPosition by remember { mutableLongStateOf(0L) }
     var bufferedPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
+    var tracks: ImmutableList<Tracks.Group> by remember { mutableStateOf(listOf<Tracks.Group>().toImmutableList()) }
     exoPlayer.addListener(object : Player.Listener {
         override fun onIsPlayingChanged(p: Boolean) {
             isPlaying = p
@@ -122,6 +135,10 @@ fun VideoViewer(videoUrl: String) {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             isReady = playbackState == Player.STATE_READY
+        }
+
+        override fun onTracksChanged(_tracks: Tracks) {
+            tracks = _tracks.groups.toList().toImmutableList()
         }
     })
     LaunchedEffect(Unit) {
@@ -221,11 +238,15 @@ fun VideoViewer(videoUrl: String) {
                 onSeekTo = { position ->
                     exoPlayer.seekTo(position)
                 },
+                onGetTracks = { tracks },
+                onGetSpeed = { exoPlayer.playbackParameters.speed },
+                onSetSpeed = { exoPlayer.setPlaybackSpeed(it) },
             )
         }
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 private fun VideoViewerControls(
     modifier: Modifier = Modifier,
@@ -237,6 +258,9 @@ private fun VideoViewerControls(
     onPause: () -> Unit,
     onPlay: () -> Unit,
     onSeekTo: (Long) -> Unit,
+    onGetTracks: () -> ImmutableList<Tracks.Group>,
+    onGetSpeed: () -> Float,
+    onSetSpeed: (Float) -> Unit,
 ) {
     val density = LocalDensity.current
 
@@ -290,6 +314,8 @@ private fun VideoViewerControls(
             }
         }
     }
+
+    var showOptions by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -398,10 +424,109 @@ private fun VideoViewerControls(
 
             // Total duration
             VideoTimeText(text = totalDurationString)
+
+            // Video options
+            IconButton(onClick = { showOptions = true }) {
+                Icon(
+                    imageVector = Icons.Default.VideoSettings,
+                    tint = Color.White,
+                    contentDescription = "video settings",
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(navBarHeight))
     }
+
+    if (showOptions) {
+        VideoOptions(
+            onDismissRequest = { showOptions = false },
+            onGetSpeed = onGetSpeed,
+            onSetSpeed = onSetSpeed,
+        )
+    }
+}
+
+@Composable
+private fun VideoOptions(
+    onDismissRequest: () -> Unit, onGetSpeed: () -> Float, onSetSpeed: (Float) -> Unit
+) {
+    var sliderPosition by remember { mutableFloatStateOf(onGetSpeed().speedToSlider()) }
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Speed: ${sliderPosition.sliderToSpeed()}×", style = MaterialTheme.typography.headlineSmall)
+                Spacer(modifier = Modifier.height(4.dp))
+                Slider(
+                    value = sliderPosition,
+                    onValueChange = { sliderPosition = it },
+                    steps = 6,
+                    valueRange = 0f..7f,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = onDismissRequest) {
+                        Text(text = "Cancel")
+                    }
+                    TextButton(onClick = {
+                        onSetSpeed(sliderPosition.sliderToSpeed())
+                        onDismissRequest()
+                    }) {
+                        Text(text = "Confirm")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun Float.speedToSlider(): Float {
+    val epsilon = 0.0001f
+    return if (this - 0.25f < epsilon) {
+        0f
+    } else if (this - 0.5f < epsilon) {
+        1f
+    } else if (this - 0.75f < epsilon) {
+        2f
+    } else if (this - 1f < epsilon) {
+        3f
+    } else if (this - 1.25f < epsilon) {
+        4f
+    } else if (this - 1.5f < epsilon) {
+        5f
+    } else if (this - 1.75f < epsilon) {
+        6f
+    } else {
+        7f
+    }
+}
+
+private fun Float.sliderToSpeed(): Float {
+    val epsilon = 0.0001f
+    return if (this - 0f < epsilon) {
+        0.25f
+    } else if (this - 1f < epsilon) {
+        0.5f
+    } else if (this - 2f < epsilon) {
+        0.75f
+    } else if (this - 3f < epsilon) {
+        1f
+    } else if (this - 4f < epsilon) {
+        1.25f
+    } else if (this - 5f < epsilon) {
+        1.5f
+    } else if (this - 6f < epsilon) {
+        1.75f
+    } else {
+        2f
+    }
+}
+
+@Preview(heightDp = 400, widthDp = 400)
+@Composable
+private fun VideoOptionsPreview() {
+    VideoOptions(onDismissRequest = {}, onGetSpeed = { 1f }, onSetSpeed = {})
 }
 
 enum class DragState {
@@ -440,6 +565,9 @@ private fun VideoViewerControlsPreview() {
         onPause = {},
         onPlay = {},
         onSeekTo = {},
+        onGetTracks = { listOf<Tracks.Group>().toImmutableList() },
+        onGetSpeed = { 1f },
+        onSetSpeed = {},
     )
 }
 
