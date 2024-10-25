@@ -36,11 +36,8 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -102,6 +99,22 @@ fun SubmissionsList(
         }
     }
 
+    // Media viewer
+    val mediaViewerState = submissionsListViewModel.mediaViewerState.collectAsStateWithLifecycle()
+    when (val s = mediaViewerState.value) {
+        is SubmissionsListViewModel.MediaViewerState.Showing -> {
+            MediaViewer(
+                submission = s.submission,
+                onClose = {
+                    submissionsListViewModel.setMediaViewerState(SubmissionsListViewModel.MediaViewerState.NotShowing)
+                },
+            )
+        }
+
+        else -> {}
+    }
+
+    // Submissions list
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
@@ -126,7 +139,9 @@ fun SubmissionsList(
                 key = { index -> lazySubmissionItems[index]!!.id }) { index ->
                 val submission = lazySubmissionItems[index]
                 if (submission != null) {
-                    SubmissionCard(submission = submission)
+                    SubmissionCard(submission = submission, setShowMediaViewerState = {
+                        submissionsListViewModel.setMediaViewerState(it)
+                    })
                 }
             }
 
@@ -179,7 +194,10 @@ private fun ErrorCard(
 }
 
 @Composable
-private fun SubmissionCard(submission: Submission) {
+private fun SubmissionCard(
+    submission: Submission,
+    setShowMediaViewerState: (SubmissionsListViewModel.MediaViewerState) -> Unit,
+) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -194,7 +212,7 @@ private fun SubmissionCard(submission: Submission) {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(8.dp))
-            PreviewImage(submission = submission)
+            PreviewImage(submission = submission, setShowMediaViewerState = setShowMediaViewerState)
             Spacer(modifier = Modifier.height(8.dp))
             SubmissionCardFooter(submission = submission)
         }
@@ -313,14 +331,12 @@ private fun CommentsButton(submission: Submission) {
 }
 
 @Composable
-private fun PreviewImage(submission: Submission) {
+private fun PreviewImage(
+    submission: Submission,
+    setShowMediaViewerState: (SubmissionsListViewModel.MediaViewerState) -> Unit,
+) {
     val previewImage = remember { submission.previewImage() } ?: return
     val previewImageUrl = remember { previewImage.escapedUrl() }
-
-    var showMediaViewer by rememberSaveable { mutableStateOf(false) }
-    if (showMediaViewer) {
-        MediaViewer(submission = submission, onClose = { showMediaViewer = false })
-    }
 
     val context = LocalPlatformContext.current
     val painter = rememberAsyncImagePainter(model = remember {
@@ -328,7 +344,11 @@ private fun PreviewImage(submission: Submission) {
     })
     val state = painter.state.collectAsStateWithLifecycle(context)
 
-    Card(onClick = { showMediaViewer = true }) {
+    Card(
+        onClick = {
+            setShowMediaViewerState(SubmissionsListViewModel.MediaViewerState.Showing(submission))
+        },
+    ) {
         when (state.value) {
             is AsyncImagePainter.State.Success -> {
                 Image(
@@ -445,7 +465,7 @@ fun PreviewPostCard() {
     SomniaTheme {
         Column {
             for (i in 1..10) {
-                SubmissionCard(submission = submission)
+                SubmissionCard(submission = submission, setShowMediaViewerState = {})
             }
         }
     }

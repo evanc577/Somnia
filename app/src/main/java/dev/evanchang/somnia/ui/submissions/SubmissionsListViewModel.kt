@@ -16,11 +16,22 @@ import kotlinx.coroutines.flow.asStateFlow
 class SubmissionsListViewModel(val subreddit: String, sort: SubmissionSort) : ViewModel() {
     private var pagingSourceFactory =
         SubredditSubmissionsPagingSourceFactory(subreddit = subreddit, sort = sort)
+
     val submissions: Flow<PagingData<Submission>> = Pager(PagingConfig(pageSize = 3)) {
         pagingSourceFactory.invoke()
     }.flow.cachedIn(viewModelScope)
+
     private var _isRefreshing = MutableStateFlow(true)
     val isRefreshing = _isRefreshing.asStateFlow()
+
+    sealed class MediaViewerState {
+        data object NotShowing : MediaViewerState()
+        class Showing(val submission: Submission) : MediaViewerState()
+    }
+
+    private var _mediaViewerState: MutableStateFlow<MediaViewerState> =
+        MutableStateFlow(MediaViewerState.NotShowing)
+    val mediaViewerState = _mediaViewerState.asStateFlow()
 
     fun updateIsRefreshing(isRefreshing: Boolean) {
         _isRefreshing.value = isRefreshing
@@ -29,5 +40,9 @@ class SubmissionsListViewModel(val subreddit: String, sort: SubmissionSort) : Vi
     fun updateSort(sort: SubmissionSort) {
         pagingSourceFactory =
             SubredditSubmissionsPagingSourceFactory(subreddit = subreddit, sort = sort)
+    }
+
+    fun setMediaViewerState(mediaViewerState: MediaViewerState) {
+        _mediaViewerState.value = mediaViewerState
     }
 }
