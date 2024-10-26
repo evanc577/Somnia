@@ -1,7 +1,10 @@
 package dev.evanchang.somnia.ui.navigation
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -81,51 +84,62 @@ fun HorizontalDraggableScreen(
         navigationViewModel.popBackStack()
     }
 
+    // Slide in when created (except base screen)
+    var initialVisibility by remember { mutableStateOf(screenStackIndex == 0) }
+    LaunchedEffect(Unit) {
+        initialVisibility = true
+    }
+
     if (shouldRender) {
-        Box(modifier = Modifier
-            .then(if (isTopScreen) {
-                Modifier
-                    .offset {
-                        IntOffset(
-                            x = screenXOffset.value.roundToInt(), y = 0
-                        )
-                    }
-                    .drawBehind {
-                        drawRect(
-                            color = Color.Black.copy(
-                                alpha = 0.8f * ((screenWidth - screenXOffset.value) / screenWidth)
-                            ),
-                            topLeft = Offset(
-                                x = -screenXOffset.value, y = 0f
-                            ),
-                            size = Size(
-                                width = screenXOffset.value, height = this.size.height
-                            ),
-                        )
-                    }
-            } else {
-                Modifier
-            })
-            .draggable(enabled = (screenStackIndex != 0),
-                orientation = Orientation.Horizontal,
-                onDragStopped = {
-                    isDragging = false
-                },
-                state = rememberDraggableState { delta ->
-                    if (!isDragging) {
-                        // If drag just started, reset target offset to current animation offset
-                        targetXOffset = screenXOffset.value
-                        navigationViewModel.renderSecondScreen.value = true
-                        isDragging = true
-                    }
-                    targetXOffset = if (targetXOffset + delta < 0) {
-                        0f
-                    } else {
-                        targetXOffset + delta
-                    }
-                })
+        AnimatedVisibility(visible = initialVisibility,
+            enter = slideInHorizontally(initialOffsetX = { it }),
+            exit = slideOutHorizontally(targetOffsetX = { it }),
         ) {
-            content()
+            Box(modifier = Modifier
+                .then(if (isTopScreen) {
+                    Modifier
+                        .offset {
+                            IntOffset(
+                                x = screenXOffset.value.roundToInt(), y = 0
+                            )
+                        }
+                        .drawBehind {
+                            drawRect(
+                                color = Color.Black.copy(
+                                    alpha = 0.8f * ((screenWidth - screenXOffset.value) / screenWidth)
+                                ),
+                                topLeft = Offset(
+                                    x = -screenXOffset.value, y = 0f
+                                ),
+                                size = Size(
+                                    width = screenXOffset.value, height = this.size.height
+                                ),
+                            )
+                        }
+                } else {
+                    Modifier
+                })
+                .draggable(enabled = (screenStackIndex != 0),
+                    orientation = Orientation.Horizontal,
+                    onDragStopped = {
+                        isDragging = false
+                    },
+                    state = rememberDraggableState { delta ->
+                        if (!isDragging) {
+                            // If drag just started, reset target offset to current animation offset
+                            targetXOffset = screenXOffset.value
+                            navigationViewModel.renderSecondScreen.value = true
+                            isDragging = true
+                        }
+                        targetXOffset = if (targetXOffset + delta < 0) {
+                            0f
+                        } else {
+                            targetXOffset + delta
+                        }
+                    })
+            ) {
+                content()
+            }
         }
     }
 }

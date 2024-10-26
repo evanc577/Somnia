@@ -12,10 +12,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class SubmissionViewModel(
+    initialSubmission: Submission?,
     val submissionId: String,
     val sort: CommentSort,
 ) {
-    private var _submission = MutableStateFlow<Submission?>(null)
+    private var _submission = MutableStateFlow(initialSubmission)
     val submission = _submission.asStateFlow()
 
     private var _comments = MutableStateFlow<PersistentList<Comment>>(persistentListOf())

@@ -76,7 +76,7 @@ fun SubredditList(
     subredditViewModel: SubredditViewModel,
     listState: LazyListState,
     topPadding: Dp,
-    onClickSubmission: (String) -> Unit,
+    onClickSubmission: (Submission) -> Unit,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         subredditViewModel.submissions.collectAsLazyPagingItems()
@@ -202,13 +202,13 @@ private fun ErrorCard(
 private fun SubmissionCard(
     submission: Submission,
     setShowMediaViewerState: (SubredditViewModel.MediaViewerState) -> Unit,
-    onClickSubmission: (String) -> Unit,
+    onClickSubmission: (Submission) -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
-        onClick = { onClickSubmission(submission.id) }, modifier = Modifier.padding(4.dp),
+        onClick = { onClickSubmission(submission) }, modifier = Modifier.padding(4.dp),
     ) {
         Column(modifier = Modifier.padding(all = 16.dp)) {
             SubmissionCardHeader(submission = submission)

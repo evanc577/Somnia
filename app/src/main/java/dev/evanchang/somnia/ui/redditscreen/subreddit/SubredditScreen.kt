@@ -234,7 +234,11 @@ fun SubredditScreen(
                     topPadding = topPadding,
                     onClickSubmission = {
                         navigationViewModel.pushSubmissionScreen(
-                            SubmissionViewModel(submissionId = it, sort = CommentSort.BEST)
+                            SubmissionViewModel(
+                                initialSubmission = it,
+                                submissionId = it.id,
+                                sort = CommentSort.BEST,
+                            )
                         )
                     },
                 )
