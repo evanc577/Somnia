@@ -2,19 +2,21 @@ package dev.evanchang.somnia.ui.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.splineBasedDecay
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,52 +25,24 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import dev.evanchang.somnia.ui.util.thenIf
 import kotlin.math.roundToInt
 
 // Allows Screen to be dragged horizontally to the right
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorizontalDraggableScreen(
     screenStackIndex: Int,
     navigationViewModel: NavigationViewModel,
     content: @Composable () -> Unit,
 ) {
+    val density = LocalDensity.current
+
     val navigationUiState = navigationViewModel.navigationUIState
     val screenWidth by navigationViewModel.screenWidth
-    var isDragging by remember { mutableStateOf(false) }
-    // Where the finger is
-    var targetXOffset by remember { mutableFloatStateOf(0f) }
-    // Current animation offset
-    val screenXOffset = remember { Animatable(initialValue = 0f) }
-    LaunchedEffect(isDragging, targetXOffset) {
-        if (isDragging) {
-            // Snap directly to finger so it doesn't feel laggy
-            screenXOffset.snapTo(targetXOffset)
-        } else if (targetXOffset > screenWidth / 3) {
-            // Animate right
-            screenXOffset.animateTo(targetValue = screenWidth)
-        } else {
-            // Animate left
-            screenXOffset.animateTo(targetValue = 0f)
-        }
-    }
-    val screenReset by remember {
-        derivedStateOf { !isDragging && screenXOffset.value < 0.01f }
-    }
-    LaunchedEffect(screenReset) {
-        if (screenReset) {
-            navigationViewModel.renderSecondScreen.value = false
-        }
-    }
-    val screenDismissed by remember {
-        derivedStateOf { !isDragging && screenXOffset.value > screenWidth - 0.01f }
-    }
-    LaunchedEffect(screenDismissed) {
-        if (screenDismissed) {
-            navigationViewModel.popBackStack()
-            screenXOffset.snapTo(targetValue = 0f)
-        }
-    }
 
     val isTopScreen by remember {
         derivedStateOf { screenStackIndex == navigationUiState.value.navigationBackStack.lastIndex }
@@ -77,7 +51,7 @@ fun HorizontalDraggableScreen(
         derivedStateOf { screenStackIndex + 1 == navigationUiState.value.navigationBackStack.lastIndex }
     }
     val shouldRender by remember {
-        derivedStateOf { isTopScreen || (isSecondScreen && navigationViewModel.renderSecondScreen.value) }
+        derivedStateOf { isTopScreen || isSecondScreen }
     }
 
     BackHandler(enabled = screenStackIndex != 0) {
@@ -90,56 +64,64 @@ fun HorizontalDraggableScreen(
         initialVisibility = true
     }
 
+    // Anchored drag
+    val anchors = DraggableAnchors {
+        DragValue.Start at 0f
+        DragValue.End at screenWidth
+    }
+    val dragState = remember {
+        AnchoredDraggableState(
+            initialValue = DragValue.Start,
+            anchors = anchors,
+            positionalThreshold = { totalDistance: Float -> totalDistance * 0.3f },
+            velocityThreshold = { with(density) { 200.dp.toPx() } },
+            snapAnimationSpec = spring(),
+            decayAnimationSpec = splineBasedDecay(density),
+        )
+    }
+    LaunchedEffect(dragState.settledValue) {
+        if (dragState.settledValue == DragValue.End) {
+            navigationViewModel.popBackStack()
+        }
+    }
+
     if (shouldRender) {
-        AnimatedVisibility(visible = initialVisibility,
+        AnimatedVisibility(
+            visible = initialVisibility,
             enter = slideInHorizontally(initialOffsetX = { it }),
             exit = slideOutHorizontally(targetOffsetX = { it }),
         ) {
-            Box(modifier = Modifier
-                .then(if (isTopScreen) {
-                    Modifier
-                        .offset {
-                            IntOffset(
-                                x = screenXOffset.value.roundToInt(), y = 0
-                            )
-                        }
-                        .drawBehind {
-                            drawRect(
-                                color = Color.Black.copy(
-                                    alpha = 0.8f * ((screenWidth - screenXOffset.value) / screenWidth)
-                                ),
-                                topLeft = Offset(
-                                    x = -screenXOffset.value, y = 0f
-                                ),
-                                size = Size(
-                                    width = screenXOffset.value, height = this.size.height
-                                ),
-                            )
-                        }
-                } else {
-                    Modifier
-                })
-                .draggable(enabled = (screenStackIndex != 0),
-                    orientation = Orientation.Horizontal,
-                    onDragStopped = {
-                        isDragging = false
-                    },
-                    state = rememberDraggableState { delta ->
-                        if (!isDragging) {
-                            // If drag just started, reset target offset to current animation offset
-                            targetXOffset = screenXOffset.value
-                            navigationViewModel.renderSecondScreen.value = true
-                            isDragging = true
-                        }
-                        targetXOffset = if (targetXOffset + delta < 0) {
-                            0f
-                        } else {
-                            targetXOffset + delta
-                        }
-                    })
-            ) {
+            Box(modifier = Modifier.thenIf(isTopScreen) {
+                Modifier
+                    .anchoredDraggable(
+                        state = dragState,
+                        orientation = Orientation.Horizontal,
+                    )
+                    .offset {
+                        IntOffset(
+                            x = dragState
+                                .requireOffset()
+                                .roundToInt(), y = 0
+                        )
+                    }
+                    .drawBehind {
+                        drawRect(
+                            color = Color.Black.copy(
+                                alpha = 0.8f * ((screenWidth - dragState.requireOffset()) / screenWidth)
+                            ),
+                            topLeft = Offset(
+                                x = -dragState.requireOffset(), y = 0f
+                            ),
+                            size = Size(
+                                width = dragState.requireOffset(), height = this.size.height
+                            ),
+                        )
+                    }
+            }) {
                 content()
             }
         }
     }
 }
+
+enum class DragValue { Start, End }
