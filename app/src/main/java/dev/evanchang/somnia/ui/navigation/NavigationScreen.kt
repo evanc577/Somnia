@@ -7,7 +7,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.evanchang.somnia.ui.redditscreen.SubmissionsScaffold
+import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditScreen
 
 @Composable
 fun NavigationScreen(
@@ -26,10 +26,10 @@ fun NavigationScreen(
         for ((index, entry) in navigationBackStack.withIndex()) {
             when (entry) {
                 is NavigationBackStackEntry.SubredditBackStackEntry -> {
-                    SubmissionsScaffold(
+                    SubredditScreen(
                         screenStackIndex = index,
                         navigationViewModel = navigationViewModel,
-                        submissionsListViewModel = entry.viewModel,
+                        subredditViewModel = entry.viewModel,
                         onNavigateToSettings = onNavigateToSettings
                     )
                 }

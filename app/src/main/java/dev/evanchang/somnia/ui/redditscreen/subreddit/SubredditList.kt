@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.submissions
+package dev.evanchang.somnia.ui.redditscreen.subreddit
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -72,20 +72,20 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubmissionsList(
-    submissionsListViewModel: SubmissionsListViewModel,
+fun SubredditList(
+    subredditViewModel: SubredditViewModel,
     listState: LazyListState,
     topPadding: Dp,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
-        submissionsListViewModel.submissions.collectAsLazyPagingItems()
-    val isRefreshing by submissionsListViewModel.isRefreshing.collectAsStateWithLifecycle()
+        subredditViewModel.submissions.collectAsLazyPagingItems()
+    val isRefreshing by subredditViewModel.isRefreshing.collectAsStateWithLifecycle()
 
     val pullToRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = remember {
         {
-            submissionsListViewModel.updateIsRefreshing(true)
+            subredditViewModel.updateIsRefreshing(true)
             coroutineScope.launch {
                 lazySubmissionItems.refresh()
             }
@@ -94,19 +94,19 @@ fun SubmissionsList(
 
     LaunchedEffect(lazySubmissionItems.loadState.refresh, isRefreshing) {
         if (isRefreshing && lazySubmissionItems.loadState.refresh != LoadState.Loading) {
-            submissionsListViewModel.updateIsRefreshing(false)
+            subredditViewModel.updateIsRefreshing(false)
             listState.scrollToItem(0)
         }
     }
 
     // Media viewer
-    val mediaViewerState = submissionsListViewModel.mediaViewerState.collectAsStateWithLifecycle()
+    val mediaViewerState = subredditViewModel.mediaViewerState.collectAsStateWithLifecycle()
     when (val s = mediaViewerState.value) {
-        is SubmissionsListViewModel.MediaViewerState.Showing -> {
+        is SubredditViewModel.MediaViewerState.Showing -> {
             MediaViewer(
                 submission = s.submission,
                 onClose = {
-                    submissionsListViewModel.setMediaViewerState(SubmissionsListViewModel.MediaViewerState.NotShowing)
+                    subredditViewModel.setMediaViewerState(SubredditViewModel.MediaViewerState.NotShowing)
                 },
             )
         }
@@ -140,7 +140,7 @@ fun SubmissionsList(
                 val submission = lazySubmissionItems[index]
                 if (submission != null) {
                     SubmissionCard(submission = submission, setShowMediaViewerState = {
-                        submissionsListViewModel.setMediaViewerState(it)
+                        subredditViewModel.setMediaViewerState(it)
                     })
                 }
             }
@@ -196,7 +196,7 @@ private fun ErrorCard(
 @Composable
 private fun SubmissionCard(
     submission: Submission,
-    setShowMediaViewerState: (SubmissionsListViewModel.MediaViewerState) -> Unit,
+    setShowMediaViewerState: (SubredditViewModel.MediaViewerState) -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -333,7 +333,7 @@ private fun CommentsButton(submission: Submission) {
 @Composable
 private fun PreviewImage(
     submission: Submission,
-    setShowMediaViewerState: (SubmissionsListViewModel.MediaViewerState) -> Unit,
+    setShowMediaViewerState: (SubredditViewModel.MediaViewerState) -> Unit,
 ) {
     val previewImage = remember { submission.previewImage() } ?: return
     val previewImageUrl = remember { previewImage.escapedUrl() }
@@ -346,7 +346,7 @@ private fun PreviewImage(
 
     Card(
         onClick = {
-            setShowMediaViewerState(SubmissionsListViewModel.MediaViewerState.Showing(submission))
+            setShowMediaViewerState(SubredditViewModel.MediaViewerState.Showing(submission))
         },
     ) {
         when (state.value) {

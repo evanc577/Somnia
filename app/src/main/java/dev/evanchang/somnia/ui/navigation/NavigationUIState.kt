@@ -3,12 +3,12 @@ package dev.evanchang.somnia.ui.navigation
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import dev.evanchang.somnia.data.SubmissionSort
-import dev.evanchang.somnia.ui.submissions.SubmissionsListViewModel
+import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditViewModel
 
 data class NavigationUIState(
     val navigationBackStack: SnapshotStateList<NavigationBackStackEntry> = mutableStateListOf(
         NavigationBackStackEntry.SubredditBackStackEntry(
-            viewModel = SubmissionsListViewModel(
+            viewModel = SubredditViewModel(
                 subreddit = "dreamcatcher",
                 sort = SubmissionSort.New,
             )
@@ -18,6 +18,6 @@ data class NavigationUIState(
 
 sealed class NavigationBackStackEntry {
     class SubredditBackStackEntry(
-        val viewModel: SubmissionsListViewModel
+        val viewModel: SubredditViewModel
     ) : NavigationBackStackEntry()
 }

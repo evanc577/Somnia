@@ -1,4 +1,4 @@
-package dev.evanchang.somnia.ui.submissions
+package dev.evanchang.somnia.ui.redditscreen.subreddit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class SubmissionsListViewModel(val subreddit: String, sort: SubmissionSort) : ViewModel() {
+class SubredditViewModel(val subreddit: String, sort: SubmissionSort) : ViewModel() {
     private var pagingSourceFactory =
         SubredditSubmissionsPagingSourceFactory(subreddit = subreddit, sort = sort)
 
