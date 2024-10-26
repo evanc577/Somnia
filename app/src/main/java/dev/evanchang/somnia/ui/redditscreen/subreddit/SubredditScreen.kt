@@ -64,9 +64,11 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
 import dev.evanchang.somnia.ui.navigation.NavigationViewModel
+import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionViewModel
 import dev.evanchang.somnia.ui.util.BottomSheetGridItem
 import dev.evanchang.somnia.ui.util.BottomSheetItem
 import kotlin.math.roundToInt
@@ -142,7 +144,7 @@ fun SubredditScreen(
 
     val allOnClick = remember {
         {
-            navigationViewModel.pushToBackStack(
+            navigationViewModel.pushSubredditScreen(
                 SubredditViewModel(
                     "all", SubmissionSort.Best
                 )
@@ -229,7 +231,12 @@ fun SubredditScreen(
                 SubredditList(
                     subredditViewModel = subredditViewModel,
                     listState = listState,
-                    topPadding = topPadding
+                    topPadding = topPadding,
+                    onClickSubmission = {
+                        navigationViewModel.pushSubmissionScreen(
+                            SubmissionViewModel(submissionId = it, sort = CommentSort.BEST)
+                        )
+                    },
                 )
             }
             if (showBottomSheet) {

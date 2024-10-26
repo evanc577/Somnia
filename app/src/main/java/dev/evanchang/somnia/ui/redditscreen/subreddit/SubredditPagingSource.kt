@@ -1,13 +1,14 @@
-package dev.evanchang.somnia.api.reddit
+package dev.evanchang.somnia.ui.redditscreen.subreddit
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingSourceFactory
 import androidx.paging.PagingState
 import dev.evanchang.somnia.api.ApiResult
+import dev.evanchang.somnia.api.reddit.RedditApiInstance
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionSort
 
-class SubredditSubmissionsPagingSource(
+class SubredditPagingSource(
     private val subreddit: String,
     private val sort: SubmissionSort,
 ) :
@@ -35,12 +36,12 @@ class SubredditSubmissionsPagingSource(
     }
 }
 
-class SubredditSubmissionsPagingSourceFactory(
+class SubredditPagingSourceFactory(
     private val subreddit: String,
     private val sort: SubmissionSort,
 ) :
     PagingSourceFactory<String, Submission> {
     override fun invoke(): PagingSource<String, Submission> {
-        return SubredditSubmissionsPagingSource(subreddit = subreddit, sort = sort)
+        return SubredditPagingSource(subreddit = subreddit, sort = sort)
     }
 }

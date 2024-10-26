@@ -7,6 +7,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionScreen
 import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditScreen
 
 @Composable
@@ -31,6 +32,13 @@ fun NavigationScreen(
                         navigationViewModel = navigationViewModel,
                         subredditViewModel = entry.viewModel,
                         onNavigateToSettings = onNavigateToSettings
+                    )
+                }
+                is NavigationBackStackEntry.SubmissionBackStackEntry -> {
+                    SubmissionScreen(
+                        screenStackIndex = index,
+                        navigationViewModel = navigationViewModel,
+                        submissionViewModel = entry.viewModel,
                     )
                 }
             }

@@ -20,8 +20,8 @@ interface RedditApi {
     )
 
     suspend fun getSubmission(
-        subreddit: String,
         submissionId: String,
+        parentId: String?,
         commentSort: CommentSort,
         after: String = "",
         limit: Int = 100,

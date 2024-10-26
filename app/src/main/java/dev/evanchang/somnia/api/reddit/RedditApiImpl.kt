@@ -63,8 +63,8 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
     }
 
     override suspend fun getSubmission(
-        subreddit: String,
         submissionId: String,
+        parentId: String?,
         commentSort: CommentSort,
         after: String,
         limit: Int,
@@ -74,7 +74,8 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                 url {
                     protocol = this@RedditApiImpl.protocol
                     host = this@RedditApiImpl.host
-                    appendPathSegments("r", subreddit, "comments", submissionId, encodeSlash = true)
+                    appendPathSegments("comments", submissionId, encodeSlash = true)
+                    if (parentId != null) it.appendPathSegments("_", parentId)
                     appendPathSegments(".json")
                     parameters.append("sort", commentSort.toString())
                     parameters.append("after", after)

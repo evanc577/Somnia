@@ -1,6 +1,5 @@
 package dev.evanchang.somnia.data
 
-import android.os.Parcelable
 import android.text.Html
 import android.webkit.MimeTypeMap
 import androidx.annotation.Keep
@@ -8,7 +7,6 @@ import dev.evanchang.somnia.serializer.SerializableImmutableList
 import dev.evanchang.somnia.serializer.SerializableImmutableMap
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -22,7 +20,8 @@ import kotlin.time.toDuration
 @Keep
 @Serializable
 data class Submission(
-    @SerialName("name") val id: String,
+    val name: String,
+    val id: String,
     val author: String,
     val subreddit: String,
     private val title: String,
@@ -137,15 +136,12 @@ data class Submission(
 
 @Keep
 @Serializable
-@Parcelize
-sealed class Media : Parcelable {
+sealed class Media {
     @Keep
     @Serializable
-    @Parcelize
     class Images(val images: ImmutableList<String>) : Media()
     @Keep
     @Serializable
-    @Parcelize
     class RedditVideo(val video: String) : Media()
 }
 

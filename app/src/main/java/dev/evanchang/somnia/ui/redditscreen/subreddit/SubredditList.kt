@@ -76,6 +76,7 @@ fun SubredditList(
     subredditViewModel: SubredditViewModel,
     listState: LazyListState,
     topPadding: Dp,
+    onClickSubmission: (String) -> Unit,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         subredditViewModel.submissions.collectAsLazyPagingItems()
@@ -136,12 +137,16 @@ fun SubredditList(
                 .fillMaxSize(), state = listState
         ) {
             items(count = lazySubmissionItems.itemCount,
-                key = { index -> lazySubmissionItems[index]!!.id }) { index ->
+                key = { index -> lazySubmissionItems[index]!!.name }) { index ->
                 val submission = lazySubmissionItems[index]
                 if (submission != null) {
-                    SubmissionCard(submission = submission, setShowMediaViewerState = {
-                        subredditViewModel.setMediaViewerState(it)
-                    })
+                    SubmissionCard(
+                        submission = submission,
+                        setShowMediaViewerState = {
+                            subredditViewModel.setMediaViewerState(it)
+                        },
+                        onClickSubmission = onClickSubmission,
+                    )
                 }
             }
 
@@ -197,11 +202,13 @@ private fun ErrorCard(
 private fun SubmissionCard(
     submission: Submission,
     setShowMediaViewerState: (SubredditViewModel.MediaViewerState) -> Unit,
+    onClickSubmission: (String) -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ), onClick = {}, modifier = Modifier.padding(4.dp)
+        ),
+        onClick = { onClickSubmission(submission.id) }, modifier = Modifier.padding(4.dp),
     ) {
         Column(modifier = Modifier.padding(all = 16.dp)) {
             SubmissionCardHeader(submission = submission)
@@ -437,6 +444,7 @@ private fun PreviewImageErrorPreview() {
 @Composable
 fun PreviewPostCard() {
     val submission = Submission(
+        name = "",
         id = "",
         author = "author",
         subreddit = "subreddit",
@@ -465,7 +473,10 @@ fun PreviewPostCard() {
     SomniaTheme {
         Column {
             for (i in 1..10) {
-                SubmissionCard(submission = submission, setShowMediaViewerState = {})
+                SubmissionCard(
+                    submission = submission, setShowMediaViewerState = {},
+                    onClickSubmission = {},
+                )
             }
         }
     }
