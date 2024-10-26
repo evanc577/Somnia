@@ -17,6 +17,7 @@ fun MediaViewer(
 ) {
     val media = remember { submission.media() }
     if (media == null) {
+        onClose()
         return
     }
 
