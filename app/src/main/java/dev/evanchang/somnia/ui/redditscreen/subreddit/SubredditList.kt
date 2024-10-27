@@ -35,7 +35,9 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
+import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.util.SubmissionCard
+import dev.evanchang.somnia.ui.util.SubmissionCardMode
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,11 +73,11 @@ fun SubredditList(
     // Media viewer
     val mediaViewerState = subredditViewModel.mediaViewerState.collectAsStateWithLifecycle()
     when (val s = mediaViewerState.value) {
-        is SubredditViewModel.MediaViewerState.Showing -> {
+        is MediaViewerState.Showing -> {
             MediaViewer(
                 submission = s.submission,
                 onClose = {
-                    subredditViewModel.setMediaViewerState(SubredditViewModel.MediaViewerState.NotShowing)
+                    subredditViewModel.setMediaViewerState(MediaViewerState.NotShowing)
                 },
             )
         }
@@ -110,6 +112,7 @@ fun SubredditList(
                 if (submission != null) {
                     SubmissionCard(
                         submission = submission,
+                        mode = SubmissionCardMode.PREVIEW_FULL,
                         setShowMediaViewerState = {
                             subredditViewModel.setMediaViewerState(it)
                         },

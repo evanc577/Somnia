@@ -5,6 +5,7 @@ import dev.evanchang.somnia.api.reddit.RedditApiInstance
 import dev.evanchang.somnia.data.Comment
 import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -38,5 +39,13 @@ class SubmissionViewModel(
         }
 
         return ApiResult.Ok(Unit)
+    }
+
+    private var _mediaViewerState: MutableStateFlow<MediaViewerState> =
+        MutableStateFlow(MediaViewerState.NotShowing)
+    val mediaViewerState = _mediaViewerState.asStateFlow()
+
+    fun setMediaViewerState(mediaViewerState: MediaViewerState) {
+        _mediaViewerState.value = mediaViewerState
     }
 }

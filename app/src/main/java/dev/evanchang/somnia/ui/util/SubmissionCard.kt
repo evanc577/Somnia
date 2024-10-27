@@ -1,6 +1,7 @@
 package dev.evanchang.somnia.ui.util
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -47,21 +50,29 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
+import dev.evanchang.markdown.MarkdownText
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
-import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditViewModel
+import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
+enum class SubmissionCardMode {
+    PREVIEW_FULL, DETAILS,
+}
+
 @Composable
 fun SubmissionCard(
     submission: Submission,
-    setShowMediaViewerState: (SubredditViewModel.MediaViewerState) -> Unit,
+    mode: SubmissionCardMode,
+    setShowMediaViewerState: (MediaViewerState) -> Unit,
     onClickSubmission: ((Submission) -> Unit)? = null,
 ) {
+    val context = LocalContext.current
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -75,17 +86,65 @@ fun SubmissionCard(
         Column(modifier = Modifier.padding(all = 16.dp)) {
             SubmissionCardHeader(submission = submission)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = submission.escapedTitle(),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            when (mode) {
+                SubmissionCardMode.PREVIEW_FULL -> {
+                    SubmissionCardTitle(submission = submission)
+                }
+
+                SubmissionCardMode.DETAILS -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        SubmissionCardTitle(
+                            submission = submission, modifier = Modifier.weight(1f, fill = false)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        PreviewImage(
+                            submission = submission,
+                            compact = true,
+                            setShowMediaViewerState = setShowMediaViewerState,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
-            PreviewImage(submission = submission, setShowMediaViewerState = setShowMediaViewerState)
+            when (mode) {
+                SubmissionCardMode.PREVIEW_FULL -> {
+                    PreviewImage(
+                        submission = submission,
+                        compact = false,
+                        setShowMediaViewerState = setShowMediaViewerState,
+                    )
+                }
+
+                SubmissionCardMode.DETAILS -> {
+                    if (submission.selftext.isNotEmpty()) {
+                        MarkdownText(
+                            markdownText = submission.selftext,
+                            onLinkClick = {
+                                // TODO handle markdown link
+                                Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
+                            },
+                        )
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
             SubmissionCardFooter(submission = submission)
         }
     }
+}
+
+@Composable
+private fun SubmissionCardTitle(modifier: Modifier = Modifier, submission: Submission) {
+    Text(
+        text = submission.escapedTitle(),
+        style = MaterialTheme.typography.titleLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -133,9 +192,11 @@ private fun ElapsedTime(submission: Submission, modifier: Modifier = Modifier) {
 
 @Composable
 private fun SubmissionCardFooter(submission: Submission) {
-    Row(horizontalArrangement = Arrangement.End, modifier = Modifier
-        .fillMaxWidth()
-        .height(32.dp)) {
+    Row(
+        horizontalArrangement = Arrangement.End, modifier = Modifier
+            .fillMaxWidth()
+            .height(32.dp)
+    ) {
         CommentsButton(submission = submission)
         Spacer(modifier = Modifier.width(8.dp))
         ScoreButton(submission = submission)
@@ -199,11 +260,19 @@ private fun CommentsButton(submission: Submission) {
 
 @Composable
 private fun PreviewImage(
+    modifier: Modifier = Modifier,
     submission: Submission,
-    setShowMediaViewerState: (SubredditViewModel.MediaViewerState) -> Unit,
+    compact: Boolean,
+    setShowMediaViewerState: (MediaViewerState) -> Unit,
 ) {
     val previewImage = remember { submission.previewImage() } ?: return
     val previewImageUrl = remember { previewImage.escapedUrl() }
+
+    val (previewImageWidth, previewImageHeight) = if (compact) {
+        Pair(1, 1)
+    } else {
+        Pair(previewImage.width, previewImage.height)
+    }
 
     val context = LocalPlatformContext.current
     val painter = rememberAsyncImagePainter(model = remember {
@@ -213,103 +282,152 @@ private fun PreviewImage(
 
     Card(
         onClick = {
-            setShowMediaViewerState(SubredditViewModel.MediaViewerState.Showing(submission))
+            setShowMediaViewerState(MediaViewerState.Showing(submission))
         },
+        modifier = modifier
+            .thenIf(compact) {
+                Modifier.size(80.dp)
+            }
+            .fillMaxWidth()
+            .aspectRatio(previewImageWidth.toFloat() / previewImageHeight),
     ) {
         when (state.value) {
             is AsyncImagePainter.State.Success -> {
                 Image(
                     painter = painter,
                     contentDescription = "submission image",
-                    contentScale = ContentScale.FillWidth,
+                    contentScale = if (compact) {
+                        ContentScale.Crop
+                    } else {
+                        ContentScale.FillWidth
+                    },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(previewImage.width.toFloat() / previewImage.height.toFloat()),
+                        .fillMaxSize()
+                        .aspectRatio(previewImageWidth.toFloat() / previewImageHeight.toFloat()),
                 )
             }
 
             is AsyncImagePainter.State.Error -> {
-                PreviewImageError(
-                    width = previewImage.width,
-                    height = previewImage.height,
-                    onRetry = { painter.restart() },
-                )
+                PreviewImageError(compact = compact, onRetry = { painter.restart() })
             }
 
             else -> {
-                PreviewImageLoading(width = previewImage.width, height = previewImage.height)
+                PreviewImageLoading()
             }
         }
     }
 }
 
 @Composable
-private fun PreviewImageLoading(width: Int, height: Int) {
+private fun PreviewImageLoading() {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(width.toFloat() / height)
-            .background(color = MaterialTheme.colorScheme.surfaceDim)
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceDim)
     ) {
         ImageLoading()
     }
 }
 
 @Composable
-private fun PreviewImageError(width: Int, height: Int, onRetry: () -> Unit) {
+private fun PreviewImageError(compact: Boolean, onRetry: () -> Unit) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(width.toFloat() / height)
-            .background(color = MaterialTheme.colorScheme.errorContainer),
+            .background(color = MaterialTheme.colorScheme.errorContainer)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        if (compact) {
             Icon(
                 imageVector = Icons.Default.Warning,
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.error
             )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Image failed to load",
-                style = TextStyle(
-                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Image failed to load",
+                    style = TextStyle(
+                        platformStyle = PlatformTextStyle(includeFontPadding = false)
+                    ),
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
                 ),
-                color = MaterialTheme.colorScheme.onErrorContainer,
-            )
+            ) {
+                Text(text = "Retry")
+            }
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        Button(
-            onClick = onRetry,
-            colors = ButtonDefaults.buttonColors().copy(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError,
-            ),
-        ) {
-            Text(text = "Retry")
+    }
+}
+
+@Preview(widthDp = 400, heightDp = 300)
+@Composable
+private fun PreviewImageErrorPreview() {
+    PreviewImageError(compact = false, onRetry = {})
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SubmissionCardPreview() {
+    val submission = createFakeSubmission()
+
+    SomniaTheme {
+        Column {
+            for (i in 1..3) {
+                SubmissionCard(
+                    submission = submission,
+                    mode = SubmissionCardMode.PREVIEW_FULL,
+                    setShowMediaViewerState = {},
+                    onClickSubmission = {},
+                )
+            }
         }
     }
 }
 
 @Preview
 @Composable
-private fun PreviewImageErrorPreview() {
-    PreviewImageError(1000, 1000, onRetry = {})
+private fun SubmissionCardDetailsPreview() {
+    SubmissionCard(
+        submission = createFakeSubmission(),
+        mode = SubmissionCardMode.DETAILS,
+        setShowMediaViewerState = {},
+        onClickSubmission = {},
+    )
 }
 
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun PreviewPostCard() {
-    val submission = Submission(
+private fun createFakeSubmission(): Submission {
+    val selftext = """
+        # Mattis facilisi venenatis rhoncus; tellus nibh nostra mattis ornare.
+        
+        Amet sem habitant ac lobortis eleifend laoreet.
+        Eleifend vel risus cubilia id auctor cras.
+        Pretium vehicula class elementum duis varius arcu neque vivamus cubilia.
+        Varius tristique dui sapien ipsum primis aptent maximus accumsan.
+        Facilisis fermentum taciti pulvinar eleifend sem dis cras.
+        Urna tempor at dignissim ridiculus dolor sed iaculis auctor.
+        Cras nec penatibus a augue curabitur inceptos non.
+    """.trimIndent()
+    return Submission(
         name = "",
         id = "",
         author = "author",
         subreddit = "subreddit",
-        title = "Post title",
-        selftext = "",
+        title = "Lorem ipsum odor amet, consectetuer adipiscing elit",
+        selftext = selftext,
         postHint = null,
         isGallery = null,
         url = "",
@@ -330,15 +448,4 @@ fun PreviewPostCard() {
         created = 1700000000f,
         galleryData = null,
     )
-
-    SomniaTheme {
-        Column {
-            for (i in 1..3) {
-                SubmissionCard(
-                    submission = submission, setShowMediaViewerState = {},
-                    onClickSubmission = {},
-                )
-            }
-        }
-    }
 }

@@ -8,6 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionSort
+import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,15 +24,6 @@ class SubredditViewModel(val subreddit: String, sort: SubmissionSort) : ViewMode
     private var _isRefreshing = MutableStateFlow(true)
     val isRefreshing = _isRefreshing.asStateFlow()
 
-    sealed class MediaViewerState {
-        data object NotShowing : MediaViewerState()
-        class Showing(val submission: Submission) : MediaViewerState()
-    }
-
-    private var _mediaViewerState: MutableStateFlow<MediaViewerState> =
-        MutableStateFlow(MediaViewerState.NotShowing)
-    val mediaViewerState = _mediaViewerState.asStateFlow()
-
     fun updateIsRefreshing(isRefreshing: Boolean) {
         _isRefreshing.value = isRefreshing
     }
@@ -40,6 +32,10 @@ class SubredditViewModel(val subreddit: String, sort: SubmissionSort) : ViewMode
         pagingSourceFactory =
             SubredditPagingSourceFactory(subreddit = subreddit, sort = sort)
     }
+
+    private var _mediaViewerState: MutableStateFlow<MediaViewerState> =
+        MutableStateFlow(MediaViewerState.NotShowing)
+    val mediaViewerState = _mediaViewerState.asStateFlow()
 
     fun setMediaViewerState(mediaViewerState: MediaViewerState) {
         _mediaViewerState.value = mediaViewerState

@@ -9,9 +9,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
+import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
 import dev.evanchang.somnia.ui.navigation.NavigationViewModel
 import dev.evanchang.somnia.ui.util.SubmissionCard
+import dev.evanchang.somnia.ui.util.SubmissionCardMode
 
 @Composable
 fun SubmissionScreen(
@@ -24,6 +27,21 @@ fun SubmissionScreen(
     }
 
     val submission by submissionViewModel.submission.collectAsStateWithLifecycle()
+
+    // Media viewer
+    val mediaViewerState = submissionViewModel.mediaViewerState.collectAsStateWithLifecycle()
+    when (val s = mediaViewerState.value) {
+        is MediaViewerState.Showing -> {
+            MediaViewer(
+                submission = s.submission,
+                onClose = {
+                    submissionViewModel.setMediaViewerState(MediaViewerState.NotShowing)
+                },
+            )
+        }
+
+        else -> {}
+    }
 
     HorizontalDraggableScreen(
         screenStackIndex = screenStackIndex,
@@ -40,7 +58,8 @@ fun SubmissionScreen(
                     item(key = submissionVal.name) {
                         SubmissionCard(
                             submission = submissionVal,
-                            setShowMediaViewerState = {},
+                            mode = SubmissionCardMode.DETAILS,
+                            setShowMediaViewerState = { submissionViewModel.setMediaViewerState(it) },
                         )
                     }
                 }
