@@ -29,6 +29,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -99,7 +100,7 @@ fun SubmissionCard(
                         SubmissionCardTitle(
                             submission = submission, modifier = Modifier.weight(1f, fill = false)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         PreviewImage(
                             submission = submission,
                             compact = true,
@@ -123,6 +124,7 @@ fun SubmissionCard(
                     if (submission.selftext.isNotEmpty()) {
                         MarkdownText(
                             markdownText = submission.selftext,
+                            style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
                             onLinkClick = {
                                 // TODO handle markdown link
                                 Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
@@ -398,15 +400,18 @@ private fun SubmissionCardPreview() {
     }
 }
 
-@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun SubmissionCardDetailsPreview() {
-    SubmissionCard(
-        submission = createFakeSubmission(),
-        mode = SubmissionCardMode.DETAILS,
-        setShowMediaViewerState = {},
-        onClickSubmission = {},
-    )
+    SomniaTheme {
+        SubmissionCard(
+            submission = createFakeSubmission(),
+            mode = SubmissionCardMode.DETAILS,
+            setShowMediaViewerState = {},
+            onClickSubmission = {},
+        )
+    }
 }
 
 private fun createFakeSubmission(): Submission {

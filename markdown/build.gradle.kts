@@ -27,6 +27,7 @@ android {
         }
         create("debugProfile") {
             initWith(buildTypes.getByName("release"))
+            isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
         }
     }

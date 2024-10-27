@@ -1,11 +1,14 @@
 package dev.evanchang.markdown
 
 import android.widget.TextView
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import io.noties.markwon.Markwon
@@ -14,6 +17,7 @@ import io.noties.markwon.Markwon
 fun MarkdownText(
     markdownText: String,
     modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current,
     onLinkClick: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -27,6 +31,9 @@ fun MarkdownText(
     AndroidView(modifier = modifier, factory = { factoryContext ->
         TextView(factoryContext)
     }, update = { textView ->
+        with (textView) {
+            setTextColor(style.color.toArgb())
+        }
         markwon.setMarkdown(textView, markdownText)
     })
 }
