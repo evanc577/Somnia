@@ -215,20 +215,22 @@ private fun ScoreButton(submission: Submission) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(4.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Icon(
                 imageVector = Icons.Outlined.KeyboardArrowUp,
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = submission.score.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 imageVector = Icons.Outlined.KeyboardArrowDown,
                 contentDescription = "",
@@ -240,12 +242,12 @@ private fun ScoreButton(submission: Submission) {
 
 @Composable
 private fun CommentsButton(submission: Submission) {
-    Card(onClick = {}, shape = RoundedCornerShape(4.dp)) {
+    Card(shape = RoundedCornerShape(4.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(4.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Icon(
                 imageVector = Icons.Outlined.ModeComment,
@@ -253,11 +255,13 @@ private fun CommentsButton(submission: Submission) {
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(16.dp),
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = submission.numComments.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
             )
         }
     }
