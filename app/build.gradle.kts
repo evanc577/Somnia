@@ -117,4 +117,6 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.slf4j.api)
     implementation(libs.telephoto)
+
+    implementation(project(path = ":markdown"))
 }

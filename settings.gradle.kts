@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Somnia"
 include(":app")
- 
+include(":markdown")

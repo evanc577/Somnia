@@ -25,6 +25,7 @@ data class Submission(
     val author: String,
     val subreddit: String,
     private val title: String,
+    val selftext: String,
     @SerialName("post_hint") val postHint: PostHint?,
     @SerialName("is_gallery") val isGallery: Boolean?,
     @SerialName("gallery_data") val galleryData: GalleryData?,

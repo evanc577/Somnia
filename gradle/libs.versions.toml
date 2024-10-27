@@ -17,12 +17,14 @@ kotlinxCollectionsImmutable = "0.3.8"
 ktor = "3.0.0"
 lifecycleRuntimeKtx = "2.8.6"
 logbackAndroid = "3.0.0"
+markwon = "4.6.2"
 material3Icons = "1.7.4"
 media3 = "1.4.1"
 paging = "3.3.2"
 serialization = "1.7.3"
 slf4j = "2.0.16"
 telephoto = "0.13.0"
+appcompat = "1.7.0"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -59,6 +61,7 @@ ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 logback-android = { group = "com.github.tony19", name = "logback-android", version.ref = "logbackAndroid" }
+markwon-core = { group = "io.noties.markwon", name = "core", version.ref = "markwon"}
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material3Icons" }
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 media3-datasource = { group = "androidx.media3", name = "media3-datasource", version.ref = "media3"}
@@ -69,9 +72,11 @@ media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "medi
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 telephoto = { group = "me.saket.telephoto", name = "zoomable-image-coil", version.ref = "telephoto" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
+android-library = { id = "com.android.library", version.ref = "agp" }

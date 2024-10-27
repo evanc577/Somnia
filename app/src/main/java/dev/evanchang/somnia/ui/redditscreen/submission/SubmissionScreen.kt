@@ -1,21 +1,17 @@
 package dev.evanchang.somnia.ui.redditscreen.submission
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
 import dev.evanchang.somnia.ui.navigation.NavigationViewModel
+import dev.evanchang.somnia.ui.util.SubmissionCard
 
 @Composable
 fun SubmissionScreen(
@@ -36,11 +32,16 @@ fun SubmissionScreen(
         val submissionVal = submission
         Scaffold { padding ->
             if (submissionVal != null) {
-                LazyColumn(modifier = Modifier.padding(padding).fillMaxSize().background(Color.Red)) {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                ) {
                     item(key = submissionVal.name) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(text = submissionVal.escapedTitle())
-                        }
+                        SubmissionCard(
+                            submission = submissionVal,
+                            setShowMediaViewerState = {},
+                        )
                     }
                 }
             }
