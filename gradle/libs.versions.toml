@@ -21,10 +21,12 @@ markwon = "4.6.2"
 material3Icons = "1.7.4"
 media3 = "1.4.1"
 paging = "3.3.2"
+re2j = "1.7"
 serialization = "1.7.3"
 slf4j = "2.0.16"
 telephoto = "0.13.0"
 textflow = "1.2.1"
+junitJupiter = "5.8.1"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -70,9 +72,11 @@ media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exoplayer-da
 media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
+re2j = { group = "com.google.re2j", name = "re2j", version.ref = "re2j" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 telephoto = { group = "me.saket.telephoto", name = "zoomable-image-coil", version.ref = "telephoto" }
 textflow = { group = "io.github.oleksandrbalan", name = "textflow-material3", version.ref = "textflow" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

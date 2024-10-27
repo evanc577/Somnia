@@ -85,7 +85,7 @@ fun SubmissionCard(
             .thenIf(onClickSubmission != null) {
                 Modifier.clickable { onClickSubmission!!(submission) }
             }
-            .padding(4.dp),
+            .padding(vertical = 4.dp),
     ) {
         Column(modifier = Modifier.padding(all = 16.dp)) {
             SubmissionCardHeader(submission = submission)
@@ -128,14 +128,21 @@ fun SubmissionCard(
 
                 SubmissionCardMode.DETAILS -> {
                     if (submission.selftext.isNotEmpty()) {
-                        MarkdownText(
-                            markdownText = submission.selftext,
-                            style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
-                            onLinkClick = {
-                                // TODO handle markdown link
-                                Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
-                            },
-                        )
+                        Card(
+                            colors = CardDefaults.cardColors()
+                                .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
+                        ) {
+                            MarkdownText(
+                                markdownText = submission.selftext,
+                                style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
+                                highlightColor = MaterialTheme.colorScheme.primary,
+                                onLinkClick = {
+                                    // TODO handle markdown link
+                                    Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.padding(4.dp),
+                            )
+                        }
                     }
                 }
             }
