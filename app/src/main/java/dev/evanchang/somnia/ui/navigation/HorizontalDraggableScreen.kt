@@ -91,7 +91,7 @@ fun HorizontalDraggableScreen(
             enter = slideInHorizontally(initialOffsetX = { it }),
             exit = slideOutHorizontally(targetOffsetX = { it }),
         ) {
-            Box(modifier = Modifier.thenIf(isTopScreen) {
+            Box(modifier = Modifier.thenIf(isTopScreen && screenStackIndex != 0) {
                 Modifier
                     .anchoredDraggable(
                         state = dragState,
