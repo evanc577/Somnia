@@ -87,17 +87,21 @@ data class Submission(
             images.addAll(previewImages.resolutions)
             images
         }?.flatten()
-        val galleryPreviewImages = galleryData?.items?.map { item ->
-            val metadata = mediaMetadata?.get(item.mediaId) ?: return@map null
+        if (previewImages != null) {
+            return previewImages
+        }
+
+        val galleryPreviewImages = galleryData?.items?.firstOrNull()?.let { item ->
+            val metadata = mediaMetadata?.get(item.mediaId) ?: return@let null
             val images = arrayListOf(metadata.source)
             images.addAll(metadata.resolutions)
             images
-        }?.filterNotNull()?.flatten()
+        }
+        if (galleryPreviewImages != null) {
+            return galleryPreviewImages
+        }
 
-        return sequenceOf(
-            previewImages.orEmpty(),
-            galleryPreviewImages.orEmpty(),
-        ).flatten().toList()
+        return listOf()
     }
 
     fun media(): Media? {
@@ -141,6 +145,7 @@ sealed class Media {
     @Keep
     @Serializable
     class Images(val images: ImmutableList<String>) : Media()
+
     @Keep
     @Serializable
     class RedditVideo(val video: String) : Media()
