@@ -24,7 +24,7 @@ paging = "3.3.2"
 serialization = "1.7.3"
 slf4j = "2.0.16"
 telephoto = "0.13.0"
-appcompat = "1.7.0"
+textflow = "1.2.1"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -72,7 +72,7 @@ media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "medi
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 telephoto = { group = "me.saket.telephoto", name = "zoomable-image-coil", version.ref = "telephoto" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+textflow = { group = "io.github.oleksandrbalan", name = "textflow-material3", version.ref = "textflow" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

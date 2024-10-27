@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -58,6 +59,8 @@ import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.theme.SomniaTheme
+import eu.wewox.textflow.material3.TextFlow
+import eu.wewox.textflow.material3.TextFlowObstacleAlignment
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
@@ -89,24 +92,27 @@ fun SubmissionCard(
             Spacer(modifier = Modifier.height(8.dp))
             when (mode) {
                 SubmissionCardMode.PREVIEW_FULL -> {
-                    SubmissionCardTitle(submission = submission)
+                    Text(
+                        text = submission.escapedTitle(),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
 
                 SubmissionCardMode.DETAILS -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    TextFlow(
+                        text = submission.escapedTitle(),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleLarge,
+                        obstacleAlignment = TextFlowObstacleAlignment.TopEnd,
                     ) {
-                        SubmissionCardTitle(
-                            submission = submission, modifier = Modifier.weight(1f, fill = false)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        PreviewImage(
-                            submission = submission,
-                            compact = true,
-                            setShowMediaViewerState = setShowMediaViewerState,
-                            modifier = Modifier.weight(1f),
-                        )
+                        Box(modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)) {
+                            PreviewImage(
+                                submission = submission,
+                                compact = true,
+                                setShowMediaViewerState = setShowMediaViewerState,
+                            )
+                        }
                     }
                 }
             }
@@ -137,16 +143,6 @@ fun SubmissionCard(
             SubmissionCardFooter(submission = submission)
         }
     }
-}
-
-@Composable
-private fun SubmissionCardTitle(modifier: Modifier = Modifier, submission: Submission) {
-    Text(
-        text = submission.escapedTitle(),
-        style = MaterialTheme.typography.titleLarge,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier,
-    )
 }
 
 @Composable
@@ -387,14 +383,16 @@ private fun SubmissionCardPreview() {
     val submission = createFakeSubmission()
 
     SomniaTheme {
-        Column {
+        LazyColumn {
             for (i in 1..3) {
-                SubmissionCard(
-                    submission = submission,
-                    mode = SubmissionCardMode.PREVIEW_FULL,
-                    setShowMediaViewerState = {},
-                    onClickSubmission = {},
-                )
+                item {
+                    SubmissionCard(
+                        submission = submission,
+                        mode = SubmissionCardMode.PREVIEW_FULL,
+                        setShowMediaViewerState = {},
+                        onClickSubmission = {},
+                    )
+                }
             }
         }
     }
@@ -414,6 +412,7 @@ private fun SubmissionCardDetailsPreview() {
     }
 }
 
+@Suppress("SpellCheckingInspection")
 private fun createFakeSubmission(): Submission {
     val selftext = """
         # Mattis facilisi venenatis rhoncus; tellus nibh nostra mattis ornare.
@@ -431,7 +430,10 @@ private fun createFakeSubmission(): Submission {
         id = "",
         author = "author",
         subreddit = "subreddit",
-        title = "Lorem ipsum odor amet, consectetuer adipiscing elit",
+        title = """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        """.trimIndent(),
         selftext = selftext,
         postHint = null,
         isGallery = null,
