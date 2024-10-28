@@ -68,6 +68,9 @@ enum class SubmissionCardMode {
     PREVIEW_FULL, DETAILS,
 }
 
+private val ROUNDED_CORNER_RADIUS = 4.dp
+private val SPACER_SIZE = 8.dp
+
 @Composable
 fun SubmissionCard(
     submission: Submission,
@@ -81,6 +84,7 @@ fun SubmissionCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
+        shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
         modifier = Modifier
             .thenIf(onClickSubmission != null) {
                 Modifier.clickable { onClickSubmission!!(submission) }
@@ -89,7 +93,7 @@ fun SubmissionCard(
     ) {
         Column(modifier = Modifier.padding(all = 16.dp)) {
             SubmissionCardHeader(submission = submission)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(SPACER_SIZE))
             when (mode) {
                 SubmissionCardMode.PREVIEW_FULL -> {
                     Text(
@@ -97,6 +101,7 @@ fun SubmissionCard(
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
+                    Spacer(modifier = Modifier.height(SPACER_SIZE))
                     PreviewImage(
                         submission = submission,
                         compact = false,
@@ -122,10 +127,11 @@ fun SubmissionCard(
                 }
             }
             if (submission.selftext.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(SPACER_SIZE))
                 Card(
                     colors = CardDefaults.cardColors()
-                        .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                    shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
                 ) {
                     MarkdownText(
                         markdownText = submission.selftext,
@@ -144,11 +150,11 @@ fun SubmissionCard(
                             SubmissionCardMode.PREVIEW_FULL -> 5
                             SubmissionCardMode.DETAILS -> null
                         },
-                        modifier = Modifier.padding(4.dp),
+                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(SPACER_SIZE))
             SubmissionCardFooter(submission = submission)
         }
     }
@@ -175,7 +181,7 @@ private fun SubmissionCardHeader(submission: Submission) {
                 },
                 style = MaterialTheme.typography.labelMedium,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(SPACER_SIZE))
             Text(
                 text = "u/${submission.author}",
                 style = MaterialTheme.typography.labelMedium,
@@ -205,7 +211,7 @@ private fun SubmissionCardFooter(submission: Submission) {
             .height(32.dp)
     ) {
         CommentsButton(submission = submission)
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(SPACER_SIZE))
         ScoreButton(submission = submission)
     }
 }
@@ -218,7 +224,7 @@ private fun ScoreButton(submission: Submission) {
             // TODO: implement voting
             Toast.makeText(context, "TODO: implement voting", Toast.LENGTH_SHORT).show()
         },
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -231,7 +237,7 @@ private fun ScoreButton(submission: Submission) {
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(SPACER_SIZE))
             Text(
                 text = submission.score.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
@@ -239,7 +245,7 @@ private fun ScoreButton(submission: Submission) {
                     platformStyle = PlatformTextStyle(includeFontPadding = false)
                 ),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(SPACER_SIZE))
             Icon(
                 imageVector = Icons.Outlined.KeyboardArrowDown,
                 contentDescription = "",
@@ -251,7 +257,7 @@ private fun ScoreButton(submission: Submission) {
 
 @Composable
 private fun CommentsButton(submission: Submission) {
-    Card(shape = RoundedCornerShape(4.dp)) {
+    Card(shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -264,7 +270,7 @@ private fun CommentsButton(submission: Submission) {
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(16.dp),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(SPACER_SIZE))
             Text(
                 text = submission.numComments.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
@@ -302,6 +308,7 @@ private fun PreviewImage(
         onClick = {
             setShowMediaViewerState(MediaViewerState.Showing(submission))
         },
+        shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
         modifier = modifier
             .thenIf(compact) {
                 Modifier.size(80.dp)
@@ -367,7 +374,7 @@ private fun PreviewImageError(compact: Boolean, onRetry: () -> Unit) {
                     contentDescription = "",
                     tint = MaterialTheme.colorScheme.error
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(SPACER_SIZE))
                 Text(
                     text = "Image failed to load",
                     style = TextStyle(
@@ -376,7 +383,7 @@ private fun PreviewImageError(compact: Boolean, onRetry: () -> Unit) {
                     color = MaterialTheme.colorScheme.onErrorContainer,
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(SPACER_SIZE))
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors().copy(

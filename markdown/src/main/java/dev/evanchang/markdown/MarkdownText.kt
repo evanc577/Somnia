@@ -50,13 +50,14 @@ fun MarkdownText(
                 }
             }
         },
-        update = { textView ->
-            with(textView) {
+        update = { view ->
+            with(view) {
                 isSoundEffectsEnabled = false
                 setTextColor(style.color.toArgb())
             }
-            markwon.setMarkdown(textView, markdownText)
+            markwon.setMarkdown(view, markdownText)
         },
+        onReset = {},
     )
 }
 
