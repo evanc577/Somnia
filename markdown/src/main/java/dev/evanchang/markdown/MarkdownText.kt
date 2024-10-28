@@ -42,22 +42,24 @@ fun MarkdownText(
         modifier = modifier,
         factory = { factoryContext ->
             TextView(factoryContext).apply {
-                if (maxLines != null) {
-                    setMaxLines(maxLines)
-                }
-                if (onClick != null) {
-                    setOnClickListener { onClick() }
-                }
-            }
-        },
-        update = { view ->
-            with(view) {
                 isSoundEffectsEnabled = false
                 setTextColor(style.color.toArgb())
             }
+        },
+        update = { view ->
+            if (maxLines != null) {
+                view.setMaxLines(maxLines)
+            }
+            if (onClick != null) {
+                view.setOnClickListener { onClick() }
+            }
             markwon.setMarkdown(view, markdownText)
         },
-        onReset = {},
+        onReset = { view ->
+            view.maxLines = Int.MAX_VALUE
+            view.setOnClickListener(null)
+            view.text = ""
+        },
     )
 }
 
