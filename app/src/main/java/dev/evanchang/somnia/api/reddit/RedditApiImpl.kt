@@ -48,7 +48,7 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                             .map { it.submission }
                     ApiResult.Ok(
                         RedditApi.SubredditSubmissionsResponse(
-                            submissions = submissions, after = response.value.after
+                            submissions = submissions, after = response.value.data.after,
                         )
                     )
                 } else {
@@ -97,7 +97,7 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                 val commentsListing =
                     response.value.filterIsInstance<RedditResponse.Listing>().getOrNull(1)
                         ?: return ApiResult.Err("no comments found")
-                val commentsAfter = commentsListing.after
+                val commentsAfter = commentsListing.data.after
                 val comments = commentsListing.data.children.filterIsInstance<Thing.CommentThing>()
                     .map { it.comment }
 

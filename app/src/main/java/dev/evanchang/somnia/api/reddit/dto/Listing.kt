@@ -17,12 +17,12 @@ sealed class RedditResponse {
     @Keep
     @Serializable
     @SerialName("Listing")
-    class Listing(@SerialName("data") val data: ListingData, val after: String?) : RedditResponse()
+    class Listing(@SerialName("data") val data: ListingData) : RedditResponse()
 }
 
 @Keep
 @Serializable
-class ListingData(val children: List<Thing>)
+class ListingData(val children: List<Thing>, val after: String?)
 
 @Keep
 @Serializable
