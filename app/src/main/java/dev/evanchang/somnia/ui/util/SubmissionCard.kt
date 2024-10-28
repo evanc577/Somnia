@@ -97,6 +97,11 @@ fun SubmissionCard(
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
+                    PreviewImage(
+                        submission = submission,
+                        compact = false,
+                        setShowMediaViewerState = setShowMediaViewerState,
+                    )
                 }
 
                 SubmissionCardMode.DETAILS -> {
@@ -116,34 +121,31 @@ fun SubmissionCard(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            when (mode) {
-                SubmissionCardMode.PREVIEW_FULL -> {
-                    PreviewImage(
-                        submission = submission,
-                        compact = false,
-                        setShowMediaViewerState = setShowMediaViewerState,
+            if (submission.selftext.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                    colors = CardDefaults.cardColors()
+                        .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+                ) {
+                    MarkdownText(
+                        markdownText = submission.selftext,
+                        style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
+                        highlightColor = MaterialTheme.colorScheme.primary,
+                        onClick = if (onClickSubmission != null) {
+                            { onClickSubmission(submission) }
+                        } else {
+                            null
+                        },
+                        onLinkClick = {
+                            // TODO handle markdown link
+                            Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
+                        },
+                        maxLines = when (mode) {
+                            SubmissionCardMode.PREVIEW_FULL -> 5
+                            SubmissionCardMode.DETAILS -> null
+                        },
+                        modifier = Modifier.padding(4.dp),
                     )
-                }
-
-                SubmissionCardMode.DETAILS -> {
-                    if (submission.selftext.isNotEmpty()) {
-                        Card(
-                            colors = CardDefaults.cardColors()
-                                .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
-                        ) {
-                            MarkdownText(
-                                markdownText = submission.selftext,
-                                style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
-                                highlightColor = MaterialTheme.colorScheme.primary,
-                                onLinkClick = {
-                                    // TODO handle markdown link
-                                    Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.padding(4.dp),
-                            )
-                        }
-                    }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -210,7 +212,14 @@ private fun SubmissionCardFooter(submission: Submission) {
 
 @Composable
 private fun ScoreButton(submission: Submission) {
-    Card(onClick = {}, shape = RoundedCornerShape(4.dp)) {
+    val context = LocalContext.current
+    Card(
+        onClick = {
+            // TODO: implement voting
+            Toast.makeText(context, "TODO: implement voting", Toast.LENGTH_SHORT).show()
+        },
+        shape = RoundedCornerShape(4.dp),
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier

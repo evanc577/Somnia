@@ -22,6 +22,8 @@ fun MarkdownText(
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
     highlightColor: Color,
+    maxLines: Int? = null,
+    onClick: (() -> Unit)? = null,
     onLinkClick: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -36,14 +38,26 @@ fun MarkdownText(
         )
     }
 
-    AndroidView(modifier = modifier, factory = { factoryContext ->
-        TextView(factoryContext)
-    }, update = { textView ->
-        with(textView) {
-            setTextColor(style.color.toArgb())
-        }
-        markwon.setMarkdown(textView, markdownText)
-    })
+    AndroidView(
+        modifier = modifier,
+        factory = { factoryContext ->
+            TextView(factoryContext).apply {
+                if (maxLines != null) {
+                    setMaxLines(maxLines)
+                }
+                if (onClick != null) {
+                    setOnClickListener { onClick() }
+                }
+            }
+        },
+        update = { textView ->
+            with(textView) {
+                isSoundEffectsEnabled = false
+                setTextColor(style.color.toArgb())
+            }
+            markwon.setMarkdown(textView, markdownText)
+        },
+    )
 }
 
 @Preview
