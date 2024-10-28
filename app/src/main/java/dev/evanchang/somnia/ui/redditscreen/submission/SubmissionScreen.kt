@@ -9,10 +9,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
 import dev.evanchang.somnia.ui.navigation.NavigationViewModel
+import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditViewModel
 import dev.evanchang.somnia.ui.util.SubmissionCard
 import dev.evanchang.somnia.ui.util.SubmissionCardMode
 
@@ -59,6 +61,9 @@ fun SubmissionScreen(
                         SubmissionCard(
                             submission = submissionVal,
                             mode = SubmissionCardMode.DETAILS,
+                            onClickSubreddit = { subreddit ->
+                                navigationViewModel.pushSubredditScreen(SubredditViewModel(subreddit, SubmissionSort.New))
+                            },
                             setShowMediaViewerState = { submissionViewModel.setMediaViewerState(it) },
                         )
                     }

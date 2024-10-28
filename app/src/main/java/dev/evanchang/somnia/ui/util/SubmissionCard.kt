@@ -76,6 +76,7 @@ fun SubmissionCard(
     submission: Submission,
     mode: SubmissionCardMode,
     setShowMediaViewerState: (MediaViewerState) -> Unit,
+    onClickSubreddit: (String) -> Unit,
     onClickSubmission: ((Submission) -> Unit)? = null,
 ) {
     val context = LocalContext.current
@@ -92,7 +93,10 @@ fun SubmissionCard(
             .padding(vertical = 4.dp),
     ) {
         Column(modifier = Modifier.padding(all = 16.dp)) {
-            SubmissionCardHeader(submission = submission)
+            SubmissionCardHeader(
+                submission = submission,
+                onClickSubreddit = onClickSubreddit,
+            )
             Spacer(modifier = Modifier.height(SPACER_SIZE))
             when (mode) {
                 SubmissionCardMode.PREVIEW_FULL -> {
@@ -150,7 +154,9 @@ fun SubmissionCard(
                             SubmissionCardMode.PREVIEW_FULL -> 5
                             SubmissionCardMode.DETAILS -> null
                         },
-                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
                     )
                 }
             }
@@ -161,7 +167,7 @@ fun SubmissionCard(
 }
 
 @Composable
-private fun SubmissionCardHeader(submission: Submission) {
+private fun SubmissionCardHeader(submission: Submission, onClickSubreddit: (String) -> Unit) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.align(Alignment.CenterVertically)) {
             Text(
@@ -180,6 +186,9 @@ private fun SubmissionCardHeader(submission: Submission) {
                     }
                 },
                 style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.clickable {
+                    onClickSubreddit(submission.subreddit)
+                },
             )
             Spacer(modifier = Modifier.height(SPACER_SIZE))
             Text(
@@ -417,6 +426,7 @@ private fun SubmissionCardPreview() {
                         submission = submission,
                         mode = SubmissionCardMode.PREVIEW_FULL,
                         setShowMediaViewerState = {},
+                        onClickSubreddit = {},
                         onClickSubmission = {},
                     )
                 }
@@ -434,6 +444,7 @@ private fun SubmissionCardDetailsPreview() {
             submission = createFakeSubmission(),
             mode = SubmissionCardMode.DETAILS,
             setShowMediaViewerState = {},
+            onClickSubreddit = {},
             onClickSubmission = {},
         )
     }

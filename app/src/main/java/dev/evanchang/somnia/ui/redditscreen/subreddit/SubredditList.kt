@@ -46,6 +46,7 @@ fun SubredditList(
     subredditViewModel: SubredditViewModel,
     listState: LazyListState,
     topPadding: Dp,
+    onClickSubreddit: (String) -> Unit,
     onClickSubmission: (Submission) -> Unit,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
@@ -116,6 +117,7 @@ fun SubredditList(
                         setShowMediaViewerState = {
                             subredditViewModel.setMediaViewerState(it)
                         },
+                        onClickSubreddit = onClickSubreddit,
                         onClickSubmission = onClickSubmission,
                     )
                 }
