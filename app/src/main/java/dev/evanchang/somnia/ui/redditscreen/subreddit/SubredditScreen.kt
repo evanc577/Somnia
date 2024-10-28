@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
@@ -98,6 +99,7 @@ class BottomBarNestedScrollConnection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubredditScreen(
+    appSettings: AppSettings,
     screenStackIndex: Int,
     navigationViewModel: NavigationViewModel,
     subredditViewModel: SubredditViewModel,
@@ -227,7 +229,7 @@ fun SubredditScreen(
                     onClickSubreddit = { subreddit ->
                         navigationViewModel.pushSubredditScreen(
                             SubredditViewModel(
-                                subreddit, SubmissionSort.New
+                                subreddit, appSettings.generalSettings.defaultSubmissionSort,
                             )
                         )
                     },
@@ -257,7 +259,7 @@ fun SubredditScreen(
                     onGoToSubreddit = { subreddit ->
                         navigationViewModel.pushSubredditScreen(
                             SubredditViewModel(
-                                subreddit, SubmissionSort.New
+                                subreddit, appSettings.generalSettings.defaultSubmissionSort,
                             )
                         )
                     },
@@ -435,6 +437,7 @@ private fun SortSelectionBottomSheet(
 @Composable
 private fun HomeScreenPreview() {
     SubredditScreen(
+        appSettings = AppSettings(),
         onNavigateToSettings = {},
         screenStackIndex = 1,
         navigationViewModel = viewModel(),

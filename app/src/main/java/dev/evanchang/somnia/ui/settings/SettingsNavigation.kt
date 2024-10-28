@@ -8,6 +8,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import dev.evanchang.somnia.ui.settings.screen.AccountSettingsScreen
 import dev.evanchang.somnia.ui.settings.screen.ApiSettingsScreen
+import dev.evanchang.somnia.ui.settings.screen.GeneralSettings
 import dev.evanchang.somnia.ui.settings.screen.LoginResult
 import dev.evanchang.somnia.ui.settings.screen.LoginWebView
 import dev.evanchang.somnia.ui.settings.screen.SettingsScreen
@@ -36,6 +37,10 @@ data class Login(
 @Serializable
 object ApiSettings
 
+@Keep
+@Serializable
+object GeneralSettings
+
 fun NavGraphBuilder.settingsNavigation(
     navController: NavController,
 ) {
@@ -43,11 +48,13 @@ fun NavGraphBuilder.settingsNavigation(
         navController.popBackStack()
     }
     navigation<SettingsNavigation>(startDestination = Settings) {
-        settingsDestination(onNavigateBack = onNavigateBack,
-            onNavigateToApiSettings = { navController.navigateToApiSettings() },
-            onNavigateToAccountSettings = { navController.navigateToAccountSettings() })
-        accountSettingsDestination(
+        settingsDestination(
             onNavigateBack = onNavigateBack,
+            onNavigateToApiSettings = { navController.navigateToApiSettings() },
+            onNavigateToAccountSettings = { navController.navigateToAccountSettings() },
+            onNavigateToGeneralSettings = { navController.navigateToGeneralSettings() },
+        )
+        accountSettingsDestination(onNavigateBack = onNavigateBack,
             onNavigateToLogin = { clientId, redirectUri ->
                 navController.navigateToLogin(
                     clientId = clientId,
@@ -62,6 +69,7 @@ fun NavGraphBuilder.settingsNavigation(
             onNavigateBack()
         })
         apiSettingsDestination(onNavigateBack = onNavigateBack)
+        generalSettingsDestination(onNavigateBack = onNavigateBack)
     }
 }
 
@@ -69,12 +77,14 @@ fun NavGraphBuilder.settingsDestination(
     onNavigateBack: () -> Unit,
     onNavigateToApiSettings: () -> Unit,
     onNavigateToAccountSettings: () -> Unit,
+    onNavigateToGeneralSettings: () -> Unit,
 ) {
     composable<Settings> {
         SettingsScreen(
             onNavigateBack = onNavigateBack,
             onNavigateToApiSettings = onNavigateToApiSettings,
             onNavigateToAccountSettings = onNavigateToAccountSettings,
+            onNavigateToGeneralSettings = onNavigateToGeneralSettings,
         )
     }
 }
@@ -100,13 +110,11 @@ fun NavGraphBuilder.accountSettingsDestination(
     onNavigateBack: () -> Unit,
 ) {
     composable<AccountSettings> {
-        AccountSettingsScreen(
-            onNavigateBack = onNavigateBack,
+        AccountSettingsScreen(onNavigateBack = onNavigateBack,
             onNavigateToLogin = onNavigateToLogin,
             loginResult = {
                 return@AccountSettingsScreen it.savedStateHandle.get("loginResult")
-            }
-        )
+            })
     }
 }
 
@@ -132,4 +140,18 @@ fun NavGraphBuilder.loginDestination(
 fun NavController.navigateToLogin(clientId: String, redirectUri: String) {
     val x = Login(clientId = clientId, redirectUri = redirectUri)
     navigate(x)
+}
+
+fun NavGraphBuilder.generalSettingsDestination(
+    onNavigateBack: () -> Unit,
+) {
+    composable<GeneralSettings> {
+        GeneralSettings(
+            onNavigateBack = onNavigateBack,
+        )
+    }
+}
+
+fun NavController.navigateToGeneralSettings() {
+    navigate(GeneralSettings)
 }

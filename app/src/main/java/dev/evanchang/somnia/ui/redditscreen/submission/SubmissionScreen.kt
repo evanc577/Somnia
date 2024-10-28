@@ -9,7 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.evanchang.somnia.data.SubmissionSort
+import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
@@ -20,6 +20,7 @@ import dev.evanchang.somnia.ui.util.SubmissionCardMode
 
 @Composable
 fun SubmissionScreen(
+    appSettings: AppSettings,
     screenStackIndex: Int,
     navigationViewModel: NavigationViewModel,
     submissionViewModel: SubmissionViewModel,
@@ -62,7 +63,12 @@ fun SubmissionScreen(
                             submission = submissionVal,
                             mode = SubmissionCardMode.DETAILS,
                             onClickSubreddit = { subreddit ->
-                                navigationViewModel.pushSubredditScreen(SubredditViewModel(subreddit, SubmissionSort.New))
+                                navigationViewModel.pushSubredditScreen(
+                                    SubredditViewModel(
+                                        subreddit,
+                                        appSettings.generalSettings.defaultSubmissionSort,
+                                    )
+                                )
                             },
                             setShowMediaViewerState = { submissionViewModel.setMediaViewerState(it) },
                         )

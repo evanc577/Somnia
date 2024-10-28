@@ -3,13 +3,16 @@ package dev.evanchang.somnia.ui.navigation
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionViewModel
 import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class NavigationViewModel : ViewModel() {
-    private val _navigationUIState = MutableStateFlow(NavigationUIState())
+class NavigationViewModel(private val appSettings: AppSettings) : ViewModel() {
+    private val _navigationUIState =
+        MutableStateFlow(NavigationUIState(appSettings.generalSettings.defaultSubmissionSort))
     val navigationUIState = _navigationUIState.asStateFlow()
     val screenWidth = mutableFloatStateOf(0f)
     val renderSecondScreen = mutableStateOf(false)
@@ -37,4 +40,11 @@ class NavigationViewModel : ViewModel() {
     fun popBackStack() {
         _navigationUIState.value.navigationBackStack.removeLastOrNull()
     }
+}
+
+@Suppress("UNCHECKED_CAST")
+class NavigationViewModelFactory(private val appSettings: AppSettings) :
+    ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T =
+        NavigationViewModel(appSettings) as T
 }

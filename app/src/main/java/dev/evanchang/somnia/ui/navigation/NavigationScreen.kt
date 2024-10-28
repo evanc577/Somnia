@@ -7,12 +7,16 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionScreen
 import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditScreen
 
 @Composable
 fun NavigationScreen(
-    navigationViewModel: NavigationViewModel = viewModel(),
+    appSettings: AppSettings,
+    navigationViewModel: NavigationViewModel = viewModel(
+        factory = NavigationViewModelFactory(appSettings)
+    ),
     onNavigateToSettings: () -> Unit,
 ) {
     val navigationState = navigationViewModel.navigationUIState.collectAsStateWithLifecycle()
@@ -28,14 +32,17 @@ fun NavigationScreen(
             when (entry) {
                 is NavigationBackStackEntry.SubredditBackStackEntry -> {
                     SubredditScreen(
+                        appSettings = appSettings,
                         screenStackIndex = index,
                         navigationViewModel = navigationViewModel,
                         subredditViewModel = entry.viewModel,
                         onNavigateToSettings = onNavigateToSettings
                     )
                 }
+
                 is NavigationBackStackEntry.SubmissionBackStackEntry -> {
                     SubmissionScreen(
+                        appSettings = appSettings,
                         screenStackIndex = index,
                         navigationViewModel = navigationViewModel,
                         submissionViewModel = entry.viewModel,

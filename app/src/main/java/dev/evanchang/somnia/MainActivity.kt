@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                         enterTransition = { EnterTransition.None },
                         exitTransition = { ExitTransition.None },
                     ) {
-                        homeDestination(onNavigateToSettings = {
+                        homeDestination(appSettings = appSettings!!, onNavigateToSettings = {
                             navController.navigateToSettings()
                         })
                         settingsNavigation(navController)
