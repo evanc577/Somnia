@@ -1,6 +1,5 @@
 package dev.evanchang.somnia.ui.redditscreen.subreddit
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -103,9 +102,8 @@ fun SubredditList(
         modifier = Modifier.padding(top = topPadding)
     ) {
         LazyColumn(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                .fillMaxSize(), state = listState
+            modifier = Modifier.fillMaxSize(),
+            state = listState,
         ) {
             items(count = lazySubmissionItems.itemCount,
                 key = { index -> lazySubmissionItems[index]!!.name }) { index ->
