@@ -115,6 +115,7 @@ dependencies {
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.ui)
     implementation(libs.navigation.compose)
+    implementation(libs.runtime.tracing)
     implementation(libs.slf4j.api)
     implementation(libs.telephoto)
     implementation(libs.textflow)

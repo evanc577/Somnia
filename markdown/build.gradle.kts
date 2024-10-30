@@ -40,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -48,6 +49,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)
     androidTestImplementation(libs.androidx.junit)
@@ -59,8 +61,11 @@ dependencies {
 
     testImplementation(kotlin("test"))
 
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.constraintlayout.core)
     implementation(libs.androidx.material3)
-
     implementation(libs.markwon.core)
+    implementation(libs.markwon.recycler)
     implementation(libs.re2j)
+    implementation(libs.runtime.tracing)
 }

@@ -150,7 +150,7 @@ fun SubmissionCard(
                             // TODO handle markdown link
                             Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
                         },
-                        maxLines = when (mode) {
+                        previewLines = when (mode) {
                             SubmissionCardMode.PREVIEW_FULL -> 5
                             SubmissionCardMode.DETAILS -> null
                         },

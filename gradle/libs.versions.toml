@@ -7,6 +7,7 @@ composeNavigation = "2.8.3"
 composeSettings = "2.6.0"
 constraintlayout = "2.1.4"
 constraintlayoutCompose = "1.0.1"
+constraintlayoutCore = "1.0.4"
 coreKtx = "1.13.1"
 datastore = "1.1.1"
 espressoCore = "3.6.1"
@@ -24,15 +25,18 @@ paging = "3.3.2"
 re2j = "1.7"
 serialization = "1.7.3"
 slf4j = "2.0.16"
+runtimeTracing = "1.7.4"
 telephoto = "0.13.0"
 textflow = "1.2.1"
 junitJupiter = "5.8.1"
+appcompat = "1.7.0"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
+androidx-constraintlayout-core = { group = "androidx.constraintlayout", name = "constraintlayout-core", version.ref = "constraintlayoutCore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -64,6 +68,7 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 logback-android = { group = "com.github.tony19", name = "logback-android", version.ref = "logbackAndroid" }
 markwon-core = { group = "io.noties.markwon", name = "core", version.ref = "markwon"}
+markwon-recycler = { group = "io.noties.markwon", name = "recycler", version.ref = "markwon"}
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material3Icons" }
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 media3-datasource = { group = "androidx.media3", name = "media3-datasource", version.ref = "media3"}
@@ -73,10 +78,12 @@ media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 re2j = { group = "com.google.re2j", name = "re2j", version.ref = "re2j" }
+runtime-tracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "runtimeTracing" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 telephoto = { group = "me.saket.telephoto", name = "zoomable-image-coil", version.ref = "telephoto" }
 textflow = { group = "io.github.oleksandrbalan", name = "textflow-material3", version.ref = "textflow" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
