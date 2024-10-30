@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,7 @@ import kotlinx.coroutines.launch
 fun SubredditList(
     subredditViewModel: SubredditViewModel,
     listState: LazyListState,
+    screenSize: Offset,
     topPadding: Dp,
     onClickSubreddit: (String) -> Unit,
     onClickSubmission: (Submission) -> Unit,
@@ -76,6 +78,7 @@ fun SubredditList(
         is MediaViewerState.Showing -> {
             MediaViewer(
                 submission = s.submission,
+                screenSize = screenSize,
                 onClose = {
                     subredditViewModel.setMediaViewerState(MediaViewerState.NotShowing)
                 },

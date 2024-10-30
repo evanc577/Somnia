@@ -42,7 +42,7 @@ fun HorizontalDraggableScreen(
     val density = LocalDensity.current
 
     val navigationUiState = navigationViewModel.navigationUIState
-    val screenWidth by navigationViewModel.screenWidth
+    val screenSize by navigationViewModel.screenSize
 
     val isTopScreen by remember {
         derivedStateOf { screenStackIndex == navigationUiState.value.navigationBackStack.lastIndex }
@@ -67,7 +67,7 @@ fun HorizontalDraggableScreen(
     // Anchored drag
     val anchors = DraggableAnchors {
         DragValue.Start at 0f
-        DragValue.End at screenWidth
+        DragValue.End at screenSize.x
     }
     val dragState = remember {
         AnchoredDraggableState(
@@ -107,7 +107,7 @@ fun HorizontalDraggableScreen(
                     .drawBehind {
                         drawRect(
                             color = Color.Black.copy(
-                                alpha = 0.8f * ((screenWidth - dragState.requireOffset()) / screenWidth)
+                                alpha = 0.8f * ((screenSize.x - dragState.requireOffset()) / screenSize.x)
                             ),
                             topLeft = Offset(
                                 x = -dragState.requireOffset(), y = 0f
@@ -124,4 +124,4 @@ fun HorizontalDraggableScreen(
     }
 }
 
-enum class DragValue { Start, End }
+private enum class DragValue { Start, End }

@@ -2,6 +2,7 @@ package dev.evanchang.somnia.ui.navigation
 
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import dev.evanchang.somnia.appSettings.AppSettings
@@ -14,11 +15,10 @@ class NavigationViewModel(private val appSettings: AppSettings) : ViewModel() {
     private val _navigationUIState =
         MutableStateFlow(NavigationUIState(appSettings.generalSettings.defaultSubmissionSort))
     val navigationUIState = _navigationUIState.asStateFlow()
-    val screenWidth = mutableFloatStateOf(0f)
-    val renderSecondScreen = mutableStateOf(false)
+    val screenSize = mutableStateOf(Offset(0f, 0f))
 
-    fun setScreenWidth(width: Float) {
-        screenWidth.floatValue = width
+    fun setScreenSize(offset: Offset) {
+        screenSize.value = offset
     }
 
     fun pushSubredditScreen(viewModel: SubredditViewModel) {

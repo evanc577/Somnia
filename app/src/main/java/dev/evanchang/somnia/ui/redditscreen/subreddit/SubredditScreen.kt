@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -229,6 +228,7 @@ fun SubredditScreen(
                 SubredditList(
                     subredditViewModel = subredditViewModel,
                     listState = listState,
+                    screenSize = navigationViewModel.screenSize.value,
                     topPadding = topPadding,
                     onClickSubreddit = { subreddit ->
                         navigationViewModel.pushSubredditScreen(

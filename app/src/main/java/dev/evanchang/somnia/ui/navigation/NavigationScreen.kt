@@ -24,8 +24,8 @@ fun NavigationScreen(
 
     Box(
         modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-            val rect = layoutCoordinates.boundsInRoot()
-            navigationViewModel.setScreenWidth(rect.topRight.x)
+            val offset = layoutCoordinates.boundsInRoot().bottomRight
+            navigationViewModel.setScreenSize(offset)
         },
     ) {
         for ((index, entry) in navigationBackStack.withIndex()) {

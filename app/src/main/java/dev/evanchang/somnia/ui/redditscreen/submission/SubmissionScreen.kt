@@ -37,6 +37,7 @@ fun SubmissionScreen(
         is MediaViewerState.Showing -> {
             MediaViewer(
                 submission = s.submission,
+                screenSize = navigationViewModel.screenSize.value,
                 onClose = {
                     submissionViewModel.setMediaViewerState(MediaViewerState.NotShowing)
                 },
