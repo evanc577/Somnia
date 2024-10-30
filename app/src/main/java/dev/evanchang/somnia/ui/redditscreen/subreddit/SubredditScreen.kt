@@ -1,5 +1,6 @@
 package dev.evanchang.somnia.ui.redditscreen.subreddit
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,6 +57,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,6 +86,7 @@ import dev.evanchang.somnia.ui.navigation.NavigationViewModel
 import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionViewModel
 import dev.evanchang.somnia.ui.util.BottomSheetGridItem
 import dev.evanchang.somnia.ui.util.BottomSheetItem
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
@@ -109,6 +114,7 @@ fun SubredditScreen(
     onNavigateToSettings: () -> Unit,
 ) {
     val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
 
     // Scrolling
     val lazyPagingItems = subredditViewModel.submissions.collectAsLazyPagingItems()
@@ -154,6 +160,16 @@ fun SubredditScreen(
         lazyPagingItems.refresh()
     }
 
+    // Exit confirmation if this is the top level screen
+    val snackbarHostState = remember { SnackbarHostState() }
+    BackHandler(enabled = screenStackIndex == 0 && snackbarHostState.currentSnackbarData == null) {
+        if (snackbarHostState.currentSnackbarData == null) {
+            scope.launch {
+                snackbarHostState.showSnackbar("Press back again to exit")
+            }
+        }
+    }
+
     // UI
     HorizontalDraggableScreen(
         screenStackIndex = screenStackIndex,
@@ -163,6 +179,18 @@ fun SubredditScreen(
             modifier = Modifier
                 .nestedScroll(nestedScrollConnection)
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.offset {
+                        IntOffset(
+                            x = 0,
+                            y = bottomBarOffsetHeightPx.floatValue.unaryMinus()
+                                .coerceAtMost(BOTTOM_BAR_HEIGHT.toPx()).roundToInt(),
+                        )
+                    },
+                )
+            },
             topBar = {
                 TopAppBar(
                     title = {
@@ -174,7 +202,8 @@ fun SubredditScreen(
                 )
             },
             bottomBar = {
-                Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
                     modifier = Modifier
                         .height(bottomBarHeight)
                         .fillMaxWidth()
@@ -182,7 +211,8 @@ fun SubredditScreen(
                             IntOffset(
                                 x = 0, y = -bottomBarOffsetHeightPx.floatValue.roundToInt()
                             )
-                        }) {
+                        },
+                ) {
                     Box(
                         contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
                     ) {
