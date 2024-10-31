@@ -34,7 +34,6 @@ object UnauthenticatedHttpClient {
     }
 }
 
-
 // Create custom replacement for Ktor bearer auth plugin that supports multiple status codes to retry
 // on other than just 401
 class BearerAuthPluginConfig {
@@ -44,7 +43,7 @@ class BearerAuthPluginConfig {
 }
 
 val BearerAuthPlugin = createClientPlugin("CustomHeaderPlugin", ::BearerAuthPluginConfig) {
-    val userAgent = pluginConfig.getUserAgent
+    val getUserAgent = pluginConfig.getUserAgent
     val loadTokens = pluginConfig.loadTokens
     val refreshTokens = pluginConfig.refreshTokens
 
@@ -59,7 +58,7 @@ val BearerAuthPlugin = createClientPlugin("CustomHeaderPlugin", ::BearerAuthPlug
         }
 
         // Add user-agent
-        val userAgent = userAgent()
+        val userAgent = getUserAgent()
         if (userAgent != null) {
             request.headers.append("user-agent", userAgent)
         }
@@ -85,6 +84,7 @@ object RedditHttpClient {
 
     fun login(accountSettings: AccountSettings) {
         this.account = accountSettings
+        this.bearerToken = null
     }
 
     fun logout() {

@@ -17,6 +17,7 @@ import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.dataStore
+import dev.evanchang.somnia.ui.settings.composable.AccountItem
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.launch
@@ -82,8 +83,33 @@ fun AccountSettingsScreen(
         )
         if (appSettings?.accountSettings?.isNotEmpty() == true) {
             SettingsGroup(title = { Text(text = "Saved accounts") }) {
+                val activeUser = appSettings?.activeUser
+                AccountItem(
+                    username = null, accountSettings = null,
+                    isActiveUser = activeUser == null,
+                    onSetActiveUser = {
+                        scope.launch {
+                            setActiveUser(context, null)
+                        }
+                    },
+                    onDeleteUser = {},
+                )
                 for (account in appSettings?.accountSettings.orEmpty()) {
-                    Text(text = account.key)
+                    AccountItem(
+                        username = account.key,
+                        accountSettings = account.value,
+                        isActiveUser = activeUser == account.key,
+                        onSetActiveUser = {
+                            scope.launch {
+                                setActiveUser(context = context, user = account.key)
+                            }
+                        },
+                        onDeleteUser = {
+                            scope.launch {
+                                deleteUser(context = context, user = account.key)
+                            }
+                        },
+                    )
                 }
             }
         }
@@ -94,9 +120,32 @@ private suspend fun addAccountSettings(
     context: Context, user: String, accountSettings: AccountSettings
 ) {
     context.dataStore.updateData { appSettings ->
-        appSettings.copy(activeUser = user,
+        appSettings.copy(
+            activeUser = user,
             accountSettings = appSettings.accountSettings.mutate { accountSettingsMap ->
                 accountSettingsMap[user] = accountSettings
-            })
+            },
+        )
+    }
+}
+
+private suspend fun setActiveUser(
+    context: Context, user: String?,
+) {
+    context.dataStore.updateData { appSettings ->
+        appSettings.copy(activeUser = user)
+    }
+}
+
+private suspend fun deleteUser(
+    context: Context, user: String,
+) {
+    context.dataStore.updateData { appSettings ->
+        appSettings.copy(
+            activeUser = null,
+            accountSettings = appSettings.accountSettings.mutate { accountSettingsMap ->
+                accountSettingsMap.remove(user)
+            },
+        )
     }
 }
