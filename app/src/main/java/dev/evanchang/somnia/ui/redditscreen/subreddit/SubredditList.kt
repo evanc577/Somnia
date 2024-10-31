@@ -115,6 +115,19 @@ fun SubredditList(
             state = listState,
             verticalArrangement = Arrangement.spacedBy(CARD_SPACING)
         ) {
+            // Show error card on refresh error
+            when (val s = lazySubmissionItems.loadState.refresh) {
+                is LoadState.Error -> item {
+                    ErrorCard(
+                        onRetry = onRefresh,
+                        message = s.error.message,
+                    )
+                }
+
+                else -> {}
+            }
+
+            // List of submissions
             items(count = lazySubmissionItems.itemCount,
                 key = { index -> lazySubmissionItems[index]!!.name }) { index ->
                 val submission = lazySubmissionItems[index]
@@ -131,11 +144,17 @@ fun SubredditList(
                 }
             }
 
+            // Show message if paging has finished
+            if (lazySubmissionItems.loadState.append.endOfPaginationReached) {
+                item { EndOfPaging() }
+            }
+
+            // Show error card on append error
             when (val s = lazySubmissionItems.loadState.append) {
                 is LoadState.Loading -> item { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) }
                 is LoadState.Error -> item {
                     ErrorCard(
-                        lazySubmissionItems = lazySubmissionItems,
+                        onRetry = { lazySubmissionItems.retry() },
                         message = s.error.message,
                     )
                 }
@@ -143,6 +162,7 @@ fun SubredditList(
                 else -> Unit
             }
 
+            // Don't draw under nav bar
             item {
                 Spacer(modifier = Modifier.height(bottomPadding))
             }
@@ -152,12 +172,10 @@ fun SubredditList(
 
 @Composable
 private fun ErrorCard(
-    lazySubmissionItems: LazyPagingItems<Submission>, message: String?
+    onRetry: () -> Unit, message: String?
 ) {
     Card(
-        onClick = {
-            lazySubmissionItems.retry()
-        },
+        onClick = onRetry,
         shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
     ) {
@@ -180,5 +198,17 @@ private fun ErrorCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EndOfPaging() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(SPACER_SIZE),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = "No more items")
     }
 }
