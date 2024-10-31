@@ -39,6 +39,9 @@ class MainActivity : ComponentActivity() {
                 } else {
                     RedditHttpClient.logout()
                 }
+
+                val userAgent = appSettings?.apiSettings?.redditUserAgent
+                RedditHttpClient.setUserAgent(userAgent)
             }
 
             SomniaTheme {

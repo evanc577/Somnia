@@ -10,6 +10,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
@@ -29,7 +30,9 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                 url {
                     protocol = this@RedditApiImpl.protocol
                     host = this@RedditApiImpl.host
-                    appendPathSegments("r", subreddit, encodeSlash = true)
+                    if (subreddit.isNotEmpty()) {
+                        appendPathSegments("r", subreddit, encodeSlash = true)
+                    }
                     appendPathSegments(sort.toString())
                     appendPathSegments(".json")
                     parameters.append("after", after)
@@ -131,6 +134,7 @@ private suspend inline fun <reified T> doRequest(request: () -> HttpResponse): A
     }
 
     val body: T = try {
+        val text = response.bodyAsText()
         response.body()
     } catch (e: Exception) {
         return ApiResult.Err(e.toString())

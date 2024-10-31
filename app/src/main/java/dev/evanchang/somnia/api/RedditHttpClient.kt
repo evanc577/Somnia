@@ -38,21 +38,30 @@ object UnauthenticatedHttpClient {
 // Create custom replacement for Ktor bearer auth plugin that supports multiple status codes to retry
 // on other than just 401
 class BearerAuthPluginConfig {
+    var getUserAgent: suspend () -> String? = { null }
     var loadTokens: suspend () -> BearerTokens? = { null }
     var refreshTokens: suspend () -> BearerTokens? = { null }
 }
 
 val BearerAuthPlugin = createClientPlugin("CustomHeaderPlugin", ::BearerAuthPluginConfig) {
+    val userAgent = pluginConfig.getUserAgent
     val loadTokens = pluginConfig.loadTokens
     val refreshTokens = pluginConfig.refreshTokens
 
     onRequest { request, _ ->
+        // Add auth tokens
         var tokens = loadTokens()
         if (tokens == null) {
             tokens = refreshTokens()
         }
         if (tokens != null) {
             request.headers.append("authorization", "bearer ${tokens.accessToken}")
+        }
+
+        // Add user-agent
+        val userAgent = userAgent()
+        if (userAgent != null) {
+            request.headers.append("user-agent", userAgent)
         }
     }
     on(Send) { request ->
@@ -70,6 +79,7 @@ val BearerAuthPlugin = createClientPlugin("CustomHeaderPlugin", ::BearerAuthPlug
 }
 
 object RedditHttpClient {
+    private var userAgent: String? = null
     private var account: AccountSettings? = null
     private var bearerToken: String? = null
 
@@ -82,6 +92,10 @@ object RedditHttpClient {
         this.bearerToken = null
     }
 
+    fun setUserAgent(ua: String?) {
+        userAgent = ua
+    }
+
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(Json {
@@ -91,6 +105,7 @@ object RedditHttpClient {
             })
         }
         install(BearerAuthPlugin) {
+            getUserAgent = { userAgent }
             loadTokens = {
                 val accountVal = account
                 val bearerTokenVal = bearerToken
@@ -128,7 +143,7 @@ object RedditHttpClient {
                     Log.d("ktor", message)
                 }
             }
-            level = LogLevel.HEADERS
+            level = LogLevel.ALL
         }
     }
 }

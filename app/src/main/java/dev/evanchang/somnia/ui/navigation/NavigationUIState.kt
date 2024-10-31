@@ -11,7 +11,7 @@ data class NavigationUIState(
     val navigationBackStack: SnapshotStateList<NavigationBackStackEntry> = mutableStateListOf(
         NavigationBackStackEntry.SubredditBackStackEntry(
             viewModel = SubredditViewModel(
-                subreddit = "dreamcatcher",
+                subreddit = "",
                 sort = defaultSubmissionSort,
             )
         )

@@ -194,7 +194,11 @@ fun SubredditScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(text = "r/${subredditViewModel.subreddit}")
+                        if (subredditViewModel.subreddit.isEmpty()) {
+                            Text(text = "Frontpage")
+                        } else {
+                            Text(text = "r/${subredditViewModel.subreddit}")
+                        }
                     },
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
