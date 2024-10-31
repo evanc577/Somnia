@@ -10,6 +10,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonNames
 import java.time.Instant
 import kotlin.math.roundToInt
@@ -93,9 +94,13 @@ data class Submission(
 
         val galleryPreviewImages = galleryData?.items?.firstOrNull()?.let { item ->
             val metadata = mediaMetadata?.get(item.mediaId) ?: return@let null
-            val images = arrayListOf(metadata.source)
-            images.addAll(metadata.resolutions)
-            images
+            if (metadata is MediaMetadata.MediaMetadataImage) {
+                val images = arrayListOf(metadata.source)
+                images.addAll(metadata.resolutions)
+                images
+            } else {
+                null
+            }
         }
         if (galleryPreviewImages != null) {
             return galleryPreviewImages
@@ -125,9 +130,13 @@ data class Submission(
 
         return galleryData?.items?.map { item ->
             val metadata = mediaMetadata?.get(item.mediaId) ?: return@map null
-            val ext =
-                MimeTypeMap.getSingleton().getExtensionFromMimeType(metadata.mimeType) ?: "jpg"
-            "https://i.redd.it/${item.mediaId}.${ext}"
+            if (metadata is MediaMetadata.MediaMetadataImage) {
+                val ext =
+                    MimeTypeMap.getSingleton().getExtensionFromMimeType(metadata.mimeType) ?: "jpg"
+                "https://i.redd.it/${item.mediaId}.${ext}"
+            } else {
+                null
+            }
         }?.filterNotNull()?.toImmutableList()
     }
 
@@ -182,13 +191,32 @@ data class PreviewImage @OptIn(ExperimentalSerializationApi::class) constructor(
     }
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @Keep
 @Serializable
-data class MediaMetadata(
-    @SerialName("s") val source: PreviewImage,
-    @SerialName("p") val resolutions: SerializableImmutableList<PreviewImage>,
-    @SerialName("m") val mimeType: String,
-)
+@JsonClassDiscriminator("e")
+sealed class MediaMetadata {
+    @Keep
+    @Serializable
+    @SerialName("Image")
+    data class MediaMetadataImage(
+        @SerialName("s") val source: PreviewImage,
+        @SerialName("p") val resolutions: SerializableImmutableList<PreviewImage>,
+        @SerialName("m") val mimeType: String,
+    ) : MediaMetadata()
+
+    @Keep
+    @Serializable
+    @SerialName("RedditVideo")
+    data class MediaMetadataRedditVideo(
+        val dashUrl: String,
+        val hlsUrl: String,
+        @SerialName("x") val width: Int,
+        @SerialName("y") val height: Int,
+        val id: String,
+        val isGif: Boolean,
+    ) : MediaMetadata()
+}
 
 @Keep
 @Serializable

@@ -269,6 +269,7 @@ fun SubredditScreen(
                     listState = listState,
                     screenSize = navigationViewModel.screenSize.value,
                     topPadding = topPadding,
+                    bottomPadding = with(density) { navBarHeightPx.toDp() },
                     onClickSubreddit = { subreddit ->
                         navigationViewModel.pushSubredditScreen(
                             SubredditViewModel(

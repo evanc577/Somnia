@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +37,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.CARD_SPACING
+import dev.evanchang.somnia.ui.UiConstants.ROUNDED_CORNER_RADIUS
 import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
@@ -50,6 +52,7 @@ fun SubredditList(
     listState: LazyListState,
     screenSize: Offset,
     topPadding: Dp,
+    bottomPadding: Dp,
     onClickSubreddit: (String) -> Unit,
     onClickSubmission: (Submission) -> Unit,
 ) {
@@ -129,7 +132,7 @@ fun SubredditList(
             }
 
             when (val s = lazySubmissionItems.loadState.append) {
-                is LoadState.Loading -> item { LinearProgressIndicator() }
+                is LoadState.Loading -> item { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) }
                 is LoadState.Error -> item {
                     ErrorCard(
                         lazySubmissionItems = lazySubmissionItems,
@@ -138,6 +141,10 @@ fun SubredditList(
                 }
 
                 else -> Unit
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(bottomPadding))
             }
         }
     }
@@ -151,6 +158,7 @@ private fun ErrorCard(
         onClick = {
             lazySubmissionItems.retry()
         },
+        shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
     ) {
         Box(modifier = Modifier.padding(CARD_PADDING)) {
