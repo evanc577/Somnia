@@ -42,7 +42,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +53,8 @@ import coil3.request.crossfade
 import coil3.request.maxBitmapSize
 import coil3.size.Dimension
 import coil3.size.Size
+import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
+import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 import dev.evanchang.somnia.ui.util.ImageLoading
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -178,7 +179,7 @@ fun GalleryViewer(
                     "Image ${pagerState.currentPage + 1}/${images.size}",
                     fontSize = 20.sp,
                     color = Color.White,
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(CARD_PADDING),
                 )
             }
         }
@@ -199,7 +200,7 @@ private fun ImageError(onRetry: () -> Unit = {}) {
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.error
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(SPACER_SIZE))
             Text(
                 text = "Image failed to load",
                 style = TextStyle(
@@ -208,7 +209,7 @@ private fun ImageError(onRetry: () -> Unit = {}) {
                 color = Color.White,
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(SPACER_SIZE))
         Button(
             onClick = onRetry,
             colors = ButtonDefaults.buttonColors().copy(

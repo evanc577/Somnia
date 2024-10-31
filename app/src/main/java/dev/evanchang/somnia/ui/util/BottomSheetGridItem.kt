@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.evanchang.somnia.ui.UiConstants.CARD_SPACING
+import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 
 @Composable
 fun BottomSheetGridItem(
@@ -31,12 +33,12 @@ fun BottomSheetGridItem(
     Box(modifier = Modifier.clickable { onClick() }, contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(CARD_SPACING),
         ) {
             Icon(
                 imageVector = icon, contentDescription = label, modifier = Modifier.size(52.dp)
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(SPACER_SIZE))
             Text(
                 text = label,
                 textAlign = TextAlign.Center,
@@ -54,8 +56,7 @@ private fun BottomSheetGridItemPreview() {
             BottomSheetGridItem(icon = Icons.Default.Settings, label = "Settings", onClick = {})
         }
         Surface {
-            BottomSheetGridItem(
-                icon = Icons.Default.Settings,
+            BottomSheetGridItem(icon = Icons.Default.Settings,
                 label = "This is a long name",
                 onClick = {})
         }

@@ -57,6 +57,10 @@ import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
+import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
+import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
+import dev.evanchang.somnia.ui.UiConstants.ROUNDED_CORNER_RADIUS
+import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 import eu.wewox.textflow.material3.TextFlow
@@ -67,9 +71,6 @@ import kotlinx.collections.immutable.toImmutableList
 enum class SubmissionCardMode {
     PREVIEW_FULL, DETAILS,
 }
-
-private val ROUNDED_CORNER_RADIUS = 4.dp
-private val SPACER_SIZE = 8.dp
 
 @Composable
 fun SubmissionCard(
@@ -89,10 +90,9 @@ fun SubmissionCard(
         modifier = Modifier
             .thenIf(onClickSubmission != null) {
                 Modifier.clickable { onClickSubmission!!(submission) }
-            }
-            .padding(vertical = 4.dp),
+            },
     ) {
-        Column(modifier = Modifier.padding(all = 16.dp)) {
+        Column(modifier = Modifier.padding(all = CARD_PADDING)) {
             SubmissionCardHeader(
                 submission = submission,
                 onClickSubreddit = onClickSubreddit,
@@ -155,7 +155,7 @@ fun SubmissionCard(
                             SubmissionCardMode.DETAILS -> null
                         },
                         modifier = Modifier
-                            .padding(8.dp)
+                            .padding(BODY_TEXT_PADDING)
                             .fillMaxWidth(),
                     )
                 }

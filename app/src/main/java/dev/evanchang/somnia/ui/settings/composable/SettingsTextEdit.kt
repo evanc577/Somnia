@@ -29,6 +29,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.alorma.compose.settings.ui.base.internal.SettingsTileScaffold
+import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
+import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
+import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 
 @Composable
 fun SettingsTextEdit(
@@ -80,13 +83,13 @@ private fun SettingsTextEditDialog(
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(CARD_PADDING)) {
                 Text(text = title, style = MaterialTheme.typography.headlineSmall)
                 if (description != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(DIALOG_HEADER_SPACING))
                     Text(text = description)
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(DIALOG_HEADER_SPACING))
                 OutlinedTextField(
                     value = value,
                     onValueChange = onValueChange,
@@ -98,7 +101,7 @@ private fun SettingsTextEditDialog(
                     singleLine = true,
                     modifier = Modifier.focusRequester(focusRequester),
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SPACER_SIZE))
                 Row(
                     modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
                 ) {

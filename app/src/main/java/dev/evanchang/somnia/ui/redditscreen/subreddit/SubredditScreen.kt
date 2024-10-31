@@ -81,6 +81,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.SubmissionSort
+import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
+import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
 import dev.evanchang.somnia.ui.navigation.NavigationViewModel
 import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionViewModel
@@ -201,7 +203,10 @@ fun SubredditScreen(
                         }
                     },
                     scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ),
                     modifier = Modifier.clickable { scrollToTop = true },
                 )
             },
@@ -340,9 +345,9 @@ private fun BottomSheet(
     if (showGoToSubreddit) {
         Dialog(onDismissRequest = { showGoToSubreddit = false }) {
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(CARD_PADDING)) {
                     Text(text = "Go to subreddit", style = MaterialTheme.typography.headlineSmall)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(DIALOG_HEADER_SPACING))
                     OutlinedTextField(
                         value = goToSubredditValue,
                         onValueChange = { goToSubredditValue = it },

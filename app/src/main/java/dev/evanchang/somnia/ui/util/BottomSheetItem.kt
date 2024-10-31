@@ -22,8 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
+import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 
 @Composable
 fun BottomSheetItem(
@@ -36,11 +37,11 @@ fun BottomSheetItem(
         .fillMaxWidth()
         .clickable { onClick() }) {
         Row(
-            modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp),
+            modifier = Modifier.padding(CARD_PADDING),
             verticalAlignment = Alignment.CenterVertically
         ) {
             leadingIcon()
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(SPACER_SIZE))
             Text(
                 text = text,
                 modifier = Modifier.weight(1f),

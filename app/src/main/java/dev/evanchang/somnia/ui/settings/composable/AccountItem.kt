@@ -1,6 +1,5 @@
 package dev.evanchang.somnia.ui.settings.composable
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -25,15 +23,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.appSettings.AccountSettings
+import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
+import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
+import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 
 @Composable
 fun AccountItem(
@@ -53,43 +53,43 @@ fun AccountItem(
         )
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onSetActiveUser()
-            }
-            .height(40.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Spacer(modifier = Modifier.width(8.dp))
-        Icon(
-            imageVector = Icons.Default.CheckCircle,
-            contentDescription = "active user icon",
-            tint = if (isActiveUser) {
-                MaterialTheme.colorScheme.primary
+    SettingsMenuLink(
+        modifier = Modifier.fillMaxWidth(),
+        title = {
+            val usernameText = if (username == null) {
+                "Anonymous"
             } else {
-                Color.Black.copy(alpha = 0f)
+                "u/${username}"
             }
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        val usernameText = if (username == null) {
-            "Anonymous"
-        } else {
-            "u/${username}"
-        }
-        Text(
-            text = usernameText, style = MaterialTheme.typography.bodyLarge.copy(
-                platformStyle = PlatformTextStyle(includeFontPadding = false)
+            Text(
+                text = usernameText, style = MaterialTheme.typography.bodyLarge.copy(
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                )
             )
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        if (accountSettings != null) {
-            IconButton(onClick = { showAccountSettingsDialog = true }) {
-                Icon(imageVector = Icons.Default.Settings, contentDescription = "account settings")
+        },
+        icon = {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = "active user icon",
+                tint = if (isActiveUser) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    Color.Black.copy(alpha = 0f)
+                }
+            )
+        },
+        action = {
+            if (accountSettings != null) {
+                IconButton(onClick = { showAccountSettingsDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "account settings"
+                    )
+                }
             }
-        }
-    }
+        },
+        onClick = onSetActiveUser,
+    )
 }
 
 @Composable
@@ -103,33 +103,32 @@ private fun AccountSettingsDialog(
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(CARD_PADDING)) {
                 Text(text = "Account details", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(DIALOG_HEADER_SPACING))
 
                 // Username
                 Text(text = "User", style = MaterialTheme.typography.labelLarge)
                 SelectionContainer {
                     Text(text = username)
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SPACER_SIZE))
 
                 // Client ID
                 Text(text = "Client ID", style = MaterialTheme.typography.labelLarge)
                 SelectionContainer {
                     Text(text = accountSettings.clientId, fontFamily = FontFamily.Monospace)
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SPACER_SIZE))
 
                 // Redirect URI
                 Text(text = "Redirect URI", style = MaterialTheme.typography.labelLarge)
                 SelectionContainer {
                     Text(text = accountSettings.redirectUri, fontFamily = FontFamily.Monospace)
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(SPACER_SIZE))
 
                 // Action buttons
-                Spacer(modifier = Modifier.height(4.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     if (!showDeleteConfirm) {
                         TextButton(onClick = { showDeleteConfirm = true }) {

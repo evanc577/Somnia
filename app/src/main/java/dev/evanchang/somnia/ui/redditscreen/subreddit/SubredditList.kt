@@ -1,5 +1,6 @@
 package dev.evanchang.somnia.ui.redditscreen.subreddit
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,12 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
+import dev.evanchang.somnia.ui.UiConstants.CARD_SPACING
+import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.util.SubmissionCard
@@ -107,6 +110,7 @@ fun SubredditList(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = listState,
+            verticalArrangement = Arrangement.spacedBy(CARD_SPACING)
         ) {
             items(count = lazySubmissionItems.itemCount,
                 key = { index -> lazySubmissionItems[index]!!.name }) { index ->
@@ -148,9 +152,8 @@ private fun ErrorCard(
             lazySubmissionItems.retry()
         },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
-        modifier = Modifier.padding(4.dp)
     ) {
-        Box(modifier = Modifier.padding(8.dp)) {
+        Box(modifier = Modifier.padding(CARD_PADDING)) {
             Column {
                 Text(
                     text = "Could not fetch posts, tap to retry",
@@ -160,7 +163,7 @@ private fun ErrorCard(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 if (message != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(SPACER_SIZE))
                     Text(
                         text = "$message",
                         style = MaterialTheme.typography.labelMedium,
