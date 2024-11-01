@@ -107,6 +107,7 @@ dependencies {
     implementation(libs.ktor.client.serialization)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.logback.android)
+    implementation(libs.markwon.core)
     implementation(libs.material.icons.extended)
     implementation(libs.media3.common)
     implementation(libs.media3.datasource)

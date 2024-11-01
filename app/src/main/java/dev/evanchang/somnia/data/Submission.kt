@@ -25,6 +25,7 @@ data class Submission(
     val id: String,
     val author: String,
     val subreddit: String,
+    val permalink: String,
     private val title: String,
     val selftext: String,
     @SerialName("post_hint") val postHint: PostHint?,

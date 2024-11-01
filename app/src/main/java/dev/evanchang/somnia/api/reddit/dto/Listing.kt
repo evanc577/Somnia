@@ -4,6 +4,7 @@ package dev.evanchang.somnia.api.reddit.dto
 
 import androidx.annotation.Keep
 import dev.evanchang.somnia.data.Comment
+import dev.evanchang.somnia.data.More
 import dev.evanchang.somnia.data.Submission
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -36,4 +37,8 @@ sealed class Thing {
     @Serializable
     @SerialName("t1")
     class CommentThing(@SerialName("data") val comment: Comment) : Thing()
+    @Keep
+    @Serializable
+    @SerialName("more")
+    class MoreThing(@SerialName("data") val more: More) : Thing()
 }

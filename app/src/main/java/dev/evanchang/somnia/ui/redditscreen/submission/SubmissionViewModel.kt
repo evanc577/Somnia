@@ -2,6 +2,8 @@ package dev.evanchang.somnia.ui.redditscreen.submission
 
 import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.reddit.RedditApiInstance
+import dev.evanchang.somnia.api.reddit.dto.RedditResponse
+import dev.evanchang.somnia.api.reddit.dto.Thing
 import dev.evanchang.somnia.data.Comment
 import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.Submission
@@ -34,11 +36,25 @@ class SubmissionViewModel(
             is ApiResult.Err -> return ApiResult.Err(r.message)
             is ApiResult.Ok -> {
                 _submission.value = r.value.submission
-                _comments.value = r.value.comments.toPersistentList()
+                _comments.value = walkComments(r.value.comments).toPersistentList()
             }
         }
 
         return ApiResult.Ok(Unit)
+    }
+
+    private fun walkComments(commentsTree: List<Comment>): Sequence<Comment> {
+        return sequence {
+            for (comment in commentsTree) {
+                yield(comment)
+                if (comment.replies != null && comment.replies is RedditResponse.Listing) {
+                    yieldAll(
+                        walkComments(comment.replies.data.children.filterIsInstance<Thing.CommentThing>()
+                            .map { ct -> ct.comment })
+                    )
+                }
+            }
+        }
     }
 
     private var _mediaViewerState: MutableStateFlow<MediaViewerState> =

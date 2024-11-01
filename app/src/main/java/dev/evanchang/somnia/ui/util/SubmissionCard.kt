@@ -492,5 +492,6 @@ private fun createFakeSubmission(): Submission {
         numComments = 20,
         created = 1700000000f,
         galleryData = null,
+        permalink = "",
     )
 }

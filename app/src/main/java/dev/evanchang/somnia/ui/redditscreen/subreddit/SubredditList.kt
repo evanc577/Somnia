@@ -128,8 +128,10 @@ fun SubredditList(
             }
 
             // List of submissions
-            items(count = lazySubmissionItems.itemCount,
-                key = { index -> lazySubmissionItems[index]!!.name }) { index ->
+            items(
+                count = lazySubmissionItems.itemCount,
+                key = { index -> lazySubmissionItems[index]!!.name },
+            ) { index ->
                 val submission = lazySubmissionItems[index]
                 if (submission != null) {
                     SubmissionCard(
