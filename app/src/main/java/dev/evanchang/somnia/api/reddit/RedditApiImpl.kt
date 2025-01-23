@@ -37,6 +37,7 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                     appendPathSegments(".json")
                     parameters.append("after", after)
                     parameters.append("limit", limit.toString())
+                    parameters.append("raw_json", "1")
                 }
             }
         }
@@ -83,6 +84,7 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                     parameters.append("sort", commentSort.toString())
                     parameters.append("after", after)
                     parameters.append("limit", limit.toString())
+                    parameters.append("raw_json", "1")
                 }
             }
         }

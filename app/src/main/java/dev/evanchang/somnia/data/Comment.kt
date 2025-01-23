@@ -12,6 +12,11 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import java.time.Instant
+import kotlin.math.roundToInt
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Keep
 @Serializable
@@ -26,7 +31,11 @@ data class Comment(
     private val created: Float,
     val depth: Int,
     @Serializable(with = NullableRedditResponseSerializer::class) val replies: RedditResponse?,
-)
+) : ElapsedTime {
+    override fun elapsedTime(): Duration {
+        return (Instant.now().epochSecond - created).roundToInt().toDuration(DurationUnit.SECONDS)
+    }
+}
 
 @Keep
 @Serializable

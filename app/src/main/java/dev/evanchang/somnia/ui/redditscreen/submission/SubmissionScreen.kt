@@ -1,12 +1,11 @@
 package dev.evanchang.somnia.ui.redditscreen.submission
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,8 +19,13 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,8 +53,6 @@ fun SubmissionScreen(
     LaunchedEffect(Unit) {
         submissionViewModel.loadInitial()
     }
-
-    val context = LocalContext.current
 
     val submission by submissionViewModel.submission.collectAsStateWithLifecycle()
     val comments by submissionViewModel.comments.collectAsStateWithLifecycle()
@@ -126,25 +128,52 @@ private fun CommentItem(
     comment: Comment,
     baseDepth: Int,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-    ) {
-        for (i in baseDepth..<comment.depth) {
-            VerticalDivider(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp),
-            )
+    val density = LocalDensity.current
+    val scoreTimeSepColor = MaterialTheme.colorScheme.onSurface
+    var height by remember { mutableStateOf(0.dp) }
+
+    Row(modifier = Modifier.onSizeChanged { with(density) { height = it.height.toDp() } }) {
+        // Indent guides
+        Row {
+            repeat(comment.depth - baseDepth) {
+                VerticalDivider(
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .height(height),
+                )
+            }
         }
-        Column(modifier = Modifier.padding(BODY_TEXT_PADDING)) {
-            Row {
+
+        // Comment
+        Column(
+            modifier = Modifier.padding(BODY_TEXT_PADDING)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "u/${comment.author}",
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.weight(1.0f))
+                Text(
+                    text = if (comment.scoreHidden) {
+                        "?"
+                    } else {
+                        comment.score.toString()
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                Canvas(modifier = Modifier.padding(horizontal = 4.dp), onDraw = {
+                    drawCircle(
+                        color = scoreTimeSepColor,
+                        radius = 3f,
+                    )
+                })
+                Text(
+                    text = comment.elapsedTimeString(),
+                    style = MaterialTheme.typography.labelMedium,
+                )
             }
             SomniaMarkdown(
                 content = comment.body,
@@ -153,6 +182,7 @@ private fun CommentItem(
         }
     }
 }
+
 
 @Preview
 @Composable
@@ -166,7 +196,7 @@ private fun CommentItemPreview() {
         score = 2,
         scoreHidden = false,
         created = 0f,
-        depth = 3,
+        depth = 8,
         replies = null,
     )
 

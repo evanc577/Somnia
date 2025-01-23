@@ -30,6 +30,7 @@ telephoto = "0.13.0"
 textflow = "1.2.1"
 junitJupiter = "5.8.1"
 appcompat = "1.7.0"
+composeTesting = "1.0.0-alpha01"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
