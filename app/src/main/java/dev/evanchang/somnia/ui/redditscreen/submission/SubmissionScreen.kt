@@ -1,8 +1,8 @@
 package dev.evanchang.somnia.ui.redditscreen.submission
 
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,26 +12,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListPrefetchStrategy
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Card
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.evanchang.markdown.MarkdownText
 import dev.evanchang.somnia.appSettings.AppSettings
+import dev.evanchang.somnia.data.Comment
 import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
 import dev.evanchang.somnia.ui.navigation.NavigationViewModel
 import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditViewModel
+import dev.evanchang.somnia.ui.util.SomniaMarkdown
 import dev.evanchang.somnia.ui.util.SubmissionCard
 import dev.evanchang.somnia.ui.util.SubmissionCardMode
 
@@ -51,6 +54,7 @@ fun SubmissionScreen(
 
     val submission by submissionViewModel.submission.collectAsStateWithLifecycle()
     val comments by submissionViewModel.comments.collectAsStateWithLifecycle()
+    val topCommentDepth = comments.firstOrNull()?.depth ?: 0
 
     // Media viewer
     val mediaViewerState = submissionViewModel.mediaViewerState.collectAsStateWithLifecycle()
@@ -81,6 +85,7 @@ fun SubmissionScreen(
                         .padding(padding)
                         .fillMaxSize(),
                 ) {
+                    // Submission body
                     item(key = submissionVal.name) {
                         SubmissionCard(
                             submission = submissionVal,
@@ -97,6 +102,7 @@ fun SubmissionScreen(
                         )
                     }
 
+                    // Comments
                     items(
                         count = comments.size,
                         key = { index ->
@@ -104,30 +110,67 @@ fun SubmissionScreen(
                         },
                     ) { index ->
                         val comment = comments[index]
-                        Spacer(modifier = Modifier.height(1.dp))
-                        Card {
-                            Column {
-                                Row {
-                                    Text(text = "u/${comment.author}")
-                                }
-                                MarkdownText(
-                                    markdownText = comment.body,
-                                    style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
-                                    highlightColor = MaterialTheme.colorScheme.primary,
-                                    onLinkClick = {
-                                        // TODO handle markdown link
-                                        Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT)
-                                            .show()
-                                    },
-                                    modifier = Modifier
-                                        .padding(BODY_TEXT_PADDING)
-                                        .fillMaxWidth(),
-                                )
-                            }
-                        }
+                        CommentItem(
+                            comment = comment,
+                            baseDepth = topCommentDepth,
+                        )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CommentItem(
+    comment: Comment,
+    baseDepth: Int,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+    ) {
+        for (i in baseDepth..<comment.depth) {
+            VerticalDivider(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp),
+            )
+        }
+        Column(modifier = Modifier.padding(BODY_TEXT_PADDING)) {
+            Row {
+                Text(
+                    text = "u/${comment.author}",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.weight(1.0f))
+            }
+            SomniaMarkdown(
+                content = comment.body,
+                isPreview = false,
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun CommentItemPreview() {
+    val comment = Comment(
+        name = "1",
+        id = "1",
+        author = "author",
+        permalink = "",
+        body = "comment body",
+        score = 2,
+        scoreHidden = false,
+        created = 0f,
+        depth = 3,
+        replies = null,
+    )
+
+    Surface {
+        CommentItem(comment, 0)
     }
 }

@@ -30,7 +30,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,7 +51,11 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
-import dev.evanchang.markdown.MarkdownText
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownColor
+import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.markdownAnimations
+import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
@@ -87,10 +90,9 @@ fun SubmissionCard(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
         shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
-        modifier = Modifier
-            .thenIf(onClickSubmission != null) {
-                Modifier.clickable { onClickSubmission!!(submission) }
-            },
+        modifier = Modifier.thenIf(onClickSubmission != null) {
+            Modifier.clickable { onClickSubmission!!(submission) }
+        },
     ) {
         Column(modifier = Modifier.padding(all = CARD_PADDING)) {
             SubmissionCardHeader(
@@ -137,27 +139,21 @@ fun SubmissionCard(
                         .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
                     shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
                 ) {
-                    MarkdownText(
-                        markdownText = submission.selftext,
-                        style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface),
-                        highlightColor = MaterialTheme.colorScheme.primary,
-                        onClick = if (onClickSubmission != null) {
-                            { onClickSubmission(submission) }
-                        } else {
-                            null
-                        },
-                        onLinkClick = {
-                            // TODO handle markdown link
-                            Toast.makeText(context, "TODO: $it", Toast.LENGTH_SHORT).show()
-                        },
-                        previewLines = when (mode) {
-                            SubmissionCardMode.PREVIEW_FULL -> 5
-                            SubmissionCardMode.DETAILS -> null
-                        },
-                        modifier = Modifier
-                            .padding(BODY_TEXT_PADDING)
-                            .fillMaxWidth(),
-                    )
+                    when (mode) {
+                        SubmissionCardMode.PREVIEW_FULL -> SomniaMarkdown(
+                            content = submission.selftext,
+                            isPreview = true,
+                            modifier = Modifier.padding(BODY_TEXT_PADDING).fillMaxWidth(),
+                        )
+
+                        SubmissionCardMode.DETAILS -> SomniaMarkdown(
+                            content = submission.selftext,
+                            isPreview = false,
+                            modifier = Modifier
+                                .padding(BODY_TEXT_PADDING)
+                                .fillMaxWidth(),
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(SPACER_SIZE))
