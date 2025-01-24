@@ -40,6 +40,18 @@ sealed class Media : MediaResolver {
         }
     }
 
+    class ImgurAlbum(val id: String) : Media() {
+        override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
+            return Imgur().getAlbum(id)
+        }
+    }
+
+    class ImgurMedia(val id: String) : Media() {
+        override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
+            return Imgur().getMedia(id)
+        }
+    }
+
     class Redgifs(val id: String) : Media() {
         override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
             return ApiResult.Ok(
@@ -72,7 +84,8 @@ data class MediaItem(
 
 private object MediaRegexManager {
     val streamableRe = Regex("https?://(?:\\w+\\.)?streamable\\.com/(\\w+)")
-    val imgurRe = 
+    val imgurAlbumRe = Regex("https?://imgur\\.com\\/a\\/[^/]*?(\\w+)(?:\$|/)")
+    val imgurMediaRe = Regex("https?://(?:i\\.)?imgur\\.com/[^/]*?(\\w+)(?:\$|/|\\.\\w+)")
     val redgifsRe = Regex("https?://(?:\\w+\\.)?redgifs\\.com/watch/(\\w+)")
 }
 
@@ -83,6 +96,24 @@ fun parseMediaFromUrl(url: String): Media? {
         val id = m?.groups?.get(1)?.value
         if (id != null) {
             return Media.Streamable(id)
+        }
+    }
+
+    // Imgur album
+    run {
+        val m = MediaRegexManager.imgurAlbumRe.find(url)
+        val id = m?.groups?.get(1)?.value
+        if (id != null) {
+            return Media.ImgurAlbum(id)
+        }
+    }
+
+    // Imgur media
+    run {
+        val m = MediaRegexManager.imgurMediaRe.find(url)
+        val id = m?.groups?.get(1)?.value
+        if (id != null) {
+            return Media.ImgurMedia(id)
         }
     }
 
