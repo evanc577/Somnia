@@ -3,6 +3,8 @@ package dev.evanchang.somnia.data
 import android.text.Html
 import android.webkit.MimeTypeMap
 import androidx.annotation.Keep
+import dev.evanchang.somnia.api.media.Media
+import dev.evanchang.somnia.api.media.parseMediaFromUrl
 import dev.evanchang.somnia.serializer.SerializableImmutableList
 import dev.evanchang.somnia.serializer.SerializableImmutableMap
 import kotlinx.collections.immutable.ImmutableList
@@ -32,6 +34,7 @@ data class Submission(
     @SerialName("is_gallery") val isGallery: Boolean?,
     @SerialName("gallery_data") val galleryData: GalleryData?,
     val url: String,
+    val domain: String,
     private val preview: SubmissionPreview?,
     @SerialName("media_metadata") private val mediaMetadata: SerializableImmutableMap<String, MediaMetadata>?,
     @SerialName("secure_media") private val media: SecureMedia?,
@@ -98,7 +101,7 @@ data class Submission(
     fun media(): Media? {
         val images = images()
         if (images != null) {
-            return Media.Images(images)
+            return Media.RedditGallery(images)
         }
 
         val video = video()
@@ -106,7 +109,7 @@ data class Submission(
             return Media.RedditVideo(video)
         }
 
-        return null
+        return parseMediaFromUrl(url)
     }
 
     private fun images(): ImmutableList<String>? {
@@ -136,18 +139,6 @@ data class Submission(
 
 @Keep
 @Serializable
-sealed class Media {
-    @Keep
-    @Serializable
-    class Images(val images: ImmutableList<String>) : Media()
-
-    @Keep
-    @Serializable
-    class RedditVideo(val video: String) : Media()
-}
-
-@Keep
-@Serializable
 data class SubmissionPreview(
     val images: SerializableImmutableList<PreviewImages>,
 )
@@ -163,9 +154,7 @@ data class PreviewImages(
 @Serializable
 data class PreviewImage @OptIn(ExperimentalSerializationApi::class) constructor(
     @SerialName(value = "url") @JsonNames("u") private val url: String,
-
     @SerialName(value = "width") @JsonNames("x") val width: Int,
-
     @SerialName(value = "height") @JsonNames("y") val height: Int,
 ) {
     fun escapedUrl(): String {
@@ -177,6 +166,21 @@ data class PreviewImage @OptIn(ExperimentalSerializationApi::class) constructor(
     }
 }
 
+@Keep
+@Serializable
+data class PreviewAnimatedImage @OptIn(ExperimentalSerializationApi::class) constructor(
+    @SerialName(value = "mp4") @JsonNames("u") private val mp4Url: String,
+    @SerialName(value = "width") @JsonNames("x") val width: Int,
+    @SerialName(value = "height") @JsonNames("y") val height: Int,
+) {
+    fun escapedUrl(): String {
+        return escapeString(mp4Url)
+    }
+
+    fun numPixels(): Int {
+        return width * height
+    }
+}
 @OptIn(ExperimentalSerializationApi::class)
 @Keep
 @Serializable
@@ -201,6 +205,15 @@ sealed class MediaMetadata {
         @SerialName("y") val height: Int,
         val id: String,
         val isGif: Boolean,
+    ) : MediaMetadata()
+
+    @Keep
+    @Serializable
+    @SerialName("AnimatedImage")
+    data class MediaMetadataAnimatedImage(
+        @SerialName("s") val source: PreviewAnimatedImage,
+        @SerialName("p") val resolutions: SerializableImmutableList<PreviewAnimatedImage>,
+        @SerialName("m") val mimeType: String,
     ) : MediaMetadata()
 }
 

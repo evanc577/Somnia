@@ -51,11 +51,6 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
-import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownColor
-import com.mikepenz.markdown.m3.markdownTypography
-import com.mikepenz.markdown.model.markdownAnimations
-import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
@@ -353,7 +348,7 @@ private fun PreviewImageLoading() {
     Box(
         modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceDim)
     ) {
-        ImageLoading()
+        MediaLoading()
     }
 }
 
@@ -472,6 +467,7 @@ private fun createFakeSubmission(): Submission {
         postHint = null,
         isGallery = null,
         url = "",
+        domain = "",
         preview = SubmissionPreview(
             persistentListOf(
                 PreviewImages(

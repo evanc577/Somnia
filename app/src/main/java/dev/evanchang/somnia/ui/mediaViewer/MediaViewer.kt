@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -20,8 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import dev.evanchang.somnia.data.Media
+import dev.evanchang.somnia.api.ApiResult
+import dev.evanchang.somnia.api.media.MediaItem
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.ui.util.MediaError
+import dev.evanchang.somnia.ui.util.MediaLoading
+import kotlinx.collections.immutable.ImmutableList
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -62,6 +69,16 @@ fun MediaViewer(
         }
     }
 
+    // Load media
+    var mediaItems: ApiResult<ImmutableList<MediaItem>>? by remember { mutableStateOf(null) }
+    var loading by remember { mutableStateOf(true) }
+    LaunchedEffect(loading) {
+        if (loading) {
+            mediaItems = media.fetchData()
+            loading = false
+        }
+    }
+
     DialogFullScreen(
         onDismissRequest = onClose,
     ) {
@@ -84,15 +101,17 @@ fun MediaViewer(
                     .offset {
                         IntOffset(
                             x = 0,
-                            y = dragState
-                                .requireOffset()
-                                .roundToInt(),
+                            y = dragState.requireOffset().roundToInt(),
                         )
                     },
             ) {
-                when (media) {
-                    is Media.Images -> GalleryViewer(media.images)
-                    is Media.RedditVideo -> VideoViewer(media.video)
+                if (loading || mediaItems == null) {
+                    MediaLoading(color = Color.White)
+                } else {
+                    when (val m = mediaItems!!) {
+                        is ApiResult.Ok -> GalleryViewer(m.value)
+                        is ApiResult.Err -> MediaError(onRetry = { loading = true })
+                    }
                 }
             }
         }

@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 @Preview
 @Composable
-fun ImageLoading(
+fun MediaLoading(
     color: Color = ProgressIndicatorDefaults.circularColor
 ) {
     Box(
