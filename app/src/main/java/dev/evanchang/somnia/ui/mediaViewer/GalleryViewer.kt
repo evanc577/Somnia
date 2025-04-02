@@ -49,6 +49,7 @@ import kotlinx.collections.immutable.toImmutableList
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.ZoomableContentLocation
+import me.saket.telephoto.zoomable.ZoomableState
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 
@@ -59,39 +60,42 @@ fun GalleryViewer(
     // Pager
     val pagerState = rememberPagerState { mediaItems.size }
 
-    // Images
     val context = LocalPlatformContext.current
     val zoomListener = remember { DoubleClickToZoomListener.cycle(maxZoomFactor = 3f) }
-    val painters = mediaItems.map { mediaItem ->
+
+    // Create list of MediaData, containing required state for either an image or video
+    val mediaData = mediaItems.map { mediaItem ->
         when (mediaItem.mediaType) {
-            MediaType.Video -> null
-            MediaType.Image -> rememberAsyncImagePainter(model = remember {
-                ImageRequest.Builder(context).data(mediaItem.url).crossfade(true).build()
-            })
-        }
-    }.toImmutableList()
-    val states = painters.map { painter ->
-        painter?.state?.collectAsStateWithLifecycle(context)
-    }.toImmutableList()
-    val zoomableStates = mediaItems.map { mediaItem ->
-        when (mediaItem.mediaType) {
-            MediaType.Video -> null
-            MediaType.Image -> rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 50f))
+            MediaType.Video -> MediaData.Video(url = mediaItem.url)
+            MediaType.Image -> {
+                val painter = rememberAsyncImagePainter(model = remember {
+                    ImageRequest.Builder(context).data(mediaItem.url).crossfade(true).build()
+                })
+                val state = painter.state.collectAsStateWithLifecycle(context)
+                val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 50f))
+                MediaData.Image(
+                    painter = painter,
+                    state = state,
+                    zoomableState = zoomableState,
+                )
+            }
         }
     }.toImmutableList()
 
     // Set zoom state edge detection after image has loaded
-    for ((state, zoomableState) in states.zip(zoomableStates)) {
-        LaunchedEffect(state?.value) {
-            if (state != null && zoomableState != null && state.value is AsyncImagePainter.State.Success) {
-                val image = (state.value as AsyncImagePainter.State.Success).result.image
-                zoomableState.setContentLocation(
-                    ZoomableContentLocation.scaledToFitAndCenterAligned(
-                        Size(
-                            image.width.toFloat(), image.height.toFloat()
+    for (md in mediaData) {
+        if (md is MediaData.Image) {
+            LaunchedEffect(md.state.value) {
+                if (md.state.value is AsyncImagePainter.State.Success) {
+                    val image = (md.state.value as AsyncImagePainter.State.Success).result.image
+                    md.zoomableState.setContentLocation(
+                        ZoomableContentLocation.scaledToFitAndCenterAligned(
+                            Size(
+                                image.width.toFloat(), image.height.toFloat()
+                            )
                         )
                     )
-                )
+                }
             }
         }
     }
@@ -129,18 +133,18 @@ fun GalleryViewer(
                     immersive = !immersive
                 },
         ) { idx ->
-            when (mediaItems[idx].mediaType) {
-                MediaType.Image -> when (states[idx]!!.value) {
+            when (val md = mediaData[idx]) {
+                is MediaData.Image -> when (md.state.value) {
                     is AsyncImagePainter.State.Success -> {
                         Image(
-                            painter = painters[idx]!!,
-                            contentDescription = "gallery image ${idx + 1}",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier
+                            md.painter, "gallery image ${idx + 1}",
+                            Modifier
                                 .fillMaxSize()
-                                .zoomable(state = zoomableStates[idx]!!,
+                                .zoomable(
+                                    state = md.zoomableState,
                                     onDoubleClick = zoomListener,
                                     onClick = { immersive = !immersive }),
+                            contentScale = ContentScale.Fit,
                         )
                     }
 
@@ -149,13 +153,13 @@ fun GalleryViewer(
                     }
 
                     is AsyncImagePainter.State.Error -> {
-                        MediaError(onRetry = { painters[idx]!!.restart() })
+                        MediaError(onRetry = { md.painter.restart() })
                     }
 
                     is AsyncImagePainter.State.Empty -> {}
                 }
 
-                MediaType.Video -> VideoViewer(mediaItems[idx].url)
+                is MediaData.Video -> VideoViewer(md.url)
             }
         }
 
@@ -183,6 +187,18 @@ fun GalleryViewer(
             }
         }
     }
+}
+
+private sealed class MediaData {
+    data class Image(
+        val painter: AsyncImagePainter,
+        val state: androidx.compose.runtime.State<Any>,
+        val zoomableState: ZoomableState,
+    ) : MediaData()
+
+    data class Video(
+        val url: String,
+    ) : MediaData()
 }
 
 @Preview
