@@ -4,6 +4,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SealedSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -15,6 +16,7 @@ typealias SerializableImmutableList<T> = @Serializable(ImmutableListSerializer::
 
 class ImmutableListSerializer<T>(private val dataSerializer: KSerializer<T?>) :
     KSerializer<ImmutableList<T>> {
+    @OptIn(SealedSerializationApi::class)
     private class ImmutableListDescriptor :
         SerialDescriptor by serialDescriptor<List<String>>() {
         @ExperimentalSerializationApi

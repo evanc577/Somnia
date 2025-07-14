@@ -4,6 +4,7 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SealedSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -17,6 +18,7 @@ class ImmutableMapSerializer<T, U>(
     private val keySerializer: KSerializer<T?>,
     private val valueSerializer: KSerializer<U?>,
 ) : KSerializer<ImmutableMap<T, U>> {
+    @OptIn(SealedSerializationApi::class)
     private class ImmutableMapDescriptor :
         SerialDescriptor by serialDescriptor<Map<String, String>>() {
         @ExperimentalSerializationApi

@@ -5,6 +5,7 @@ import dev.evanchang.somnia.api.reddit.dto.RedditResponse
 import dev.evanchang.somnia.serializer.SerializableImmutableList
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SealedSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.nullable
@@ -49,6 +50,7 @@ data class More(
 // Reddit returns null replies as an empty string, catch parse errors during decoding and convert
 // them to null instead.
 class NullableRedditResponseSerializer : KSerializer<RedditResponse?> {
+    @OptIn(SealedSerializationApi::class)
     private class RedditResponseDescriptor : SerialDescriptor by serialDescriptor<List<String>>() {
         @ExperimentalSerializationApi
         override val serialName: String = "dev.evanchang.somnia.redditresponse"
