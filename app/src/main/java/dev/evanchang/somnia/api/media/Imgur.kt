@@ -11,6 +11,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
@@ -130,6 +131,10 @@ class Imgur {
 
             if (resp.status.isSuccess()) {
                 return ApiResult.Ok(resp)
+            }
+
+            if (resp.status != HttpStatusCode.Unauthorized) {
+                return ApiResult.Err("imgur status code: ${resp.status.value}")
             }
 
             // Try refreshing client ID again if failed
