@@ -2,6 +2,7 @@ package dev.evanchang.somnia.ui.redditscreen.submission
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +43,7 @@ import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditViewModel
 import dev.evanchang.somnia.ui.util.SomniaMarkdown
 import dev.evanchang.somnia.ui.util.SubmissionCard
 import dev.evanchang.somnia.ui.util.SubmissionCardMode
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -54,9 +57,11 @@ fun SubmissionScreen(
         submissionViewModel.loadInitial()
     }
 
-    val submission by submissionViewModel.submission.collectAsStateWithLifecycle()
-    val comments by submissionViewModel.comments.collectAsStateWithLifecycle()
-    val topCommentDepth = comments.firstOrNull()?.depth ?: 0
+    val scope = rememberCoroutineScope()
+
+    val submission by submissionViewModel.submission
+    val comments = submissionViewModel.comments
+    val topCommentDepth = comments.filterIsInstance<Comment.CommentData>().firstOrNull()?.depth ?: 0
 
     // Media viewer
     val mediaViewerState = submissionViewModel.mediaViewerState.collectAsStateWithLifecycle()
@@ -82,7 +87,7 @@ fun SubmissionScreen(
         Scaffold { padding ->
             if (submissionVal != null) {
                 LazyColumn(
-                    state = rememberLazyListState(prefetchStrategy = LazyListPrefetchStrategy(100)),
+                    state = rememberLazyListState(),
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize(),
@@ -108,13 +113,18 @@ fun SubmissionScreen(
                     items(
                         count = comments.size,
                         key = { index ->
-                            comments[index].name
+                            comments[index].name()
                         },
                     ) { index ->
                         val comment = comments[index]
                         CommentItem(
                             comment = comment,
                             baseDepth = topCommentDepth,
+                            onMore = {
+                                scope.launch {
+                                    submissionViewModel.loadMore(comment.name())
+                                }
+                            },
                         )
                     }
                 }
@@ -127,15 +137,15 @@ fun SubmissionScreen(
 private fun CommentItem(
     comment: Comment,
     baseDepth: Int,
+    onMore: (String) -> Unit,
 ) {
     val density = LocalDensity.current
-    val scoreTimeSepColor = MaterialTheme.colorScheme.onSurface
     var height by remember { mutableStateOf(0.dp) }
 
     Row(modifier = Modifier.onSizeChanged { with(density) { height = it.height.toDp() } }) {
         // Indent guides
         Row {
-            repeat(comment.depth - baseDepth) {
+            repeat(comment.depth() - baseDepth) {
                 VerticalDivider(
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier
@@ -143,51 +153,63 @@ private fun CommentItem(
                         .height(height),
                 )
             }
-        }
-
-        // Comment
-        Column(
-            modifier = Modifier.padding(BODY_TEXT_PADDING)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "u/${comment.author}",
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(modifier = Modifier.weight(1.0f))
-                Text(
-                    text = if (comment.scoreHidden) {
-                        "?"
-                    } else {
-                        comment.score.toString()
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                )
-                Canvas(modifier = Modifier.padding(horizontal = 4.dp), onDraw = {
-                    drawCircle(
-                        color = scoreTimeSepColor,
-                        radius = 3f,
-                    )
-                })
-                Text(
-                    text = comment.elapsedTimeString(),
-                    style = MaterialTheme.typography.labelMedium,
-                )
+            when (comment) {
+                is Comment.CommentData -> CommentDisplay(comment)
+                is Comment.More -> CommentMoreDisplay(comment, onClick = onMore)
             }
-            SomniaMarkdown(
-                content = comment.body,
-                isPreview = false,
-            )
         }
     }
 }
 
+@Composable
+private fun CommentDisplay(comment: Comment.CommentData) {
+    val scoreTimeSepColor = MaterialTheme.colorScheme.onSurface
+
+    Column(
+        modifier = Modifier.padding(BODY_TEXT_PADDING)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "u/${comment.author}",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.weight(1.0f))
+            Text(
+                text = if (comment.scoreHidden) {
+                    "?"
+                } else {
+                    comment.score.toString()
+                },
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Canvas(modifier = Modifier.padding(horizontal = 4.dp), onDraw = {
+                drawCircle(
+                    color = scoreTimeSepColor,
+                    radius = 3f,
+                )
+            })
+            Text(
+                text = comment.elapsedTimeString(),
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
+        SomniaMarkdown(
+            content = comment.body,
+            isPreview = false,
+        )
+    }
+}
+
+@Composable
+private fun CommentMoreDisplay(more: Comment.More, onClick: (String) -> Unit) {
+    Text(text = "Load more (${more.children.size})", modifier = Modifier.clickable { onClick(more.name) })
+}
 
 @Preview
 @Composable
 private fun CommentItemPreview() {
-    val comment = Comment(
+    val comment = Comment.CommentData(
         name = "1",
         id = "1",
         author = "author",
@@ -201,6 +223,10 @@ private fun CommentItemPreview() {
     )
 
     Surface {
-        CommentItem(comment, 0)
+        CommentItem(
+            comment = comment,
+            baseDepth = 0,
+            onMore = {}
+        )
     }
 }

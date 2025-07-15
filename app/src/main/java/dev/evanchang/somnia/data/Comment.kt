@@ -3,6 +3,7 @@ package dev.evanchang.somnia.data
 import androidx.annotation.Keep
 import dev.evanchang.somnia.api.reddit.dto.RedditResponse
 import dev.evanchang.somnia.serializer.SerializableImmutableList
+import dev.evanchang.somnia.serializer.SerializablePersistentList
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SealedSerializationApi
@@ -21,31 +22,59 @@ import kotlin.time.toDuration
 
 @Keep
 @Serializable
-data class Comment(
-    val name: String,
-    val id: String,
-    val author: String,
-    val permalink: String,
-    val body: String,
-    val score: Int,
-    @SerialName("score_hidden") val scoreHidden: Boolean,
-    private val created: Float,
-    val depth: Int,
-    @Serializable(with = NullableRedditResponseSerializer::class) val replies: RedditResponse?,
-) : ElapsedTime {
-    override fun elapsedTime(): Duration {
-        return (Instant.now().epochSecond - created).roundToInt().toDuration(DurationUnit.SECONDS)
+sealed class Comment : CommentInterface {
+    @Keep
+    @Serializable
+    data class CommentData(
+        val name: String,
+        val id: String,
+        val author: String,
+        val permalink: String,
+        val body: String,
+        val score: Int,
+        @SerialName("score_hidden") val scoreHidden: Boolean,
+        private val created: Float,
+        val depth: Int,
+        @Serializable(with = NullableRedditResponseSerializer::class) val replies: RedditResponse?,
+    ) : Comment(), ElapsedTime {
+        override fun elapsedTime(): Duration {
+            return (Instant.now().epochSecond - created).roundToInt().toDuration(DurationUnit.SECONDS)
+        }
+
+        override fun name(): String {
+            return name
+        }
+
+        override fun id(): String {
+            return id
+        }
+
+        override fun depth(): Int {
+            return depth
+        }
+    }
+
+    @Keep
+    @Serializable
+    data class More(
+        val name: String,
+        val id: String,
+        val depth: Int,
+        var children: SerializablePersistentList<String>,
+    ) : Comment() {
+        override fun name(): String {
+            return "more_${name}"
+        }
+
+        override fun id(): String {
+            return id
+        }
+
+        override fun depth(): Int {
+            return depth
+        }
     }
 }
-
-@Keep
-@Serializable
-data class More(
-    val name: String,
-    val id: String,
-    val depth: Int,
-    val children: SerializableImmutableList<String>,
-)
 
 // Reddit returns null replies as an empty string, catch parse errors during decoding and convert
 // them to null instead.
@@ -70,4 +99,10 @@ class NullableRedditResponseSerializer : KSerializer<RedditResponse?> {
             null
         }
     }
+}
+
+private interface CommentInterface {
+    fun name(): String
+    fun id(): String
+    fun depth(): Int
 }

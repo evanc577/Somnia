@@ -24,12 +24,22 @@ interface RedditApi {
         parentId: String?,
         commentSort: CommentSort,
         after: String = "",
-        limit: Int = 100,
+        limit: Int = 10,
     ): ApiResult<SubmissionResponse>
 
     class SubmissionResponse(
         val submission: Submission,
         val comments: List<Comment>,
         val commentsAfter: String?,
+    )
+
+    suspend fun getMoreChildren(
+        submissionId: String,
+        children: List<String>,
+        sort: CommentSort,
+    ): ApiResult<MoreChildrenResponse>
+
+    class MoreChildrenResponse(
+        val comments: List<Comment>,
     )
 }

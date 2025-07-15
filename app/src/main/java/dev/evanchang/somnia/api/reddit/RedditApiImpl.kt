@@ -11,6 +11,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
+import kotlinx.serialization.Serializable
 
 class RedditApiImpl(private val client: HttpClient) : RedditApi {
     private val protocol = URLProtocol.HTTPS
@@ -100,8 +101,13 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                     response.value.filterIsInstance<RedditResponse.Listing>().getOrNull(1)
                         ?: return ApiResult.Err("no comments found")
                 val commentsAfter = commentsListing.data.after
-                val comments = commentsListing.data.children.filterIsInstance<Thing.CommentThing>()
-                    .map { it.comment }
+                val comments = commentsListing.data.children.mapNotNull {
+                    when (it) {
+                        is Thing.CommentThing -> it.comment
+                        is Thing.MoreThing -> it.more
+                        is Thing.SubmissionThing -> null
+                    }
+                }
 
                 ApiResult.Ok(
                     RedditApi.SubmissionResponse(
@@ -111,6 +117,57 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                     )
                 )
             }
+        }
+    }
+
+    override suspend fun getMoreChildren(
+        submissionId: String, children: List<String>, sort: CommentSort
+    ): ApiResult<RedditApi.MoreChildrenResponse> {
+        @Serializable
+        data class MoreChildrenData(
+            val things: List<Thing>,
+        )
+
+        @Serializable
+        data class MoreChildrenJson(
+            val data: MoreChildrenData,
+        )
+
+        @Serializable
+        data class MoreChildrenResponse(
+            val json: MoreChildrenJson,
+        )
+
+        val response = doRequest<MoreChildrenResponse> {
+            client.get {
+                url {
+                    protocol = this@RedditApiImpl.protocol
+                    host = this@RedditApiImpl.host
+                    appendPathSegments("api", "morechildren.json", encodeSlash = true)
+                    parameters.append("sort", sort.toString())
+                    parameters.append("api_type", "json")
+                    parameters.append("limit_children", "false")
+                    parameters.append("link_id", submissionId)
+                    parameters.append("children", children.joinToString(","))
+                    parameters.append("raw_json", "1")
+                }
+            }
+        }
+
+        return when (response) {
+            is ApiResult.Err -> response
+
+            is ApiResult.Ok -> ApiResult.Ok(
+                RedditApi.MoreChildrenResponse(
+                    comments = response.value.json.data.things.mapNotNull {
+                        when (it) {
+                            is Thing.CommentThing -> it.comment
+                            is Thing.MoreThing -> null  // Ignore top level Mores
+                            is Thing.SubmissionThing -> null
+                        }
+                    }
+                )
+            )
         }
     }
 }
