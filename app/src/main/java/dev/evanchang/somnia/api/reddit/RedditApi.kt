@@ -24,7 +24,7 @@ interface RedditApi {
         parentId: String?,
         commentSort: CommentSort,
         after: String = "",
-        limit: Int = 10,
+        limit: Int = 100,
     ): ApiResult<SubmissionResponse>
 
     class SubmissionResponse(

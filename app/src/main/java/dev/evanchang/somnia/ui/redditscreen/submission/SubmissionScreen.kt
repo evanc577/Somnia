@@ -32,8 +32,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.Comment
+import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
@@ -53,15 +56,22 @@ fun SubmissionScreen(
     navigationViewModel: NavigationViewModel,
     submissionViewModel: SubmissionViewModel,
 ) {
-    LaunchedEffect(Unit) {
-        submissionViewModel.loadInitial()
-    }
-
     val scope = rememberCoroutineScope()
 
     val submission by submissionViewModel.submission
-    val comments = submissionViewModel.comments
-    val topCommentDepth = comments.filterIsInstance<Comment.CommentData>().firstOrNull()?.depth ?: 0
+    val lazyCommentItems: LazyPagingItems<Comment> =
+        submissionViewModel.comments.collectAsLazyPagingItems()
+    val topCommentDepth = remember {
+        if (lazyCommentItems.itemCount == 0) {
+            return@remember 0
+        }
+        val c = lazyCommentItems[0]
+        if (c == null || c !is Comment.CommentData) {
+            0
+        } else {
+            c.depth()
+        }
+    }
 
     // Media viewer
     val mediaViewerState = submissionViewModel.mediaViewerState.collectAsStateWithLifecycle()
@@ -111,18 +121,18 @@ fun SubmissionScreen(
 
                     // Comments
                     items(
-                        count = comments.size,
+                        count = lazyCommentItems.itemCount,
                         key = { index ->
-                            comments[index].name()
+                            lazyCommentItems[index]!!.name()
                         },
                     ) { index ->
-                        val comment = comments[index]
+                        val comment = lazyCommentItems[index]!!
                         CommentItem(
                             comment = comment,
                             baseDepth = topCommentDepth,
                             onMore = {
                                 scope.launch {
-                                    submissionViewModel.loadMore(comment.name())
+//                                    submissionViewModel.loadMore(comment.name())
                                 }
                             },
                         )
@@ -203,7 +213,7 @@ private fun CommentDisplay(comment: Comment.CommentData) {
 
 @Composable
 private fun CommentMoreDisplay(more: Comment.More, onClick: (String) -> Unit) {
-    Text(text = "Load more (${more.children.size})", modifier = Modifier.clickable { onClick(more.name) })
+    Text(text = "Load more (${more.children.size}) (depth = ${more.depth})", modifier = Modifier.clickable { onClick(more.name) })
 }
 
 @Preview

@@ -2,6 +2,7 @@ package dev.evanchang.somnia.data
 
 import androidx.annotation.Keep
 import dev.evanchang.somnia.api.reddit.dto.RedditResponse
+import dev.evanchang.somnia.api.reddit.dto.Thing
 import dev.evanchang.somnia.serializer.SerializableImmutableList
 import dev.evanchang.somnia.serializer.SerializablePersistentList
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -38,7 +39,8 @@ sealed class Comment : CommentInterface {
         @Serializable(with = NullableRedditResponseSerializer::class) val replies: RedditResponse?,
     ) : Comment(), ElapsedTime {
         override fun elapsedTime(): Duration {
-            return (Instant.now().epochSecond - created).roundToInt().toDuration(DurationUnit.SECONDS)
+            return (Instant.now().epochSecond - created).roundToInt()
+                .toDuration(DurationUnit.SECONDS)
         }
 
         override fun name(): String {
@@ -105,4 +107,22 @@ private interface CommentInterface {
     fun name(): String
     fun id(): String
     fun depth(): Int
+}
+
+fun List<Comment>.flatten(): Sequence<Comment> {
+    return sequence {
+        for (comment in this@flatten) {
+            yield(comment)
+            when (comment) {
+                is Comment.CommentData -> if (comment.replies != null && comment.replies is RedditResponse.Listing) {
+                    yieldAll(
+                        comment.replies.data.children.filterIsInstance<Thing.CommentThing>()
+                            .map { ct -> ct.comment }.flatten()
+                    )
+                }
+
+                is Comment.More -> {}
+            }
+        }
+    }
 }
