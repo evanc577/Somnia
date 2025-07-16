@@ -3,26 +3,38 @@ package dev.evanchang.somnia.api
 import android.util.Log
 import dev.evanchang.somnia.api.reddit.RedditLoginApiInstance
 import dev.evanchang.somnia.appSettings.AccountSettings
+import dev.evanchang.somnia.data.MediaMetadata
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiationConfig
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+
+private val jsonSerialization: ContentNegotiationConfig.() -> Unit = {
+    json(Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+        explicitNulls = false
+        serializersModule = SerializersModule {
+            polymorphicDefaultDeserializer(MediaMetadata::class) {
+                MediaMetadata.None.serializer()
+            }
+        }
+    })
+}
 
 object UnauthenticatedHttpClient {
     val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-            })
-        }
+        install(ContentNegotiation, jsonSerialization)
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
@@ -97,13 +109,8 @@ object RedditHttpClient {
     }
 
     val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                coerceInputValues = true
-                explicitNulls = false
-            })
-        }
+
+        install(ContentNegotiation, jsonSerialization)
         install(BearerAuthPlugin) {
             getUserAgent = { userAgent }
             loadTokens = {

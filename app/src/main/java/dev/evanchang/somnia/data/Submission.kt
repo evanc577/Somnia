@@ -215,6 +215,10 @@ sealed class MediaMetadata {
         @SerialName("p") val resolutions: SerializableImmutableList<PreviewAnimatedImage>,
         @SerialName("m") val mimeType: String,
     ) : MediaMetadata()
+
+    @Keep
+    @Serializable
+    class None : MediaMetadata()
 }
 
 @Keep
