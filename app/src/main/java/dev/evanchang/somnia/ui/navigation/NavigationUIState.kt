@@ -12,7 +12,7 @@ data class NavigationUIState(
         NavigationBackStackEntry.SubredditBackStackEntry(
             viewModel = SubredditViewModel(
                 subreddit = "",
-                sort = defaultSubmissionSort,
+                defaultSort = defaultSubmissionSort,
             )
         )
     ),

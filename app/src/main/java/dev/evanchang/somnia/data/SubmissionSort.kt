@@ -19,8 +19,8 @@ sealed class SubmissionSort {
             Hot -> "hot"
             New -> "new"
             Rising -> "rising"
-            is Top -> "top/${this.duration}"
-            is Controversial -> "controversial/${this.duration}"
+            is Top -> "top"
+            is Controversial -> "controversial"
         }
     }
 }

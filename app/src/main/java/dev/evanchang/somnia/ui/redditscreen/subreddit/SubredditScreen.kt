@@ -1,6 +1,8 @@
 package dev.evanchang.somnia.ui.redditscreen.subreddit
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,6 +82,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.CommentSort
+import dev.evanchang.somnia.data.SortDuration
 import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
@@ -328,7 +331,8 @@ private fun BottomSheet(
     val sortSheetState = rememberModalBottomSheetState()
     var showSortSheet by remember { mutableStateOf(false) }
     if (showSortSheet) {
-        SortSelectionBottomSheet(onDismissRequest = { showSortSheet = false },
+        SortSelectionBottomSheet(
+            onDismissRequest = { showSortSheet = false },
             sheetState = sortSheetState,
             onSortSelected = { sort ->
                 onSortSelected(sort)
@@ -418,6 +422,12 @@ private fun BottomSheet(
     }
 }
 
+private enum class SortExpansion {
+    COLLAPSED,
+    TOP,
+    CONTROVERSIAL,
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SortSelectionBottomSheet(
@@ -425,61 +435,156 @@ private fun SortSelectionBottomSheet(
     sheetState: SheetState,
     onSortSelected: (SubmissionSort) -> Unit,
 ) {
+    var sortExpansion by remember { mutableStateOf(SortExpansion.COLLAPSED) }
+    LaunchedEffect(sortExpansion) {
+        if (sortExpansion != SortExpansion.COLLAPSED) {
+            sheetState.expand()
+        }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        BottomSheetItem(leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.StarOutline, contentDescription = ""
-            )
-        }, text = "Best", onClick = {
-            onSortSelected(SubmissionSort.Best)
-            onDismissRequest()
-        })
-        BottomSheetItem(leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Whatshot, contentDescription = ""
-            )
-        }, text = "Hot", onClick = {
-            onSortSelected(SubmissionSort.Hot)
-            onDismissRequest()
-        })
-        BottomSheetItem(leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.NewReleases, contentDescription = ""
-            )
-        }, text = "New", onClick = {
-            onSortSelected(SubmissionSort.New)
-            onDismissRequest()
-        })
-        BottomSheetItem(leadingIcon = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.TrendingUp, contentDescription = ""
-            )
-        }, text = "Rising", onClick = {
-            onSortSelected(SubmissionSort.Rising)
-            onDismissRequest()
-        })
-        BottomSheetItem(leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Leaderboard, contentDescription = ""
-            )
-        }, text = "Top", trailingIcon = {
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown, contentDescription = ""
-            )
-        })
-        BottomSheetItem(leadingIcon = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.TrendingDown, contentDescription = ""
-            )
-        }, text = "Controversial", trailingIcon = {
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown, contentDescription = ""
-            )
-        })
+        BottomSheetItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.StarOutline, contentDescription = ""
+                )
+            },
+            text = "Best",
+            onClick = {
+                onSortSelected(SubmissionSort.Best)
+                onDismissRequest()
+            },
+        )
+        BottomSheetItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Whatshot, contentDescription = ""
+                )
+            },
+            text = "Hot",
+            onClick = {
+                onSortSelected(SubmissionSort.Hot)
+                onDismissRequest()
+            },
+        )
+        BottomSheetItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.NewReleases, contentDescription = ""
+                )
+            },
+            text = "New",
+            onClick = {
+                onSortSelected(SubmissionSort.New)
+                onDismissRequest()
+            },
+        )
+        BottomSheetItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.TrendingUp, contentDescription = ""
+                )
+            },
+            text = "Rising",
+            onClick = {
+                onSortSelected(SubmissionSort.Rising)
+                onDismissRequest()
+            },
+        )
+        BottomSheetItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Leaderboard, contentDescription = ""
+                )
+            },
+            text = "Top",
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown, contentDescription = ""
+                )
+            },
+            onClick = {
+                if (sortExpansion != SortExpansion.TOP) {
+                    sortExpansion = SortExpansion.TOP
+                } else {
+                    sortExpansion = SortExpansion.COLLAPSED
+                }
+            }
+        )
+        if (sortExpansion == SortExpansion.TOP) {
+            SortDurationSelection(onDurationSelected = { duration ->
+                onSortSelected(SubmissionSort.Top(duration))
+                onDismissRequest()
+            })
+        }
+        BottomSheetItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.TrendingDown, contentDescription = ""
+                )
+            },
+            text = "Controversial",
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown, contentDescription = ""
+                )
+            },
+            onClick = {
+                if (sortExpansion != SortExpansion.CONTROVERSIAL) {
+                    sortExpansion = SortExpansion.CONTROVERSIAL
+                } else {
+                    sortExpansion = SortExpansion.COLLAPSED
+                }
+            }
+        )
+        if (sortExpansion == SortExpansion.CONTROVERSIAL) {
+            SortDurationSelection(onDurationSelected = { duration ->
+                onSortSelected(SubmissionSort.Controversial(duration))
+                onDismissRequest()
+            })
+        }
+    }
+}
+
+@Composable
+private fun SortDurationSelection(
+    onDurationSelected: (SortDuration) -> Unit,
+) {
+    Column(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceDim)) {
+        BottomSheetItem(
+            leadingIcon = {},
+            text = "Hour",
+            onClick = { onDurationSelected(SortDuration.HOUR) },
+        )
+        BottomSheetItem(
+            leadingIcon = {},
+            text = "Day",
+            onClick = { onDurationSelected(SortDuration.DAY) },
+        )
+        BottomSheetItem(
+            leadingIcon = {},
+            text = "Week",
+            onClick = { onDurationSelected(SortDuration.WEEK) },
+        )
+        BottomSheetItem(
+            leadingIcon = {},
+            text = "Month",
+            onClick = { onDurationSelected(SortDuration.MONTH) },
+        )
+        BottomSheetItem(
+            leadingIcon = {},
+            text = "Year",
+            onClick = { onDurationSelected(SortDuration.YEAR) },
+        )
+        BottomSheetItem(
+            leadingIcon = {},
+            text = "All Time",
+            onClick = { onDurationSelected(SortDuration.ALL) },
+        )
     }
 }
 
@@ -493,7 +598,7 @@ private fun HomeScreenPreview() {
         navigationViewModel = viewModel(),
         subredditViewModel = SubredditViewModel(
             subreddit = "dreamcatcher",
-            sort = SubmissionSort.New,
+            defaultSort = SubmissionSort.New,
         )
     )
 }

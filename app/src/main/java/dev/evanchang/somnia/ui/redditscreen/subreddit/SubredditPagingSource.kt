@@ -35,13 +35,3 @@ class SubredditPagingSource(
         return null
     }
 }
-
-class SubredditPagingSourceFactory(
-    private val subreddit: String,
-    private val sort: SubmissionSort,
-) :
-    PagingSourceFactory<String, Submission> {
-    override fun invoke(): PagingSource<String, Submission> {
-        return SubredditPagingSource(subreddit = subreddit, sort = sort)
-    }
-}

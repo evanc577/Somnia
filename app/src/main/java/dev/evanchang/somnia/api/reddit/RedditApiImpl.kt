@@ -7,6 +7,7 @@ import dev.evanchang.somnia.api.reddit.dto.RedditResponse
 import dev.evanchang.somnia.api.reddit.dto.Thing
 import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.SubmissionSort
+import dev.evanchang.somnia.data.durationString
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.http.URLProtocol
@@ -23,6 +24,7 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
         after: String,
         limit: Int,
     ): ApiResult<RedditApi.SubredditSubmissionsResponse> {
+        val sortDuration = sort.durationString()
         val response = doRequest<RedditResponse> {
             client.get {
                 url {
@@ -33,6 +35,9 @@ class RedditApiImpl(private val client: HttpClient) : RedditApi {
                     }
                     appendPathSegments(sort.toString())
                     appendPathSegments(".json")
+                    if (sortDuration != null) {
+                        parameters.append("t", sortDuration)
+                    }
                     parameters.append("after", after)
                     parameters.append("limit", limit.toString())
                     parameters.append("raw_json", "1")
