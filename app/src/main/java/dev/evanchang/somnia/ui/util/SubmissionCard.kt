@@ -2,17 +2,13 @@ package dev.evanchang.somnia.ui.util
 
 import android.content.res.Configuration
 import android.widget.Toast
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,15 +17,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.ModeComment
-import androidx.compose.material.icons.outlined.OndemandVideo
-import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -39,22 +29,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImagePainter
-import coil3.compose.LocalPlatformContext
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
-import dev.evanchang.somnia.api.media.Media
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
@@ -107,7 +89,7 @@ fun SubmissionCard(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(SPACER_SIZE))
-                PreviewImage(
+                SubmissionCardPreviewImage(
                     submission = submission,
                     compact = false,
                     setShowMediaViewerState = setShowMediaViewerState,
@@ -120,7 +102,7 @@ fun SubmissionCard(
                     obstacleAlignment = TextFlowObstacleAlignment.TopEnd,
                 ) {
                     Box(modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)) {
-                        PreviewImage(
+                        SubmissionCardPreviewImage(
                             submission = submission,
                             compact = true,
                             setShowMediaViewerState = setShowMediaViewerState,
@@ -285,244 +267,10 @@ private fun CommentsButton(submission: Submission) {
     }
 }
 
-@Composable
-private fun PreviewImage(
-    modifier: Modifier = Modifier,
-    submission: Submission,
-    compact: Boolean,
-    setShowMediaViewerState: (MediaViewerState) -> Unit,
-) {
-    val previewImage = remember { submission.previewImage() } ?: return
-    val previewImageUrl = remember { previewImage.escapedUrl() }
-
-    val (previewImageWidth, previewImageHeight) = if (compact) {
-        Pair(1, 1)
-    } else {
-        Pair(previewImage.width, previewImage.height)
-    }
-
-    val context = LocalPlatformContext.current
-    val painter = rememberAsyncImagePainter(model = remember {
-        ImageRequest.Builder(context).data(previewImageUrl).build()
-    })
-    val state = painter.state.collectAsStateWithLifecycle(context)
-
-    val media = remember { submission.media() }
-    val previewIconType = remember {
-        if (media != null) {
-            PreviewIconType.Media(media)
-        } else {
-            PreviewIconType.Link()
-        }
-    }
-    val previewIconAlignment = remember {
-        if (compact) {
-            Alignment.Center
-        } else {
-            Alignment.TopStart
-        }
-    }
-
-    Card(
-        onClick = {
-            setShowMediaViewerState(MediaViewerState.Showing(submission))
-        },
-        shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
-        modifier = modifier
-            .thenIf(compact) {
-                Modifier.size(80.dp)
-            }
-            .fillMaxWidth()
-            .aspectRatio(previewImageWidth.toFloat() / previewImageHeight),
-    ) {
-        when (state.value) {
-            is AsyncImagePainter.State.Success -> {
-                Box {
-                    Image(
-                        painter = painter,
-                        contentDescription = "submission image",
-                        contentScale = if (compact) {
-                            ContentScale.Crop
-                        } else {
-                            ContentScale.FillWidth
-                        },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .aspectRatio(previewImageWidth.toFloat() / previewImageHeight.toFloat()),
-                    )
-                    PreviewIcon(
-                        type = previewIconType,
-                        modifier = Modifier.padding(CARD_PADDING),
-                        contentAlignment = previewIconAlignment,
-                    )
-                }
-            }
-
-            is AsyncImagePainter.State.Error -> {
-                PreviewImageError(compact = compact, onRetry = { painter.restart() })
-            }
-
-            else -> {
-                PreviewImageLoading()
-            }
-        }
-    }
-}
-
-@Composable
-private fun PreviewImageLoading() {
-    Box(
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceDim)
-    ) {
-        MediaLoading()
-    }
-}
-
-@Composable
-private fun PreviewImageError(compact: Boolean, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.errorContainer)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        if (compact) {
-            Icon(
-                imageVector = Icons.Default.Warning,
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.error
-            )
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)) {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = "",
-                    tint = MaterialTheme.colorScheme.error
-                )
-                Spacer(modifier = Modifier.width(SPACER_SIZE))
-                Text(
-                    text = "Image failed to load",
-                    style = TextStyle(
-                        platformStyle = PlatformTextStyle(includeFontPadding = false)
-                    ),
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                )
-            }
-            Spacer(modifier = Modifier.height(SPACER_SIZE))
-            Button(
-                onClick = onRetry,
-                colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError,
-                ),
-            ) {
-                Text(text = "Retry")
-            }
-        }
-    }
-}
-
-private sealed class PreviewIconType {
-    data class Media(val media: dev.evanchang.somnia.api.media.Media) : PreviewIconType()
-    class Link : PreviewIconType()
-}
-
-@Composable
-private fun PreviewIcon(
-    type: PreviewIconType,
-    modifier: Modifier = Modifier,
-    contentAlignment: Alignment = Alignment.TopStart
-) {
-    val linkIcon = Icons.Outlined.Link
-    val galleryIcon = Icons.Outlined.PhotoLibrary
-    val videoIcon = Icons.Outlined.OndemandVideo
-
-    if (type is PreviewIconType.Media && type.media is Media.RedditGallery && type.media.images.size <= 1) {
-        return
-    }
-
-    Box(contentAlignment = contentAlignment, modifier = Modifier.fillMaxSize()) {
-        Card(
-            colors = CardDefaults.cardColors()
-                .copy(containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f)),
-            shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
-            modifier = modifier,
-        ) {
-            Box(modifier = Modifier.padding(8.dp)) {
-                when (type) {
-                    is PreviewIconType.Link -> Icon(
-                        imageVector = linkIcon,
-                        contentDescription = "link",
-                    )
-
-                    is PreviewIconType.Media -> {
-                        when (type.media) {
-                            is Media.ImgurAlbum -> Text(text = "Imgur Gallery")
-                            is Media.ImgurMedia -> Text(text = "Imgur")
-                            is Media.RedditGallery -> Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = galleryIcon,
-                                    contentDescription = "album",
-                                )
-                                Spacer(modifier = Modifier.size(SPACER_SIZE))
-                                Text(text = type.media.images.size.toString())
-                            }
-
-                            is Media.RedditVideo -> Icon(
-                                imageVector = videoIcon,
-                                contentDescription = "video",
-                            )
-
-                            is Media.Redgifs -> Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = videoIcon,
-                                    contentDescription = "video",
-                                )
-                                Spacer(modifier = Modifier.size(SPACER_SIZE))
-                                Text(text = "Redgifs")
-                            }
-
-                            is Media.Streamable -> Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = videoIcon,
-                                    contentDescription = "video",
-                                )
-                                Spacer(modifier = Modifier.size(SPACER_SIZE))
-                                Text(text = "Streamable")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun PreviewIconPreview() {
-    Column {
-        PreviewIcon(PreviewIconType.Media(Media.RedditGallery(listOf<String>().toImmutableList())))
-        PreviewIcon(PreviewIconType.Media(Media.RedditVideo("")))
-        PreviewIcon(PreviewIconType.Media(Media.ImgurAlbum("")))
-        PreviewIcon(PreviewIconType.Media(Media.ImgurMedia("")))
-        PreviewIcon(PreviewIconType.Media(Media.Redgifs("")))
-        PreviewIcon(PreviewIconType.Media(Media.Streamable("")))
-        PreviewIcon(PreviewIconType.Link())
-    }
-}
-
-@Preview(widthDp = 400, heightDp = 300)
-@Composable
-private fun PreviewImageErrorPreview() {
-    PreviewImageError(compact = false, onRetry = {})
-}
-
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun SubmissionCardPreview() {
+private fun SubmissionCardPreviewPreview() {
     val submission = createFakeSubmission()
 
     SomniaTheme {
@@ -581,6 +329,7 @@ private fun createFakeSubmission(): Submission {
         """.trimIndent(),
         selftext = selftext,
         postHint = null,
+        isSelf = false,
         isGallery = null,
         url = "",
         domain = "",

@@ -31,6 +31,7 @@ data class Submission(
     private val title: String,
     val selftext: String,
     @SerialName("post_hint") val postHint: PostHint?,
+    @SerialName("is_self") val isSelf: Boolean,
     @SerialName("is_gallery") val isGallery: Boolean?,
     @SerialName("gallery_data") val galleryData: GalleryData?,
     val url: String,
