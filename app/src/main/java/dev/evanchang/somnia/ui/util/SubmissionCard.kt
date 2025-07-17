@@ -24,7 +24,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.ModeComment
+import androidx.compose.material.icons.outlined.OndemandVideo
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,6 +54,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
+import dev.evanchang.somnia.api.media.Media
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
@@ -78,7 +82,8 @@ fun SubmissionCard(
     onClickSubreddit: (String) -> Unit,
     onClickSubmission: ((Submission) -> Unit)? = null,
 ) {
-    val context = LocalContext.current
+    LocalContext.current
+    val media = remember { submission.media() }
 
     Card(
         colors = CardDefaults.cardColors(
@@ -95,35 +100,31 @@ fun SubmissionCard(
                 onClickSubreddit = onClickSubreddit,
             )
             Spacer(modifier = Modifier.height(SPACER_SIZE))
-            when (mode) {
-                SubmissionCardMode.PREVIEW_FULL -> {
-                    Text(
-                        text = submission.escapedTitle(),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(modifier = Modifier.height(SPACER_SIZE))
-                    PreviewImage(
-                        submission = submission,
-                        compact = false,
-                        setShowMediaViewerState = setShowMediaViewerState,
-                    )
-                }
-
-                SubmissionCardMode.DETAILS -> {
-                    TextFlow(
-                        text = submission.escapedTitle(),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleLarge,
-                        obstacleAlignment = TextFlowObstacleAlignment.TopEnd,
-                    ) {
-                        Box(modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)) {
-                            PreviewImage(
-                                submission = submission,
-                                compact = true,
-                                setShowMediaViewerState = setShowMediaViewerState,
-                            )
-                        }
+            if (mode == SubmissionCardMode.PREVIEW_FULL && media != null) {
+                Text(
+                    text = submission.escapedTitle(),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(SPACER_SIZE))
+                PreviewImage(
+                    submission = submission,
+                    compact = false,
+                    setShowMediaViewerState = setShowMediaViewerState,
+                )
+            } else {
+                TextFlow(
+                    text = submission.escapedTitle(),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleLarge,
+                    obstacleAlignment = TextFlowObstacleAlignment.TopEnd,
+                ) {
+                    Box(modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)) {
+                        PreviewImage(
+                            submission = submission,
+                            compact = true,
+                            setShowMediaViewerState = setShowMediaViewerState,
+                        )
                     }
                 }
             }
@@ -138,7 +139,9 @@ fun SubmissionCard(
                         SubmissionCardMode.PREVIEW_FULL -> SomniaMarkdown(
                             content = submission.selftext,
                             isPreview = true,
-                            modifier = Modifier.padding(BODY_TEXT_PADDING).fillMaxWidth(),
+                            modifier = Modifier
+                                .padding(BODY_TEXT_PADDING)
+                                .fillMaxWidth(),
                         )
 
                         SubmissionCardMode.DETAILS -> SomniaMarkdown(
@@ -304,6 +307,22 @@ private fun PreviewImage(
     })
     val state = painter.state.collectAsStateWithLifecycle(context)
 
+    val media = remember { submission.media() }
+    val previewIconType = remember {
+        if (media != null) {
+            PreviewIconType.Media(media)
+        } else {
+            PreviewIconType.Link()
+        }
+    }
+    val previewIconAlignment = remember {
+        if (compact) {
+            Alignment.Center
+        } else {
+            Alignment.TopStart
+        }
+    }
+
     Card(
         onClick = {
             setShowMediaViewerState(MediaViewerState.Showing(submission))
@@ -318,18 +337,25 @@ private fun PreviewImage(
     ) {
         when (state.value) {
             is AsyncImagePainter.State.Success -> {
-                Image(
-                    painter = painter,
-                    contentDescription = "submission image",
-                    contentScale = if (compact) {
-                        ContentScale.Crop
-                    } else {
-                        ContentScale.FillWidth
-                    },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .aspectRatio(previewImageWidth.toFloat() / previewImageHeight.toFloat()),
-                )
+                Box {
+                    Image(
+                        painter = painter,
+                        contentDescription = "submission image",
+                        contentScale = if (compact) {
+                            ContentScale.Crop
+                        } else {
+                            ContentScale.FillWidth
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .aspectRatio(previewImageWidth.toFloat() / previewImageHeight.toFloat()),
+                    )
+                    PreviewIcon(
+                        type = previewIconType,
+                        modifier = Modifier.padding(CARD_PADDING),
+                        contentAlignment = previewIconAlignment,
+                    )
+                }
             }
 
             is AsyncImagePainter.State.Error -> {
@@ -394,6 +420,96 @@ private fun PreviewImageError(compact: Boolean, onRetry: () -> Unit) {
                 Text(text = "Retry")
             }
         }
+    }
+}
+
+private sealed class PreviewIconType {
+    data class Media(val media: dev.evanchang.somnia.api.media.Media) : PreviewIconType()
+    class Link : PreviewIconType()
+}
+
+@Composable
+private fun PreviewIcon(
+    type: PreviewIconType,
+    modifier: Modifier = Modifier,
+    contentAlignment: Alignment = Alignment.TopStart
+) {
+    val linkIcon = Icons.Outlined.Link
+    val galleryIcon = Icons.Outlined.PhotoLibrary
+    val videoIcon = Icons.Outlined.OndemandVideo
+
+    if (type is PreviewIconType.Media && type.media is Media.RedditGallery && type.media.images.size <= 1) {
+        return
+    }
+
+    Box(contentAlignment = contentAlignment, modifier = Modifier.fillMaxSize()) {
+        Card(
+            colors = CardDefaults.cardColors()
+                .copy(containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.8f)),
+            shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
+            modifier = modifier,
+        ) {
+            Box(modifier = Modifier.padding(8.dp)) {
+                when (type) {
+                    is PreviewIconType.Link -> Icon(
+                        imageVector = linkIcon,
+                        contentDescription = "link",
+                    )
+
+                    is PreviewIconType.Media -> {
+                        when (type.media) {
+                            is Media.ImgurAlbum -> Text(text = "Imgur Gallery")
+                            is Media.ImgurMedia -> Text(text = "Imgur")
+                            is Media.RedditGallery -> Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = galleryIcon,
+                                    contentDescription = "album",
+                                )
+                                Spacer(modifier = Modifier.size(SPACER_SIZE))
+                                Text(text = type.media.images.size.toString())
+                            }
+
+                            is Media.RedditVideo -> Icon(
+                                imageVector = videoIcon,
+                                contentDescription = "video",
+                            )
+
+                            is Media.Redgifs -> Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = videoIcon,
+                                    contentDescription = "video",
+                                )
+                                Spacer(modifier = Modifier.size(SPACER_SIZE))
+                                Text(text = "Redgifs")
+                            }
+
+                            is Media.Streamable -> Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = videoIcon,
+                                    contentDescription = "video",
+                                )
+                                Spacer(modifier = Modifier.size(SPACER_SIZE))
+                                Text(text = "Streamable")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewIconPreview() {
+    Column {
+        PreviewIcon(PreviewIconType.Media(Media.RedditGallery(listOf<String>().toImmutableList())))
+        PreviewIcon(PreviewIconType.Media(Media.RedditVideo("")))
+        PreviewIcon(PreviewIconType.Media(Media.ImgurAlbum("")))
+        PreviewIcon(PreviewIconType.Media(Media.ImgurMedia("")))
+        PreviewIcon(PreviewIconType.Media(Media.Redgifs("")))
+        PreviewIcon(PreviewIconType.Media(Media.Streamable("")))
+        PreviewIcon(PreviewIconType.Link())
     }
 }
 

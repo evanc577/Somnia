@@ -240,6 +240,8 @@ data class RedditVideo(
 enum class PostHint {
     @SerialName("image")
     IMAGE,
+    @SerialName("self")
+    SELF,
 }
 
 private fun escapeString(s: String): String {
