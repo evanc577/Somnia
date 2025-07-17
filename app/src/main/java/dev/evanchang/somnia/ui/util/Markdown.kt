@@ -3,9 +3,12 @@ package dev.evanchang.somnia.ui.util
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.ViewModel
@@ -24,15 +27,22 @@ import kotlin.random.Random
 
 @Composable
 fun SomniaMarkdown(content: String, isPreview: Boolean, modifier: Modifier = Modifier) {
+
     if (isPreview) {
-        Text(
-            text = content.buildMarkdownAnnotatedString(
-                markdownTypography().text
-            ),
-            maxLines = 5,
-            overflow = TextOverflow.Ellipsis,
-            modifier = modifier,
-        )
+        CompositionLocalProvider(LocalUriHandler provides object : UriHandler {
+            override fun openUri(uri: String) {
+                // Ignore all links for previews
+            }
+        }) {
+            Text(
+                text = content.buildMarkdownAnnotatedString(
+                    markdownTypography().text
+                ),
+                maxLines = 5,
+                overflow = TextOverflow.Ellipsis,
+                modifier = modifier,
+            )
+        }
     } else {
         val vmKey = rememberSaveable { Random.nextInt().toString() }
         val vm = viewModel(key = vmKey) { MarkdownViewModel(content) }
