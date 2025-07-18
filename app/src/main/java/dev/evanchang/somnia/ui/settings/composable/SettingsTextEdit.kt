@@ -26,7 +26,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.alorma.compose.settings.ui.base.internal.SettingsTileScaffold
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
@@ -123,7 +122,8 @@ private fun SettingsTextEditDialog(
 @Preview
 @Composable
 private fun SettingsTextEditPreview() {
-    SettingsTextEdit(title = "SettingsTextEdit",
+    SettingsTextEdit(
+        title = "SettingsTextEdit",
         description = "This is the description for SettingsTextEdit",
         defaultText = "Initial text",
         onConfirmRequest = {})

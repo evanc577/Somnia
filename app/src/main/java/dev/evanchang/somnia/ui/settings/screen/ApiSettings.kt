@@ -5,10 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,51 +22,52 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
 
     val appSettings by context.dataStore.data.collectAsStateWithLifecycle(initialValue = null)
-
-    var openRedditClientIdDialog by remember { mutableStateOf(false) }
-    var openRedditRedirectUriDialog by remember { mutableStateOf(false) }
-    var openRedditUserAgentDialog by remember { mutableStateOf(false) }
+    if (appSettings == null) {
+        return
+    }
+    val redditClientId = appSettings?.apiSettings?.redditClientId
+    val redditRedirectUri = appSettings?.apiSettings?.redditRedirectUri
+    val redditUserAgent = appSettings?.apiSettings?.redditUserAgent
 
     SettingsScaffold(
         title = "API Settings",
         onNavigateBack = onNavigateBack,
     ) {
         SettingsGroup(title = { Text(text = "Reddit") }) {
-            SettingsTextEdit(title = "Reddit Client ID",
+            SettingsTextEdit(
+                title = "Reddit Client ID",
                 subtitle = {
-                    val text = appSettings?.apiSettings?.redditClientId
-                    if (text == null) {
+                    if (redditClientId == null) {
                         Text(text = "(Unset)", color = MaterialTheme.colorScheme.error)
                     } else {
-                        Text(text = text)
+                        Text(text = redditClientId)
                     }
                 },
                 description = "Reddit developed app client ID.",
-                defaultText = appSettings?.apiSettings?.redditClientId ?: "",
+                defaultText = redditClientId ?: "",
                 onConfirmRequest = {
-                    openRedditClientIdDialog = false
                     coroutineScope.launch {
                         setRedditApiClientId(context, it)
                     }
                 })
 
-            SettingsTextEdit(title = "Reddit redirect URI",
-                subtitle = { Text(text = appSettings?.apiSettings?.redditRedirectUri ?: "") },
+            SettingsTextEdit(
+                title = "Reddit redirect URI",
+                subtitle = { Text(text = redditRedirectUri ?: "") },
                 description = "Reddit developed app redirect URI.",
-                defaultText = appSettings?.apiSettings?.redditRedirectUri ?: "",
+                defaultText = redditRedirectUri ?: "",
                 onConfirmRequest = {
-                    openRedditRedirectUriDialog = false
                     coroutineScope.launch {
                         setRedditApiRedirectUri(context, it)
                     }
                 })
 
-            SettingsTextEdit(title = "Reddit User-Agent",
-                subtitle = { Text(text = appSettings?.apiSettings?.redditUserAgent ?: "") },
+            SettingsTextEdit(
+                title = "Reddit User-Agent",
+                subtitle = { Text(text = redditUserAgent ?: "") },
                 description = "User-Agent header sent with all Reddit API requests. Leave empty to return to default User-Agent.",
-                defaultText = appSettings?.apiSettings?.redditUserAgent ?: "",
+                defaultText = redditUserAgent ?: "",
                 onConfirmRequest = {
-                    openRedditUserAgentDialog = false
                     coroutineScope.launch {
                         setRedditApiUserAgent(context, it)
                     }
