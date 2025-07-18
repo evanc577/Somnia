@@ -44,10 +44,12 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+            resValue("string", "app_name", "Somnia")
         }
         getByName("debug") {
             versionNameSuffix = "-debug"
             applicationIdSuffix = ".debug"
+            resValue("string", "app_name", "Somnia (debug)")
         }
         create("debugProfile") {
             initWith(buildTypes.getByName("release"))
