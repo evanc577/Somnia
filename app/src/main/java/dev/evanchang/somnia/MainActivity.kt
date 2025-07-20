@@ -9,10 +9,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.datastore.dataStore
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.rememberNavBackStack
 import dev.evanchang.somnia.api.RedditHttpClient
 import dev.evanchang.somnia.appSettings.AppSettingsSerializer
-import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.navigation.NavigationRoot
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 
@@ -42,15 +40,7 @@ class MainActivity : ComponentActivity() {
             SomniaTheme {
                 // Start UI once settings have loaded
                 if (appSettings != null) {
-                    val backStack = rememberNavBackStack(
-                        Nav.Subreddit(
-                            subreddit = "",
-                        )
-                    )
-                    NavigationRoot(
-                        backStack = backStack,
-                        appSettings = appSettings!!,
-                    )
+                    NavigationRoot(appSettings = appSettings!!)
                 }
             }
         }

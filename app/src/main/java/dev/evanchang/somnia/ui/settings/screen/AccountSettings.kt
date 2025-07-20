@@ -13,21 +13,23 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.dataStore
+import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.settings.composable.AccountItem
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 
 @Composable
 fun AccountSettingsScreen(
-    backStack: NavBackStack,
-    onNavigateToLogin: (clientId: String, redirectUri: String) -> Unit,
-    loginResult: () -> LoginResult?,
+    onBack: (Int) -> Unit,
+    onNavigate: (Nav) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -39,22 +41,20 @@ fun AccountSettingsScreen(
     val redirectUri = appSettings?.apiSettings?.redditRedirectUri
 
     // Set to true after action is taken after login success or error
-    var loginFinished by remember { mutableStateOf(false) }
-    LaunchedEffect(loginFinished) {
-        if (!loginFinished) {
-            loginFinished = true
-            when (val loginResultValue = loginResult()) {
+    var loginResult: LoginResult? by remember { mutableStateOf(null) }
+    LaunchedEffect(loginResult) {
+        val loginResult = loginResult
+        if (loginResult != null) {
+            when (loginResult) {
                 is LoginResult.Ok -> scope.launch {
                     addAccountSettings(
-                        context, loginResultValue.user, loginResultValue.accountSettings
+                        context, loginResult.user, loginResult.accountSettings
                     )
                 }
 
                 is LoginResult.Err -> scope.launch {
-                    snackbarHostState.showSnackbar("Error logging in: ${loginResultValue.error}")
+                    snackbarHostState.showSnackbar("Error logging in: ${loginResult.error}")
                 }
-
-                null -> Unit
             }
         }
     }
@@ -64,7 +64,7 @@ fun AccountSettingsScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        backStack = backStack,
+        onBack = onBack,
     ) {
         SettingsMenuLink(
             title = { Text(text = "Add new account") },
@@ -78,7 +78,19 @@ fun AccountSettingsScreen(
                         snackbarHostState.showSnackbar("Redirect URI not set")
                     }
                 } else {
-                    onNavigateToLogin(clientId, redirectUri)
+                    onNavigate(
+                        Nav.Settings(
+                            SettingsNavKey.Account(
+                                AccountSettingsNavKey.Login(
+                                    clientId = clientId,
+                                    redirectUri = redirectUri,
+                                    onLoginFinished = { result ->
+                                        loginResult = result
+                                    },
+                                )
+                            )
+                        )
+                    )
                 }
             },
         )
@@ -115,6 +127,43 @@ fun AccountSettingsScreen(
             }
         }
     }
+}
+
+fun AccountSettingsNav(
+    key: AccountSettingsNavKey,
+    onBack: (Int) -> Unit,
+    onNavigate: (Nav) -> Unit,
+): NavEntry<NavKey> {
+    return when (key) {
+        is AccountSettingsNavKey.TopLevel -> NavEntry(key) {
+            AccountSettingsScreen(
+                onBack = onBack,
+                onNavigate = onNavigate,
+            )
+        }
+
+        is AccountSettingsNavKey.Login -> NavEntry(key) {
+            LoginScreen(
+                clientId = key.clientId,
+                redirectUri = key.redirectUri,
+                onLoginFinished = key.onLoginFinished,
+                onBack = onBack,
+            )
+        }
+    }
+}
+
+@Serializable
+sealed class AccountSettingsNavKey : NavKey {
+    @Serializable
+    data object TopLevel : AccountSettingsNavKey()
+
+    @Serializable
+    data class Login(
+        val clientId: String,
+        val redirectUri: String,
+        val onLoginFinished: (LoginResult) -> Unit,
+    ) : AccountSettingsNavKey()
 }
 
 private suspend fun addAccountSettings(

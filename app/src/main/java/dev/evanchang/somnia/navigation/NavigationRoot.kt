@@ -1,37 +1,30 @@
 package dev.evanchang.somnia.navigation
 
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import dev.evanchang.somnia.api.media.Media
 import dev.evanchang.somnia.appSettings.AppSettings
+import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionScreen
 import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditScreen
-import dev.evanchang.somnia.ui.settings.screen.ApiSettingsScreen
-import dev.evanchang.somnia.ui.settings.screen.SettingsScreen
+import dev.evanchang.somnia.ui.settings.screen.AccountSettingsNavKey
+import dev.evanchang.somnia.ui.settings.screen.SettingsNav
+import dev.evanchang.somnia.ui.settings.screen.SettingsNavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class Nav : NavKey {
     @Serializable
-    sealed class Settings : Nav() {
-        @Serializable
-        data object TopLevel : Settings()
-
-        @Serializable
-        data object General : Settings()
-
-        @Serializable
-        data object Account : Settings()
-
-        @Serializable
-        data object Api : Settings()
-    }
+    data class Settings(val key: SettingsNavKey) : Nav()
 
     @Serializable
     data class Subreddit(val subreddit: String) : Nav()
@@ -48,9 +41,21 @@ sealed class Nav : NavKey {
 
 @Composable
 fun NavigationRoot(
-    backStack: NavBackStack,
     appSettings: AppSettings,
 ) {
+    val backStack = rememberNavBackStack(
+        Nav.Subreddit(
+            subreddit = "",
+        )
+    )
+
+    val onBack: (Int) -> Unit = { count ->
+        repeat(count) { backStack.removeLastOrNull() }
+    }
+    val onNavigate: (Nav) -> Unit = { nav ->
+        backStack.add(nav)
+    }
+
     NavDisplay(
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),
@@ -58,17 +63,31 @@ fun NavigationRoot(
             rememberViewModelStoreNavEntryDecorator(),
         ),
         backStack = backStack,
+        onBack = onBack,
+        transitionSpec = {
+            slideInHorizontally(initialOffsetX = { it }) togetherWith
+                    slideOutHorizontally(targetOffsetX = { -it })
+        },
+        popTransitionSpec = {
+            slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                    slideOutHorizontally(targetOffsetX = { it })
+        },
+        predictivePopTransitionSpec = {
+            slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                    slideOutHorizontally(targetOffsetX = { it })
+        },
         entryProvider = { key ->
             when (key) {
                 is Nav.Settings -> SettingsNav(
-                        key = key,
-                        backStack = backStack,
-                    )
+                    key = key.key,
+                    onBack = onBack,
+                    onNavigate = onNavigate,
+                )
 
                 is Nav.Subreddit -> NavEntry(key) {
                     SubredditScreen(
-                        key.subreddit,
-                        appSettings,
+                        subreddit = key.subreddit,
+                        appSettings = appSettings,
                         backStack = backStack,
                     )
                 }
@@ -82,26 +101,15 @@ fun NavigationRoot(
                     )
                 }
 
-                is Nav.MediaViewer -> TODO()
+                is Nav.MediaViewer -> NavEntry(key) {
+                    MediaViewer(
+                        media = key.media,
+                        onClose = { backStack.removeLastOrNull() }
+                    )
+                }
 
-                else -> throw RuntimeException("Invalid NavKey")
+                else -> throw RuntimeException("Invalid NavKey ${key}")
             }
         }
     )
 }
-
-private fun SettingsNav(
-    key: Nav.Settings,
-    backStack: NavBackStack,
-): NavEntry<NavKey> {
-        return when (key) {
-            is Nav.Settings.TopLevel -> NavEntry(key) {
-                SettingsScreen(backStack)
-            }
-            is Nav.Settings.Api -> NavEntry(key) {
-                ApiSettingsScreen(backStack)
-            }
-            is Nav.Settings.Account -> TODO()
-            is Nav.Settings.General -> TODO()
-        }
-    }

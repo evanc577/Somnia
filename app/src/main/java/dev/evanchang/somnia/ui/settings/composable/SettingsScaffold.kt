@@ -21,13 +21,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation3.runtime.NavBackStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScaffold(
     title: String,
-    backStack: NavBackStack,
+    onBack: (Int) -> Unit,
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -37,7 +36,7 @@ fun SettingsScaffold(
                 title = { Text(text = title) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
                 navigationIcon = {
-                    IconButton(onClick = { backStack.removeLastOrNull() }) {
+                    IconButton(onClick = { onBack(1) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "previous screen"
@@ -58,7 +57,7 @@ fun SettingsScaffold(
 @Preview
 @Composable
 private fun SettingsScaffoldPreview() {
-    SettingsScaffold(title = "Preview Settings", NavBackStack()) {
+    SettingsScaffold(title = "Preview Settings", onBack = {}) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,

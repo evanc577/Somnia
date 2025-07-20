@@ -84,6 +84,7 @@ import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
+import dev.evanchang.somnia.ui.settings.screen.SettingsNavKey
 import dev.evanchang.somnia.ui.util.BottomSheetGridItem
 import dev.evanchang.somnia.ui.util.BottomSheetItem
 import kotlin.math.roundToInt
@@ -265,7 +266,7 @@ fun SubredditScreen(
             BottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 sheetState = sheetState,
-                onNavigateToSettings = { backStack.add(Nav.Settings.TopLevel) },
+                onNavigateToSettings = { backStack.add(Nav.Settings(SettingsNavKey.TopLevel)) },
                 onSortSelected = { sort ->
                     updateSort = sort
                 },

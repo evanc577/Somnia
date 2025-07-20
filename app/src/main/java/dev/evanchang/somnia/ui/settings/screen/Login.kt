@@ -25,14 +25,15 @@ import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun LoginWebView(
+fun LoginScreen(
     clientId: String,
     redirectUri: String,
     onLoginFinished: (LoginResult) -> Unit,
-    backStack: NavBackStack,
+    onBack: (Int) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -64,7 +65,7 @@ fun LoginWebView(
     // Adding a WebView inside AndroidView with layout as full screen
     SettingsScaffold(
         title = "Log in",
-        backStack = backStack,
+        onBack = onBack,
     ) {
         if (!retrievingAccessToken) {
             AndroidView(factory = {
@@ -93,7 +94,7 @@ fun LoginWebView(
     }
 }
 
-@Keep
+@Serializable
 @Parcelize
 sealed class LoginResult : Parcelable {
     class Ok(val user: String, val accountSettings: AccountSettings) : LoginResult()
