@@ -5,20 +5,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.datastore.dataStore
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.rememberNavBackStack
 import dev.evanchang.somnia.api.RedditHttpClient
 import dev.evanchang.somnia.appSettings.AppSettingsSerializer
-import dev.evanchang.somnia.ui.redditscreen.RedditNav
-import dev.evanchang.somnia.ui.redditscreen.homeDestination
-import dev.evanchang.somnia.ui.settings.navigateToSettings
-import dev.evanchang.somnia.ui.settings.settingsNavigation
+import dev.evanchang.somnia.navigation.Nav
+import dev.evanchang.somnia.navigation.SomniaNavDisplay
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 
 val Context.dataStore by dataStore("settings.json", AppSettingsSerializer)
@@ -47,18 +42,15 @@ class MainActivity : ComponentActivity() {
             SomniaTheme {
                 // Start UI once settings have loaded
                 if (appSettings != null) {
-                    val navController = rememberNavController()
-                    NavHost(
-                        navController = navController,
-                        startDestination = RedditNav,
-                        enterTransition = { EnterTransition.None },
-                        exitTransition = { ExitTransition.None },
-                    ) {
-                        homeDestination(appSettings = appSettings!!, onNavigateToSettings = {
-                            navController.navigateToSettings()
-                        })
-                        settingsNavigation(navController)
-                    }
+                    val backStack = rememberNavBackStack(
+                        Nav.Subreddit(
+                            subreddit = "",
+                        )
+                    )
+                    SomniaNavDisplay(
+                        backStack = backStack,
+                        appSettings = appSettings!!,
+                    )
                 }
             }
         }

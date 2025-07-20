@@ -38,22 +38,23 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavBackStack
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import dev.evanchang.somnia.api.media.Media
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun SubmissionCardPreviewImage(
-    modifier: Modifier = Modifier.Companion,
     submission: Submission,
     compact: Boolean,
-    setShowMediaViewerState: (MediaViewerState) -> Unit,
+    backStack: NavBackStack,
+    modifier: Modifier = Modifier.Companion,
 ) {
     val previewImage = remember { submission.previewImage() } ?: return
     val previewImageUrl = remember { previewImage.escapedUrl() }
@@ -90,7 +91,10 @@ fun SubmissionCardPreviewImage(
 
     Card(
         onClick = {
-            setShowMediaViewerState(MediaViewerState.Showing(submission))
+            val media = submission.media()
+            if (media != null) {
+                backStack.add(Nav.MediaViewer(media))
+            }
         },
         shape = RoundedCornerShape(UiConstants.ROUNDED_CORNER_RADIUS),
         modifier = modifier

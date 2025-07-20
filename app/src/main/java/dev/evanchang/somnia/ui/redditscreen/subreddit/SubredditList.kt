@@ -31,6 +31,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavBackStack
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -49,12 +50,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun SubredditList(
     subredditViewModel: SubredditViewModel,
+    backStack: NavBackStack,
     listState: LazyListState,
-    screenSize: Offset,
     topPadding: Dp,
     bottomPadding: Dp,
-    onClickSubreddit: (String) -> Unit,
-    onClickSubmission: (Submission) -> Unit,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         subredditViewModel.submissions.collectAsLazyPagingItems()
@@ -76,22 +75,6 @@ fun SubredditList(
             subredditViewModel.updateIsRefreshing(false)
             listState.scrollToItem(0)
         }
-    }
-
-    // Media viewer
-    val mediaViewerState = subredditViewModel.mediaViewerState.collectAsStateWithLifecycle()
-    when (val s = mediaViewerState.value) {
-        is MediaViewerState.Showing -> {
-            MediaViewer(
-                submission = s.submission,
-                screenSize = screenSize,
-                onClose = {
-                    subredditViewModel.setMediaViewerState(MediaViewerState.NotShowing)
-                },
-            )
-        }
-
-        else -> {}
     }
 
     // Submissions list
@@ -137,11 +120,7 @@ fun SubredditList(
                     SubmissionCard(
                         submission = submission,
                         mode = SubmissionCardMode.PREVIEW_FULL,
-                        setShowMediaViewerState = {
-                            subredditViewModel.setMediaViewerState(it)
-                        },
-                        onClickSubreddit = onClickSubreddit,
-                        onClickSubmission = onClickSubmission,
+                        backStack = backStack,
                     )
                 }
             }

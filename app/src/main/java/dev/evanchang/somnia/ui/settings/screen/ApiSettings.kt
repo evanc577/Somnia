@@ -9,6 +9,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavBackStack
 import com.alorma.compose.settings.ui.SettingsGroup
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.dataStore
@@ -17,7 +18,7 @@ import dev.evanchang.somnia.ui.settings.composable.SettingsTextEdit
 import kotlinx.coroutines.launch
 
 @Composable
-fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
+fun ApiSettingsScreen(backStack: NavBackStack) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -31,7 +32,7 @@ fun ApiSettingsScreen(onNavigateBack: () -> Unit) {
 
     SettingsScaffold(
         title = "API Settings",
-        onNavigateBack = onNavigateBack,
+        backStack = backStack,
     ) {
         SettingsGroup(title = { Text(text = "Reddit") }) {
             SettingsTextEdit(
@@ -118,5 +119,5 @@ private suspend fun setRedditApiUserAgent(context: Context, userAgent: String) {
 @Preview
 @Composable
 private fun ApiSettingsScreenPreview() {
-    ApiSettingsScreen(onNavigateBack = {})
+    ApiSettingsScreen(NavBackStack())
 }

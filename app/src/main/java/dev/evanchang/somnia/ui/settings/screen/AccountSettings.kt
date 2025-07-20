@@ -13,6 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavBackStack
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.appSettings.AccountSettings
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AccountSettingsScreen(
-    onNavigateBack: () -> Unit,
+    backStack: NavBackStack,
     onNavigateToLogin: (clientId: String, redirectUri: String) -> Unit,
     loginResult: () -> LoginResult?,
 ) {
@@ -63,7 +64,7 @@ fun AccountSettingsScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        onNavigateBack = onNavigateBack,
+        backStack = backStack,
     ) {
         SettingsMenuLink(
             title = { Text(text = "Add new account") },

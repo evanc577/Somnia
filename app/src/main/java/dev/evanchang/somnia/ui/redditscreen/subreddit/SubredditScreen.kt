@@ -1,7 +1,5 @@
 package dev.evanchang.somnia.ui.redditscreen.subreddit
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +57,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -79,19 +76,16 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavBackStack
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.appSettings.AppSettings
-import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.SortDuration
 import dev.evanchang.somnia.data.SubmissionSort
+import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
-import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
-import dev.evanchang.somnia.ui.navigation.NavigationViewModel
-import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionViewModel
 import dev.evanchang.somnia.ui.util.BottomSheetGridItem
 import dev.evanchang.somnia.ui.util.BottomSheetItem
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
@@ -112,14 +106,17 @@ class BottomBarNestedScrollConnection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubredditScreen(
+    subreddit: String,
     appSettings: AppSettings,
-    screenStackIndex: Int,
-    navigationViewModel: NavigationViewModel,
-    subredditViewModel: SubredditViewModel,
-    onNavigateToSettings: () -> Unit,
+    backStack: NavBackStack,
+    subredditViewModel: SubredditViewModel = viewModel(
+        factory = SubredditViewModel.Factory(
+            subreddit,
+            appSettings.generalSettings.defaultSubmissionSort,
+        )
+    )
 ) {
     val density = LocalDensity.current
-    val scope = rememberCoroutineScope()
 
     // Scrolling
     val lazyPagingItems = subredditViewModel.submissions.collectAsLazyPagingItems()
@@ -167,151 +164,119 @@ fun SubredditScreen(
 
     // Exit confirmation if this is the top level screen
     val snackbarHostState = remember { SnackbarHostState() }
-    BackHandler(enabled = screenStackIndex == 0 && snackbarHostState.currentSnackbarData == null) {
-        if (snackbarHostState.currentSnackbarData == null) {
-            scope.launch {
-                snackbarHostState.showSnackbar("Press back again to exit")
-            }
-        }
-    }
 
     // UI
-    HorizontalDraggableScreen(
-        screenStackIndex = screenStackIndex,
-        navigationViewModel = navigationViewModel,
-    ) {
-        Scaffold(
-            modifier = Modifier
-                .nestedScroll(nestedScrollConnection)
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-            snackbarHost = {
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier.offset {
+    Scaffold(
+        modifier = Modifier
+            .nestedScroll(nestedScrollConnection)
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.offset {
+                    IntOffset(
+                        x = 0,
+                        y = bottomBarOffsetHeightPx.floatValue.unaryMinus()
+                            .coerceAtMost(BOTTOM_BAR_HEIGHT.toPx()).roundToInt(),
+                    )
+                },
+            )
+        },
+        topBar = {
+            TopAppBar(
+                title = {
+                    if (subredditViewModel.subreddit.isEmpty()) {
+                        Text(text = "Frontpage")
+                    } else {
+                        Text(text = "r/${subredditViewModel.subreddit}")
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+                modifier = Modifier.clickable { scrollToTop = true },
+            )
+        },
+        bottomBar = {
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier
+                    .height(bottomBarHeight)
+                    .fillMaxWidth()
+                    .offset {
                         IntOffset(
-                            x = 0,
-                            y = bottomBarOffsetHeightPx.floatValue.unaryMinus()
-                                .coerceAtMost(BOTTOM_BAR_HEIGHT.toPx()).roundToInt(),
+                            x = 0, y = -bottomBarOffsetHeightPx.floatValue.roundToInt()
                         )
                     },
-                )
-            },
-            topBar = {
-                TopAppBar(
-                    title = {
-                        if (subredditViewModel.subreddit.isEmpty()) {
-                            Text(text = "Frontpage")
-                        } else {
-                            Text(text = "r/${subredditViewModel.subreddit}")
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    ),
-                    modifier = Modifier.clickable { scrollToTop = true },
-                )
-            },
-            bottomBar = {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    modifier = Modifier
-                        .height(bottomBarHeight)
-                        .fillMaxWidth()
-                        .offset {
-                            IntOffset(
-                                x = 0, y = -bottomBarOffsetHeightPx.floatValue.roundToInt()
-                            )
-                        },
+            ) {
+                Box(
+                    contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
                 ) {
-                    Box(
-                        contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(BOTTOM_BAR_HEIGHT)
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(BOTTOM_BAR_HEIGHT)
-                        ) {
-                            IconButton(onClick = {}) {
-                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                            }
-                            IconButton(onClick = {}) {
-                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                            }
-                            FloatingActionButton(onClick = { showBottomSheet = true }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.ExpandCircleDown,
-                                    contentDescription = "",
-                                    modifier = Modifier.scale(scaleX = 1f, scaleY = -1f)
-                                )
-                            }
-                            IconButton(onClick = {}) {
-                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                            }
-                            IconButton(onClick = {}) {
-                                Icon(imageVector = Icons.Default.Star, contentDescription = "")
-                            }
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }
+                        FloatingActionButton(onClick = { showBottomSheet = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.ExpandCircleDown,
+                                contentDescription = "",
+                                modifier = Modifier.scale(scaleX = 1f, scaleY = -1f)
+                            )
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "")
                         }
                     }
                 }
-            },
-        ) { padding ->
-            // Only use top bar padding without status bar
-            topPadding = remember(padding) {
-                (padding.calculateTopPadding() - with(density) { statusBarHeightPx.toDp() }).coerceAtLeast(
-                    0.dp
-                )
             }
-            Column {
-                Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
-                SubredditList(
-                    subredditViewModel = subredditViewModel,
-                    listState = listState,
-                    screenSize = navigationViewModel.screenSize.value,
-                    topPadding = topPadding,
-                    bottomPadding = with(density) { navBarHeightPx.toDp() },
-                    onClickSubreddit = { subreddit ->
-                        navigationViewModel.pushSubredditScreen(
-                            SubredditViewModel(
-                                subreddit, appSettings.generalSettings.defaultSubmissionSort,
-                            )
-                        )
-                    },
-                    onClickSubmission = {
-                        navigationViewModel.pushSubmissionScreen(
-                            SubmissionViewModel(
-                                initialSubmission = it,
-                                submissionId = it.id,
-                                sort = CommentSort.BEST,
-                            )
-                        )
-                    },
-                )
-            }
-            if (showBottomSheet) {
-                BottomSheet(
-                    onDismissRequest = { showBottomSheet = false },
-                    sheetState = sheetState,
-                    onNavigateToSettings = onNavigateToSettings,
-                    onSortSelected = { sort ->
-                        updateSort = sort
-                    },
-                    onScrollToTop = {
-                        scrollToTop = true
-                        showBottomSheet = false
-                    },
-                    onGoToSubreddit = { subreddit ->
-                        navigationViewModel.pushSubredditScreen(
-                            SubredditViewModel(
-                                subreddit, appSettings.generalSettings.defaultSubmissionSort,
-                            )
-                        )
-                    },
-                )
-            }
+        },
+    ) { padding ->
+        // Only use top bar padding without status bar
+        topPadding = remember(padding) {
+            (padding.calculateTopPadding() - with(density) { statusBarHeightPx.toDp() }).coerceAtLeast(
+                0.dp
+            )
+        }
+        Column {
+            Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
+            SubredditList(
+                subredditViewModel = subredditViewModel,
+                backStack = backStack,
+                listState = listState,
+                topPadding = topPadding,
+                bottomPadding = with(density) { navBarHeightPx.toDp() },
+            )
+        }
+        if (showBottomSheet) {
+            BottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState,
+                onNavigateToSettings = { backStack.add(Nav.Settings.TopLevel) },
+                onSortSelected = { sort ->
+                    updateSort = sort
+                },
+                onScrollToTop = {
+                    scrollToTop = true
+                    showBottomSheet = false
+                },
+                onGoToSubreddit = { subreddit ->
+                    backStack.add(Nav.Subreddit(subreddit))
+                },
+            )
         }
     }
 }
@@ -592,13 +557,8 @@ private fun SortDurationSelection(
 @Composable
 private fun HomeScreenPreview() {
     SubredditScreen(
+        subreddit = "dreamcatcher",
         appSettings = AppSettings(),
-        onNavigateToSettings = {},
-        screenStackIndex = 1,
-        navigationViewModel = viewModel(),
-        subredditViewModel = SubredditViewModel(
-            subreddit = "dreamcatcher",
-            defaultSort = SubmissionSort.New,
-        )
+        backStack = NavBackStack(),
     )
 }

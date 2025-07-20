@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListPrefetchStrategy
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,7 +17,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,18 +29,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavBackStack
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.Comment
+import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
-import dev.evanchang.somnia.ui.navigation.HorizontalDraggableScreen
-import dev.evanchang.somnia.ui.navigation.NavigationViewModel
-import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditViewModel
 import dev.evanchang.somnia.ui.util.SomniaMarkdown
 import dev.evanchang.somnia.ui.util.SubmissionCard
 import dev.evanchang.somnia.ui.util.SubmissionCardMode
@@ -51,10 +45,15 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SubmissionScreen(
+    initialSubmission: Submission,
+    submissionId: String,
     appSettings: AppSettings,
-    screenStackIndex: Int,
-    navigationViewModel: NavigationViewModel,
-    submissionViewModel: SubmissionViewModel,
+    backStack: NavBackStack,
+    submissionViewModel: SubmissionViewModel = SubmissionViewModel(
+        initialSubmission = initialSubmission,
+        submissionId = submissionId,
+        sort = CommentSort.BEST,
+    ),
 ) {
     val scope = rememberCoroutineScope()
 
@@ -73,70 +72,41 @@ fun SubmissionScreen(
         }
     }
 
-    // Media viewer
-    val mediaViewerState = submissionViewModel.mediaViewerState.collectAsStateWithLifecycle()
-    when (val s = mediaViewerState.value) {
-        is MediaViewerState.Showing -> {
-            MediaViewer(
-                submission = s.submission,
-                screenSize = navigationViewModel.screenSize.value,
-                onClose = {
-                    submissionViewModel.setMediaViewerState(MediaViewerState.NotShowing)
-                },
-            )
-        }
+    val submissionVal = submission
+    Scaffold { padding ->
+        if (submissionVal != null) {
+            LazyColumn(
+                state = rememberLazyListState(),
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+            ) {
+                // Submission body
+                item(key = submissionVal.name) {
+                    SubmissionCard(
+                        submission = submissionVal,
+                        mode = SubmissionCardMode.DETAILS,
+                        backStack = backStack,
+                    )
+                }
 
-        else -> {}
-    }
-
-    HorizontalDraggableScreen(
-        screenStackIndex = screenStackIndex,
-        navigationViewModel = navigationViewModel,
-    ) {
-        val submissionVal = submission
-        Scaffold { padding ->
-            if (submissionVal != null) {
-                LazyColumn(
-                    state = rememberLazyListState(),
-                    modifier = Modifier
-                        .padding(padding)
-                        .fillMaxSize(),
-                ) {
-                    // Submission body
-                    item(key = submissionVal.name) {
-                        SubmissionCard(
-                            submission = submissionVal,
-                            mode = SubmissionCardMode.DETAILS,
-                            onClickSubreddit = { subreddit ->
-                                navigationViewModel.pushSubredditScreen(
-                                    SubredditViewModel(
-                                        subreddit,
-                                        appSettings.generalSettings.defaultSubmissionSort,
-                                    )
-                                )
-                            },
-                            setShowMediaViewerState = { submissionViewModel.setMediaViewerState(it) },
-                        )
-                    }
-
-                    // Comments
-                    items(
-                        count = lazyCommentItems.itemCount,
-                        key = { index ->
-                            lazyCommentItems[index]!!.name()
-                        },
-                    ) { index ->
-                        val comment = lazyCommentItems[index]!!
-                        CommentItem(
-                            comment = comment,
-                            baseDepth = topCommentDepth,
-                            onMore = {
-                                scope.launch {
+                // Comments
+                items(
+                    count = lazyCommentItems.itemCount,
+                    key = { index ->
+                        lazyCommentItems[index]!!.name()
+                    },
+                ) { index ->
+                    val comment = lazyCommentItems[index]!!
+                    CommentItem(
+                        comment = comment,
+                        baseDepth = topCommentDepth,
+                        onMore = {
+                            scope.launch {
 //                                    submissionViewModel.loadMore(comment.name())
-                                }
-                            },
-                        )
-                    }
+                            }
+                        },
+                    )
                 }
             }
         }
@@ -213,7 +183,9 @@ private fun CommentDisplay(comment: Comment.CommentData) {
 
 @Composable
 private fun CommentMoreDisplay(more: Comment.More, onClick: (String) -> Unit) {
-    Text(text = "Load more (${more.children.size}) (depth = ${more.depth})", modifier = Modifier.clickable { onClick(more.name) })
+    Text(
+        text = "Load more (${more.children.size}) (depth = ${more.depth})",
+        modifier = Modifier.clickable { onClick(more.name) })
 }
 
 @Preview

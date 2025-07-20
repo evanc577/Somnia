@@ -30,7 +30,8 @@ telephoto = "0.16.0"
 textflow = "1.2.1"
 junitJupiter = "5.13.3"
 appcompat = "1.7.1"
-composeTesting = "1.0.0-alpha01"
+nav3Core = "1.0.0-alpha05"
+lifecycleViewmodelNav3 = "1.0.0-alpha03"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -75,7 +76,6 @@ media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", versi
 media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exoplayer-dash", version.ref = "media3" }
 media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 re2j = { group = "com.google.re2j", name = "re2j", version.ref = "re2j" }
 runtime-tracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "runtimeTracing" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
@@ -86,6 +86,9 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 multiplatform-markdown-renderer-android = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-android", version.ref = "mmr"}
 multiplatform-markdown-renderer-m3 = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-m3", version.ref = "mmr"}
 multiplatform-markdown-renderer-coil3 = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-coil3", version.ref = "mmr"}
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

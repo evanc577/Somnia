@@ -3,9 +3,12 @@ package dev.evanchang.somnia.api.media
 import dev.evanchang.somnia.api.ApiResult
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.serialization.Serializable
 import okhttp3.internal.immutableListOf
 
+@Serializable
 sealed class Media : MediaResolver {
+    @Serializable
     class RedditGallery(val images: ImmutableList<String>) : Media() {
         override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
             return ApiResult.Ok(images.map {
@@ -17,6 +20,7 @@ sealed class Media : MediaResolver {
         }
     }
 
+    @Serializable
     class RedditVideo(val video: String) : Media() {
         override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
             return ApiResult.Ok(
@@ -30,6 +34,7 @@ sealed class Media : MediaResolver {
         }
     }
 
+    @Serializable
     class Streamable(val id: String) : Media() {
         override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
             return when (val response = StreamableApi().getVideo(id)) {
@@ -40,18 +45,21 @@ sealed class Media : MediaResolver {
         }
     }
 
+    @Serializable
     class ImgurAlbum(val id: String) : Media() {
         override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
             return Imgur().getAlbum(id)
         }
     }
 
+    @Serializable
     class ImgurMedia(val id: String) : Media() {
         override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
             return Imgur().getMedia(id)
         }
     }
 
+    @Serializable
     class Redgifs(val id: String) : Media() {
         override suspend fun fetchData(): ApiResult<ImmutableList<MediaItem>> {
             return ApiResult.Ok(

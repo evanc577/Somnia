@@ -8,23 +8,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation3.runtime.NavBackStack
 import com.alorma.compose.settings.ui.SettingsMenuLink
+import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit,
-    onNavigateToApiSettings: () -> Unit,
-    onNavigateToAccountSettings: () -> Unit,
-    onNavigateToGeneralSettings: () -> Unit,
+    backStack: NavBackStack,
 ) {
     SettingsScaffold(
         title = "Settings",
-        onNavigateBack = onNavigateBack,
+        backStack = backStack,
     ) {
         SettingsMenuLink(
             title = { Text(text = "Account") },
-            onClick = onNavigateToAccountSettings,
+            onClick = { backStack.add(Nav.Settings.Account) },
             icon = {
                 Icon(
                     imageVector = Icons.Default.AccountCircle, contentDescription = "account icon"
@@ -33,12 +32,12 @@ fun SettingsScreen(
         )
         SettingsMenuLink(
             title = { Text(text = "API") },
-            onClick = onNavigateToApiSettings,
+            onClick = { backStack.add(Nav.Settings.Api) },
             icon = { Icon(imageVector = Icons.Default.Api, contentDescription = "API icon") },
         )
         SettingsMenuLink(
             title = { Text(text = "General") },
-            onClick = onNavigateToGeneralSettings,
+            onClick = { backStack.add(Nav.Settings.General) },
             icon = {
                 Icon(
                     imageVector = Icons.Default.Settings, contentDescription = "settings icon"
@@ -51,10 +50,5 @@ fun SettingsScreen(
 @Preview
 @Composable
 private fun SettingsScreenPreview() {
-    SettingsScreen(
-        onNavigateBack = {},
-        onNavigateToApiSettings = {},
-        onNavigateToAccountSettings = {},
-        onNavigateToGeneralSettings = {},
-    )
+    SettingsScreen(NavBackStack())
 }

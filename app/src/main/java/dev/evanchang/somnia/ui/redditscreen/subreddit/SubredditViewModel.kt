@@ -1,12 +1,12 @@
 package dev.evanchang.somnia.ui.redditscreen.subreddit
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import dev.evanchang.somnia.data.SubmissionSort
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,11 +39,13 @@ class SubredditViewModel(val subreddit: String, val defaultSort: SubmissionSort)
         sort.value = newSort
     }
 
-    private var _mediaViewerState: MutableStateFlow<MediaViewerState> =
-        MutableStateFlow(MediaViewerState.NotShowing)
-    val mediaViewerState = _mediaViewerState.asStateFlow()
-
-    fun setMediaViewerState(mediaViewerState: MediaViewerState) {
-        _mediaViewerState.value = mediaViewerState
+    companion object {
+        fun Factory(subreddit: String, defaultSort: SubmissionSort): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    @Suppress("UNCHECKED_CAST")
+                    return SubredditViewModel(subreddit, defaultSort) as T
+                }
+            }
     }
 }

@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "dev.evanchang.somnia"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.evanchang.somnia"
         minSdk = 30
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0-alpha1"
 
@@ -126,9 +126,11 @@ dependencies {
     implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.ui)
-    implementation(libs.navigation.compose)
     implementation(libs.runtime.tracing)
     implementation(libs.slf4j.api)
     implementation(libs.telephoto)
     implementation(libs.textflow)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 }

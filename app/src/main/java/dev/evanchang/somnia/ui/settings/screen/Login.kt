@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation3.runtime.NavBackStack
 import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.reddit.RedditLoginApiInstance
 import dev.evanchang.somnia.appSettings.AccountSettings
@@ -30,8 +31,8 @@ import kotlinx.parcelize.Parcelize
 fun LoginWebView(
     clientId: String,
     redirectUri: String,
-    onNavigateBack: () -> Unit,
     onLoginFinished: (LoginResult) -> Unit,
+    backStack: NavBackStack,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -63,7 +64,7 @@ fun LoginWebView(
     // Adding a WebView inside AndroidView with layout as full screen
     SettingsScaffold(
         title = "Log in",
-        onNavigateBack = onNavigateBack,
+        backStack = backStack,
     ) {
         if (!retrievingAccessToken) {
             AndroidView(factory = {

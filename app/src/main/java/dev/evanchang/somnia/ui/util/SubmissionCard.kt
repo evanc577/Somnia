@@ -37,15 +37,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavBackStack
 import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
+import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.ROUNDED_CORNER_RADIUS
 import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 import eu.wewox.textflow.material3.TextFlow
 import eu.wewox.textflow.material3.TextFlowObstacleAlignment
@@ -60,9 +61,7 @@ enum class SubmissionCardMode {
 fun SubmissionCard(
     submission: Submission,
     mode: SubmissionCardMode,
-    setShowMediaViewerState: (MediaViewerState) -> Unit,
-    onClickSubreddit: (String) -> Unit,
-    onClickSubmission: ((Submission) -> Unit)? = null,
+    backStack: NavBackStack,
 ) {
     LocalContext.current
     val media = remember { submission.media() }
@@ -72,14 +71,21 @@ fun SubmissionCard(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
         shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
-        modifier = Modifier.thenIf(onClickSubmission != null) {
-            Modifier.clickable { onClickSubmission!!(submission) }
-        },
-    ) {
+        modifier =
+            Modifier.clickable {
+                backStack.add(
+                    Nav.Submission(
+                        initialSubmission = submission,
+                        submissionId = submission.id,
+                    )
+                )
+            },
+
+        ) {
         Column(modifier = Modifier.padding(all = CARD_PADDING)) {
             SubmissionCardHeader(
                 submission = submission,
-                onClickSubreddit = onClickSubreddit,
+                onClickSubreddit = { backStack.add(Nav.Subreddit(submission.subreddit)) },
             )
             Spacer(modifier = Modifier.height(SPACER_SIZE))
             if (mode == SubmissionCardMode.PREVIEW_FULL && media != null) {
@@ -92,7 +98,7 @@ fun SubmissionCard(
                 SubmissionCardPreviewImage(
                     submission = submission,
                     compact = false,
-                    setShowMediaViewerState = setShowMediaViewerState,
+                    backStack = backStack,
                 )
             } else {
                 TextFlow(
@@ -105,7 +111,7 @@ fun SubmissionCard(
                         SubmissionCardPreviewImage(
                             submission = submission,
                             compact = true,
-                            setShowMediaViewerState = setShowMediaViewerState,
+                            backStack = backStack,
                         )
                     }
                 }
@@ -280,9 +286,7 @@ private fun SubmissionCardPreviewPreview() {
                     SubmissionCard(
                         submission = submission,
                         mode = SubmissionCardMode.PREVIEW_FULL,
-                        setShowMediaViewerState = {},
-                        onClickSubreddit = {},
-                        onClickSubmission = {},
+                        backStack = NavBackStack(),
                     )
                 }
             }
@@ -298,9 +302,7 @@ private fun SubmissionCardDetailsPreview() {
         SubmissionCard(
             submission = createFakeSubmission(),
             mode = SubmissionCardMode.DETAILS,
-            setShowMediaViewerState = {},
-            onClickSubreddit = {},
-            onClickSubmission = {},
+            backStack = NavBackStack(),
         )
     }
 }

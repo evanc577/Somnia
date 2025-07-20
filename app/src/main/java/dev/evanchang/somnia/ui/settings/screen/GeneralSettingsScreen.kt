@@ -7,16 +7,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation3.runtime.NavBackStack
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 
 @Composable
-fun GeneralSettings(onNavigateBack: () -> Unit) {
+fun GeneralSettingsScreen(backStack: NavBackStack) {
     var showSubmissionSortDialog by remember { mutableStateOf(false) }
 
     SettingsScaffold(
         title = "General Settings",
-        onNavigateBack = onNavigateBack,
+        backStack = backStack,
     ) {
         SettingsMenuLink(
             title = { Text(text = "Default submissions sort") },
@@ -28,7 +29,5 @@ fun GeneralSettings(onNavigateBack: () -> Unit) {
 @Preview
 @Composable
 private fun GeneralSettingsPreview() {
-    GeneralSettings(
-        onNavigateBack = {},
-    )
+    GeneralSettingsScreen(NavBackStack())
 }
