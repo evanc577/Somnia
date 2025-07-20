@@ -109,17 +109,17 @@ fun SubredditScreen(
     subreddit: String,
     appSettings: AppSettings,
     backStack: NavBackStack,
-    subredditViewModel: SubredditViewModel = viewModel(
+) {
+    val vm: SubredditViewModel = viewModel(
         factory = SubredditViewModel.Factory(
-            subreddit,
-            appSettings.generalSettings.defaultSubmissionSort,
+            subreddit = subreddit,
+            defaultSort = appSettings.generalSettings.defaultSubmissionSort,
         )
     )
-) {
     val density = LocalDensity.current
 
     // Scrolling
-    val lazyPagingItems = subredditViewModel.submissions.collectAsLazyPagingItems()
+    val lazyPagingItems = vm.submissions.collectAsLazyPagingItems()
     val listState = rememberLazyListState()
     var scrollToTop by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(scrollToTop) {
@@ -157,8 +157,8 @@ fun SubredditScreen(
     var updateSort: SubmissionSort? by remember { mutableStateOf(null) }
     LaunchedEffect(updateSort) {
         val updateSortVal = updateSort ?: return@LaunchedEffect
-        subredditViewModel.updateSort(updateSortVal)
-        subredditViewModel.updateIsRefreshing(true)
+        vm.updateSort(updateSortVal)
+        vm.updateIsRefreshing(true)
         lazyPagingItems.refresh()
     }
 
@@ -185,10 +185,10 @@ fun SubredditScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    if (subredditViewModel.subreddit.isEmpty()) {
+                    if (vm.subreddit.isEmpty()) {
                         Text(text = "Frontpage")
                     } else {
-                        Text(text = "r/${subredditViewModel.subreddit}")
+                        Text(text = "r/${vm.subreddit}")
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -254,7 +254,7 @@ fun SubredditScreen(
         Column {
             Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
             SubredditList(
-                subredditViewModel = subredditViewModel,
+                subredditViewModel = vm,
                 backStack = backStack,
                 listState = listState,
                 topPadding = topPadding,

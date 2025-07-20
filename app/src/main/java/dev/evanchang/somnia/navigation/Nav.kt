@@ -1,6 +1,5 @@
 package dev.evanchang.somnia.navigation
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -48,7 +47,7 @@ sealed class Nav : NavKey {
 }
 
 @Composable
-fun SomniaNavDisplay(
+fun NavigationRoot(
     backStack: NavBackStack,
     appSettings: AppSettings,
 ) {
@@ -85,7 +84,7 @@ fun SomniaNavDisplay(
 
                 is Nav.MediaViewer -> TODO()
 
-                else -> NavEntry(key) { Text("Unknown route") }
+                else -> throw RuntimeException("Invalid NavKey")
             }
         }
     )

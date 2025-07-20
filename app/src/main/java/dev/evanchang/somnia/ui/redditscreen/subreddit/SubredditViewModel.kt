@@ -39,13 +39,11 @@ class SubredditViewModel(val subreddit: String, val defaultSort: SubmissionSort)
         sort.value = newSort
     }
 
-    companion object {
-        fun Factory(subreddit: String, defaultSort: SubmissionSort): ViewModelProvider.Factory =
-            object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    @Suppress("UNCHECKED_CAST")
-                    return SubredditViewModel(subreddit, defaultSort) as T
-                }
-            }
+    class Factory(private val subreddit: String, private val defaultSort: SubmissionSort) :
+        ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            @Suppress("UNCHECKED_CAST")
+            return SubredditViewModel(subreddit, defaultSort) as T
+        }
     }
 }

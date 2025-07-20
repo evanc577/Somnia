@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -49,17 +50,19 @@ fun SubmissionScreen(
     submissionId: String,
     appSettings: AppSettings,
     backStack: NavBackStack,
-    submissionViewModel: SubmissionViewModel = SubmissionViewModel(
-        initialSubmission = initialSubmission,
-        submissionId = submissionId,
-        sort = CommentSort.BEST,
-    ),
 ) {
+    val vm: SubmissionViewModel = viewModel(
+        factory = SubmissionViewModel.Factory(
+            initialSubmission = initialSubmission,
+            submissionId = submissionId,
+            sort = CommentSort.BEST,
+        )
+    )
     val scope = rememberCoroutineScope()
 
-    val submission by submissionViewModel.submission
+    val submission by vm.submission
     val lazyCommentItems: LazyPagingItems<Comment> =
-        submissionViewModel.comments.collectAsLazyPagingItems()
+        vm.comments.collectAsLazyPagingItems()
     val topCommentDepth = remember {
         if (lazyCommentItems.itemCount == 0) {
             return@remember 0

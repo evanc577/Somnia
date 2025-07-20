@@ -2,6 +2,7 @@ package dev.evanchang.somnia.ui.redditscreen.submission
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -32,5 +33,16 @@ class SubmissionViewModel(
 
     fun setMediaViewerState(mediaViewerState: MediaViewerState) {
         _mediaViewerState.value = mediaViewerState
+    }
+
+    class Factory(
+        private val initialSubmission: Submission?,
+        private val submissionId: String,
+        private val sort: CommentSort,
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            @Suppress("UNCHECKED_CAST")
+            return SubmissionViewModel(initialSubmission, submissionId, sort) as T
+        }
     }
 }

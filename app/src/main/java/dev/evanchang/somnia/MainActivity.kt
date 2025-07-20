@@ -13,7 +13,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import dev.evanchang.somnia.api.RedditHttpClient
 import dev.evanchang.somnia.appSettings.AppSettingsSerializer
 import dev.evanchang.somnia.navigation.Nav
-import dev.evanchang.somnia.navigation.SomniaNavDisplay
+import dev.evanchang.somnia.navigation.NavigationRoot
 import dev.evanchang.somnia.ui.theme.SomniaTheme
 
 val Context.dataStore by dataStore("settings.json", AppSettingsSerializer)
@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                             subreddit = "",
                         )
                     )
-                    SomniaNavDisplay(
+                    NavigationRoot(
                         backStack = backStack,
                         appSettings = appSettings!!,
                     )
