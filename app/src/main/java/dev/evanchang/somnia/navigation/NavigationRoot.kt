@@ -1,7 +1,10 @@
 package dev.evanchang.somnia.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -97,7 +100,16 @@ fun NavigationRoot() {
                     )
                 }
 
-                is Nav.MediaViewer -> NavEntry(key) {
+                is Nav.MediaViewer -> NavEntry(
+                    key = key,
+                    metadata = NavDisplay.transitionSpec {
+                        EnterTransition.None togetherWith ExitTransition.KeepUntilTransitionsFinished
+                    } + NavDisplay.popTransitionSpec {
+                        EnterTransition.None togetherWith slideOutVertically(targetOffsetY = { -it })
+                    } + NavDisplay.popTransitionSpec {
+                        EnterTransition.None togetherWith slideOutVertically(targetOffsetY = { -it })
+                    },
+                ) {
                     MediaViewer(
                         media = key.media,
                         onClose = { backStack.removeLastOrNull() }
