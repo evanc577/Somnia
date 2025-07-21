@@ -55,11 +55,13 @@ fun LoginScreen(
                 redirectUri = redirectUri,
             )
             onLoginFinished(loginResult)
+            onBack(1)
         }
     }
     val onAuthorizationError: (error: String) -> Unit = { error ->
         val loginResult = LoginResult.Err(error = error)
         onLoginFinished(loginResult)
+        onBack(1)
     }
 
     // Adding a WebView inside AndroidView with layout as full screen
@@ -183,4 +185,15 @@ private suspend fun login(
             redirectUri = redirectUri,
         )
     )
+}private suspend fun addAccountSettings(
+    context: Context, user: String, accountSettings: AccountSettings
+) {
+    context.dataStore.updateData { appSettings ->
+        appSettings.copy(
+            activeUser = user,
+            accountSettings = appSettings.accountSettings.mutate { accountSettingsMap ->
+                accountSettingsMap[user] = accountSettings
+            },
+        )
+    }
 }

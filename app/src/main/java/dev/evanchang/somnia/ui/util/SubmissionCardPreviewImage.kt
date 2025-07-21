@@ -38,7 +38,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.NavBackStack
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
@@ -53,7 +52,8 @@ import kotlinx.collections.immutable.toImmutableList
 fun SubmissionCardPreviewImage(
     submission: Submission,
     compact: Boolean,
-    backStack: NavBackStack,
+    onBack: (Int) -> Unit,
+    onNavigate: (Nav) -> Unit,
     modifier: Modifier = Modifier.Companion,
 ) {
     val previewImage = remember { submission.previewImage() } ?: return
@@ -93,7 +93,7 @@ fun SubmissionCardPreviewImage(
         onClick = {
             val media = submission.media()
             if (media != null) {
-                backStack.add(Nav.MediaViewer(media))
+                onNavigate(Nav.MediaViewer(media))
             }
         },
         shape = RoundedCornerShape(UiConstants.ROUNDED_CORNER_RADIUS),

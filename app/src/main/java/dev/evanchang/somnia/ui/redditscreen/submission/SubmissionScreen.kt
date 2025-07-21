@@ -30,13 +30,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavBackStack
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.Comment
 import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
 import dev.evanchang.somnia.ui.util.SomniaMarkdown
 import dev.evanchang.somnia.ui.util.SubmissionCard
@@ -48,8 +47,8 @@ import kotlinx.coroutines.launch
 fun SubmissionScreen(
     initialSubmission: Submission,
     submissionId: String,
-    appSettings: AppSettings,
-    backStack: NavBackStack,
+    onBack: (Int) -> Unit,
+    onNavigate: (Nav) -> Unit,
 ) {
     val vm: SubmissionViewModel = viewModel(
         factory = SubmissionViewModel.Factory(
@@ -89,7 +88,8 @@ fun SubmissionScreen(
                     SubmissionCard(
                         submission = submissionVal,
                         mode = SubmissionCardMode.DETAILS,
-                        backStack = backStack,
+                        onBack = onBack,
+                        onNavigate = onNavigate,
                     )
                 }
 

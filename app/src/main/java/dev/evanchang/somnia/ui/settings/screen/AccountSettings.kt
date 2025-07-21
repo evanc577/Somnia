@@ -6,13 +6,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import com.alorma.compose.settings.ui.SettingsGroup
@@ -36,9 +36,8 @@ fun AccountSettingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Extract API settings
-    val appSettings by context.dataStore.data.collectAsStateWithLifecycle(initialValue = null)
-    val clientId = appSettings?.apiSettings?.redditClientId
-    val redirectUri = appSettings?.apiSettings?.redditRedirectUri
+    val settings by context.dataStore.data.collectAsState(initial = null)
+    val appSettings = remember(settings) { settings }
 
     // Set to true after action is taken after login success or error
     var loginResult: LoginResult? by remember { mutableStateOf(null) }
@@ -66,63 +65,62 @@ fun AccountSettingsScreen(
         },
         onBack = onBack,
     ) {
-        SettingsMenuLink(
-            title = { Text(text = "Add new account") },
-            onClick = {
-                if (clientId == null) {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Client ID not set")
-                    }
-                } else if (redirectUri == null) {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Redirect URI not set")
-                    }
-                } else {
-                    onNavigate(
-                        Nav.Settings(
-                            SettingsNavKey.Account(
-                                AccountSettingsNavKey.Login(
-                                    clientId = clientId,
-                                    redirectUri = redirectUri,
-                                    onLoginFinished = { result ->
-                                        loginResult = result
-                                    },
+        if (appSettings != null) {
+            SettingsMenuLink(
+                title = { Text(text = "Add new account") },
+                onClick = {
+                    if (appSettings.apiSettings.redditClientId == null) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Client ID not set")
+                        }
+                    } else {
+                        onNavigate(
+                            Nav.Settings(
+                                SettingsNavKey.Account(
+                                    AccountSettingsNavKey.Login(
+                                        clientId = appSettings.apiSettings.redditClientId,
+                                        redirectUri = appSettings.apiSettings.redditRedirectUri,
+                                        onLoginFinished = { result ->
+                                            loginResult = result
+                                            onBack(1)
+                                        },
+                                    )
                                 )
                             )
                         )
-                    )
-                }
-            },
-        )
-        if (appSettings?.accountSettings?.isNotEmpty() == true) {
-            SettingsGroup(title = { Text(text = "Saved accounts") }) {
-                val activeUser = appSettings?.activeUser
-                AccountItem(
-                    username = null, accountSettings = null,
-                    isActiveUser = activeUser == null,
-                    onSetActiveUser = {
-                        scope.launch {
-                            setActiveUser(context, null)
-                        }
-                    },
-                    onDeleteUser = {},
-                )
-                for (account in appSettings?.accountSettings.orEmpty()) {
+                    }
+                },
+            )
+            if (appSettings.accountSettings.isNotEmpty()) {
+                SettingsGroup(title = { Text(text = "Saved accounts") }) {
+                    val activeUser = appSettings.activeUser
                     AccountItem(
-                        username = account.key,
-                        accountSettings = account.value,
-                        isActiveUser = activeUser == account.key,
+                        username = null, accountSettings = null,
+                        isActiveUser = activeUser == null,
                         onSetActiveUser = {
                             scope.launch {
-                                setActiveUser(context = context, user = account.key)
+                                setActiveUser(context, null)
                             }
                         },
-                        onDeleteUser = {
-                            scope.launch {
-                                deleteUser(context = context, user = account.key)
-                            }
-                        },
+                        onDeleteUser = {},
                     )
+                    for (account in appSettings.accountSettings) {
+                        AccountItem(
+                            username = account.key,
+                            accountSettings = account.value,
+                            isActiveUser = activeUser == account.key,
+                            onSetActiveUser = {
+                                scope.launch {
+                                    setActiveUser(context = context, user = account.key)
+                                }
+                            },
+                            onDeleteUser = {
+                                scope.launch {
+                                    deleteUser(context = context, user = account.key)
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }

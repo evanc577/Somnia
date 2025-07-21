@@ -38,10 +38,7 @@ class MainActivity : ComponentActivity() {
             }
 
             SomniaTheme {
-                // Start UI once settings have loaded
-                if (appSettings != null) {
-                    NavigationRoot(appSettings = appSettings!!)
-                }
+                NavigationRoot()
             }
         }
     }

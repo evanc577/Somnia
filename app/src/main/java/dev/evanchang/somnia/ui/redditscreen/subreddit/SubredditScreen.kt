@@ -53,6 +53,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +69,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -76,11 +78,10 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavBackStack
 import androidx.paging.compose.collectAsLazyPagingItems
-import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.SortDuration
 import dev.evanchang.somnia.data.SubmissionSort
+import dev.evanchang.somnia.dataStore
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
@@ -108,13 +109,20 @@ class BottomBarNestedScrollConnection(
 @Composable
 fun SubredditScreen(
     subreddit: String,
-    appSettings: AppSettings,
-    backStack: NavBackStack,
+    onBack: (Int) -> Unit,
+    onNavigate: (Nav) -> Unit,
 ) {
+    val context = LocalContext.current
+    val settings by context.dataStore.data.collectAsState(initial = null)
+    val defaultSort = remember(settings) { settings?.generalSettings?.defaultSubmissionSort }
+    if (defaultSort == null) {
+        return
+    }
+
     val vm: SubredditViewModel = viewModel(
         factory = SubredditViewModel.Factory(
             subreddit = subreddit,
-            defaultSort = appSettings.generalSettings.defaultSubmissionSort,
+            defaultSort = defaultSort,
         )
     )
     val density = LocalDensity.current
@@ -256,17 +264,18 @@ fun SubredditScreen(
             Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
             SubredditList(
                 subredditViewModel = vm,
-                backStack = backStack,
                 listState = listState,
                 topPadding = topPadding,
                 bottomPadding = with(density) { navBarHeightPx.toDp() },
+                onBack = onBack,
+                onNavigate = onNavigate,
             )
         }
         if (showBottomSheet) {
             BottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 sheetState = sheetState,
-                onNavigateToSettings = { backStack.add(Nav.Settings(SettingsNavKey.TopLevel)) },
+                onNavigateToSettings = { onNavigate(Nav.Settings(SettingsNavKey.TopLevel)) },
                 onSortSelected = { sort ->
                     updateSort = sort
                 },
@@ -275,7 +284,7 @@ fun SubredditScreen(
                     showBottomSheet = false
                 },
                 onGoToSubreddit = { subreddit ->
-                    backStack.add(Nav.Subreddit(subreddit))
+                    onNavigate(Nav.Subreddit(subreddit))
                 },
             )
         }
@@ -559,7 +568,7 @@ private fun SortDurationSelection(
 private fun HomeScreenPreview() {
     SubredditScreen(
         subreddit = "dreamcatcher",
-        appSettings = AppSettings(),
-        backStack = NavBackStack(),
+        onBack = {},
+        onNavigate = {},
     )
 }

@@ -27,21 +27,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.NavBackStack
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.CARD_SPACING
 import dev.evanchang.somnia.ui.UiConstants.ROUNDED_CORNER_RADIUS
 import dev.evanchang.somnia.ui.UiConstants.SPACER_SIZE
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
-import dev.evanchang.somnia.ui.mediaViewer.MediaViewerState
 import dev.evanchang.somnia.ui.util.SubmissionCard
 import dev.evanchang.somnia.ui.util.SubmissionCardMode
 import kotlinx.coroutines.launch
@@ -50,10 +47,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun SubredditList(
     subredditViewModel: SubredditViewModel,
-    backStack: NavBackStack,
     listState: LazyListState,
     topPadding: Dp,
     bottomPadding: Dp,
+    onBack: (Int) -> Unit,
+    onNavigate: (Nav) -> Unit,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         subredditViewModel.submissions.collectAsLazyPagingItems()
@@ -120,7 +118,8 @@ fun SubredditList(
                     SubmissionCard(
                         submission = submission,
                         mode = SubmissionCardMode.PREVIEW_FULL,
-                        backStack = backStack,
+                        onBack = onBack,
+                        onNavigate = onNavigate,
                     )
                 }
             }

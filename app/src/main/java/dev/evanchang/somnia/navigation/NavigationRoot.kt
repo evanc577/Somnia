@@ -12,11 +12,9 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import dev.evanchang.somnia.api.media.Media
-import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.ui.mediaViewer.MediaViewer
 import dev.evanchang.somnia.ui.redditscreen.submission.SubmissionScreen
 import dev.evanchang.somnia.ui.redditscreen.subreddit.SubredditScreen
-import dev.evanchang.somnia.ui.settings.screen.AccountSettingsNavKey
 import dev.evanchang.somnia.ui.settings.screen.SettingsNav
 import dev.evanchang.somnia.ui.settings.screen.SettingsNavKey
 import kotlinx.serialization.Serializable
@@ -40,9 +38,7 @@ sealed class Nav : NavKey {
 }
 
 @Composable
-fun NavigationRoot(
-    appSettings: AppSettings,
-) {
+fun NavigationRoot() {
     val backStack = rememberNavBackStack(
         Nav.Subreddit(
             subreddit = "",
@@ -87,8 +83,8 @@ fun NavigationRoot(
                 is Nav.Subreddit -> NavEntry(key) {
                     SubredditScreen(
                         subreddit = key.subreddit,
-                        appSettings = appSettings,
-                        backStack = backStack,
+                        onBack = onBack,
+                        onNavigate = onNavigate,
                     )
                 }
 
@@ -96,8 +92,8 @@ fun NavigationRoot(
                     SubmissionScreen(
                         initialSubmission = key.initialSubmission,
                         submissionId = key.submissionId,
-                        appSettings = appSettings,
-                        backStack = backStack,
+                        onBack = onBack,
+                        onNavigate = onNavigate,
                     )
                 }
 
