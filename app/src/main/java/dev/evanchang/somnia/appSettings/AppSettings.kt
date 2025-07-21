@@ -26,5 +26,5 @@ data class ApiSettings(
 @Keep
 @Serializable
 data class GeneralSettings(
-    val defaultSubmissionSort: SubmissionSort = SubmissionSort.Hot,
+    val defaultSubmissionSort: SubmissionSort = SubmissionSort.Best,
 )

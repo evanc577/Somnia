@@ -6,14 +6,29 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import dev.evanchang.somnia.appSettings.AppSettings
 import dev.evanchang.somnia.data.SubmissionSort
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
-class SubredditViewModel(val subreddit: String, val defaultSort: SubmissionSort) : ViewModel() {
-    private val sort = MutableStateFlow(defaultSort)
+class SubredditViewModel(val subreddit: String, settings: Flow<AppSettings>) : ViewModel() {
+    private val sort: MutableStateFlow<SubmissionSort?> =
+        MutableStateFlow(null)
+
+    init {
+        viewModelScope.launch {
+            settings.map { settings ->
+                settings.generalSettings.defaultSubmissionSort
+            }.collect { defaultSort ->
+                sort.value = defaultSort
+            }
+        }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val submissions = sort.flatMapLatest { sort ->
@@ -31,19 +46,19 @@ class SubredditViewModel(val subreddit: String, val defaultSort: SubmissionSort)
     private var _isRefreshing = MutableStateFlow(true)
     val isRefreshing = _isRefreshing.asStateFlow()
 
-    fun updateIsRefreshing(isRefreshing: Boolean) {
+    fun setIsRefreshing(isRefreshing: Boolean) {
         _isRefreshing.value = isRefreshing
     }
 
-    fun updateSort(newSort: SubmissionSort) {
+    fun setSort(newSort: SubmissionSort) {
         sort.value = newSort
     }
 
-    class Factory(private val subreddit: String, private val defaultSort: SubmissionSort) :
+    class Factory(private val subreddit: String, private val settings: Flow<AppSettings>) :
         ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return SubredditViewModel(subreddit, defaultSort) as T
+            return SubredditViewModel(subreddit, settings) as T
         }
     }
 }

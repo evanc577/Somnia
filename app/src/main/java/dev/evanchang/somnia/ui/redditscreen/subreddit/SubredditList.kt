@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import dev.evanchang.somnia.api.isWaitForDataStore
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
@@ -46,7 +47,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubredditList(
-    subredditViewModel: SubredditViewModel,
+    vm: SubredditViewModel,
     listState: LazyListState,
     topPadding: Dp,
     bottomPadding: Dp,
@@ -54,23 +55,29 @@ fun SubredditList(
     onNavigate: (Nav) -> Unit,
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
-        subredditViewModel.submissions.collectAsLazyPagingItems()
-    val isRefreshing by subredditViewModel.isRefreshing.collectAsStateWithLifecycle()
+        vm.submissions.collectAsLazyPagingItems()
+    val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
 
     val pullToRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = remember {
         {
-            subredditViewModel.updateIsRefreshing(true)
+            vm.setIsRefreshing(true)
             coroutineScope.launch {
                 lazySubmissionItems.refresh()
             }
         }
     }
 
-    LaunchedEffect(lazySubmissionItems.loadState.refresh, isRefreshing) {
+    LaunchedEffect(
+        lazySubmissionItems.loadState,
+        isRefreshing,
+    ) {
+        if (lazySubmissionItems.isWaitForDataStore()) {
+            return@LaunchedEffect
+        }
         if (isRefreshing && lazySubmissionItems.loadState.refresh != LoadState.Loading) {
-            subredditViewModel.updateIsRefreshing(false)
+            vm.setIsRefreshing(false)
             listState.scrollToItem(0)
         }
     }
@@ -98,11 +105,13 @@ fun SubredditList(
         ) {
             // Show error card on refresh error
             when (val s = lazySubmissionItems.loadState.refresh) {
-                is LoadState.Error -> item {
-                    ErrorCard(
-                        onRetry = onRefresh,
-                        message = s.error.message,
-                    )
+                is LoadState.Error -> if (!lazySubmissionItems.isWaitForDataStore()) {
+                    item {
+                        ErrorCard(
+                            onRetry = onRefresh,
+                            message = s.error.message,
+                        )
+                    }
                 }
 
                 else -> {}

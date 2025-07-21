@@ -53,7 +53,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -113,16 +112,11 @@ fun SubredditScreen(
     onNavigate: (Nav) -> Unit,
 ) {
     val context = LocalContext.current
-    val settings by context.dataStore.data.collectAsState(initial = null)
-    val defaultSort = remember(settings) { settings?.generalSettings?.defaultSubmissionSort }
-    if (defaultSort == null) {
-        return
-    }
 
     val vm: SubredditViewModel = viewModel(
         factory = SubredditViewModel.Factory(
             subreddit = subreddit,
-            defaultSort = defaultSort,
+            settings = context.dataStore.data,
         )
     )
     val density = LocalDensity.current
@@ -166,8 +160,8 @@ fun SubredditScreen(
     var updateSort: SubmissionSort? by remember { mutableStateOf(null) }
     LaunchedEffect(updateSort) {
         val updateSortVal = updateSort ?: return@LaunchedEffect
-        vm.updateSort(updateSortVal)
-        vm.updateIsRefreshing(true)
+        vm.setSort(updateSortVal)
+        vm.setIsRefreshing(true)
         lazyPagingItems.refresh()
     }
 
@@ -263,7 +257,7 @@ fun SubredditScreen(
         Column {
             Spacer(modifier = Modifier.height(with(density) { statusBarHeightPx.toDp() }))
             SubredditList(
-                subredditViewModel = vm,
+                vm = vm,
                 listState = listState,
                 topPadding = topPadding,
                 bottomPadding = with(density) { navBarHeightPx.toDp() },

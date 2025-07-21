@@ -1,8 +1,8 @@
 package dev.evanchang.somnia.ui.redditscreen.subreddit
 
 import androidx.paging.PagingSource
-import androidx.paging.PagingSourceFactory
 import androidx.paging.PagingState
+import dev.evanchang.somnia.api.WaitForDataStore
 import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.reddit.RedditApiInstance
 import dev.evanchang.somnia.data.Submission
@@ -10,12 +10,17 @@ import dev.evanchang.somnia.data.SubmissionSort
 
 class SubredditPagingSource(
     private val subreddit: String,
-    private val sort: SubmissionSort,
+    private val sort: SubmissionSort?,
 ) :
     PagingSource<String, Submission>() {
     override suspend fun load(
         params: LoadParams<String>
     ): LoadResult<String, Submission> {
+        // Sort may come async from datastore, return nothing if it hasn't loaded yet
+        if (sort == null) {
+            return LoadResult.Error(WaitForDataStore)
+        }
+
         return when (val r = RedditApiInstance.api.getSubredditSubmissions(
             subreddit = subreddit,
             sort = sort,
