@@ -5,19 +5,15 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
-import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.dataStore
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.settings.composable.AccountItem
@@ -38,25 +34,6 @@ fun AccountSettingsScreen(
     // Extract API settings
     val settings by context.dataStore.data.collectAsState(initial = null)
     val appSettings = remember(settings) { settings }
-
-    // Set to true after action is taken after login success or error
-    var loginResult: LoginResult? by remember { mutableStateOf(null) }
-    LaunchedEffect(loginResult) {
-        val loginResult = loginResult
-        if (loginResult != null) {
-            when (loginResult) {
-                is LoginResult.Ok -> scope.launch {
-                    addAccountSettings(
-                        context, loginResult.user, loginResult.accountSettings
-                    )
-                }
-
-                is LoginResult.Err -> scope.launch {
-                    snackbarHostState.showSnackbar("Error logging in: ${loginResult.error}")
-                }
-            }
-        }
-    }
 
     SettingsScaffold(
         title = "Account Settings",
@@ -80,10 +57,6 @@ fun AccountSettingsScreen(
                                     AccountSettingsNavKey.Login(
                                         clientId = appSettings.apiSettings.redditClientId,
                                         redirectUri = appSettings.apiSettings.redditRedirectUri,
-                                        onLoginFinished = { result ->
-                                            loginResult = result
-                                            onBack(1)
-                                        },
                                     )
                                 )
                             )
@@ -144,7 +117,6 @@ fun AccountSettingsNav(
             LoginScreen(
                 clientId = key.clientId,
                 redirectUri = key.redirectUri,
-                onLoginFinished = key.onLoginFinished,
                 onBack = onBack,
             )
         }
@@ -160,22 +132,9 @@ sealed class AccountSettingsNavKey : NavKey {
     data class Login(
         val clientId: String,
         val redirectUri: String,
-        val onLoginFinished: (LoginResult) -> Unit,
     ) : AccountSettingsNavKey()
 }
 
-private suspend fun addAccountSettings(
-    context: Context, user: String, accountSettings: AccountSettings
-) {
-    context.dataStore.updateData { appSettings ->
-        appSettings.copy(
-            activeUser = user,
-            accountSettings = appSettings.accountSettings.mutate { accountSettingsMap ->
-                accountSettingsMap[user] = accountSettings
-            },
-        )
-    }
-}
 
 private suspend fun setActiveUser(
     context: Context, user: String?,

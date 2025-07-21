@@ -1,6 +1,7 @@
 package dev.evanchang.somnia.ui.settings.screen
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import android.os.Parcelable
 import android.view.ViewGroup
@@ -9,7 +10,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.annotation.Keep
+import android.widget.Toast
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,12 +18,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.navigation3.runtime.NavBackStack
 import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.reddit.RedditLoginApiInstance
 import dev.evanchang.somnia.appSettings.AccountSettings
+import dev.evanchang.somnia.dataStore
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
+import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -32,9 +35,9 @@ import kotlinx.serialization.Serializable
 fun LoginScreen(
     clientId: String,
     redirectUri: String,
-    onLoginFinished: (LoginResult) -> Unit,
     onBack: (Int) -> Unit,
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     // Declare a string that contains a url
@@ -43,6 +46,16 @@ fun LoginScreen(
         .appendQueryParameter("client_id", clientId).appendQueryParameter("response_type", "code")
         .appendQueryParameter("state", state).appendQueryParameter("redirect_uri", redirectUri)
         .appendQueryParameter("duration", "permanent").appendQueryParameter("scope", "*").build()
+
+    val onLoginFailure = remember {
+        { loginResult: LoginResult.Err ->
+            Toast.makeText(
+                context,
+                "Login failed: ${loginResult.error}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
     // Login return values
     var retrievingAccessToken by remember { mutableStateOf(false) }
@@ -54,13 +67,20 @@ fun LoginScreen(
                 code = code,
                 redirectUri = redirectUri,
             )
-            onLoginFinished(loginResult)
+            when (loginResult) {
+                is LoginResult.Err -> onLoginFailure(loginResult)
+
+                is LoginResult.Ok -> addAccountSettings(
+                    context = context,
+                    user = loginResult.user,
+                    accountSettings = loginResult.accountSettings,
+                )
+            }
             onBack(1)
         }
     }
     val onAuthorizationError: (error: String) -> Unit = { error ->
-        val loginResult = LoginResult.Err(error = error)
-        onLoginFinished(loginResult)
+        onLoginFailure(LoginResult.Err(error = error))
         onBack(1)
     }
 
@@ -185,7 +205,9 @@ private suspend fun login(
             redirectUri = redirectUri,
         )
     )
-}private suspend fun addAccountSettings(
+}
+
+private suspend fun addAccountSettings(
     context: Context, user: String, accountSettings: AccountSettings
 ) {
     context.dataStore.updateData { appSettings ->
