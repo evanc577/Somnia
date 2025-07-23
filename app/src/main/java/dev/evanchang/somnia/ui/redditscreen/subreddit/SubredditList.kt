@@ -56,14 +56,15 @@ fun SubredditList(
 ) {
     val lazySubmissionItems: LazyPagingItems<Submission> =
         vm.submissions.collectAsLazyPagingItems()
-    val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
 
+    val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
     val pullToRefreshState = rememberPullToRefreshState()
-    val coroutineScope = rememberCoroutineScope()
+
+    val scope = rememberCoroutineScope()
     val onRefresh: () -> Unit = remember {
         {
             vm.setIsRefreshing(true)
-            coroutineScope.launch {
+            scope.launch {
                 lazySubmissionItems.refresh()
             }
         }

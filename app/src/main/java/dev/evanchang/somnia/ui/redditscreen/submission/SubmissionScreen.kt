@@ -11,12 +11,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,16 +30,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import dev.evanchang.somnia.api.isWaitForDataStore
 import dev.evanchang.somnia.data.Comment
-import dev.evanchang.somnia.data.CommentSort
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.dataStore
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
 import dev.evanchang.somnia.ui.util.SomniaMarkdown
@@ -42,7 +51,7 @@ import dev.evanchang.somnia.ui.util.SubmissionCard
 import dev.evanchang.somnia.ui.util.SubmissionCardMode
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SubmissionScreen(
     initialSubmission: Submission,
@@ -50,11 +59,13 @@ fun SubmissionScreen(
     onBack: (Int) -> Unit,
     onNavigate: (Nav) -> Unit,
 ) {
+    val context = LocalContext.current
+
     val vm: SubmissionViewModel = viewModel(
         factory = SubmissionViewModel.Factory(
             initialSubmission = initialSubmission,
             submissionId = submissionId,
-            sort = CommentSort.BEST,
+            settings = context.dataStore.data,
         )
     )
     val scope = rememberCoroutineScope()
@@ -62,6 +73,7 @@ fun SubmissionScreen(
     val submission by vm.submission
     val lazyCommentItems: LazyPagingItems<Comment> =
         vm.comments.collectAsLazyPagingItems()
+    val listState = rememberLazyListState()
     val topCommentDepth = remember {
         if (lazyCommentItems.itemCount == 0) {
             return@remember 0
@@ -74,42 +86,86 @@ fun SubmissionScreen(
         }
     }
 
-    val submissionVal = submission
-    Scaffold { padding ->
-        if (submissionVal != null) {
-            LazyColumn(
-                state = rememberLazyListState(),
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-            ) {
-                // Submission body
-                item(key = submissionVal.name) {
-                    SubmissionCard(
-                        submission = submissionVal,
-                        mode = SubmissionCardMode.DETAILS,
-                        onBack = onBack,
-                        onNavigate = onNavigate,
-                    )
-                }
+    val isRefreshing by vm.isRefreshing.collectAsStateWithLifecycle()
+    val pullToRefreshState = rememberPullToRefreshState()
+    val onRefresh: () -> Unit = remember {
+        {
+            vm.setIsRefreshing(true)
+            scope.launch {
+                lazyCommentItems.refresh()
+            }
+        }
+    }
 
-                // Comments
-                items(
-                    count = lazyCommentItems.itemCount,
-                    key = { index ->
-                        lazyCommentItems[index]!!.name()
-                    },
-                ) { index ->
-                    val comment = lazyCommentItems[index]!!
-                    CommentItem(
-                        comment = comment,
-                        baseDepth = topCommentDepth,
-                        onMore = {
-                            scope.launch {
-//                                    submissionViewModel.loadMore(comment.name())
-                            }
+    LaunchedEffect(
+        lazyCommentItems.loadState,
+        isRefreshing,
+    ) {
+        if (lazyCommentItems.isWaitForDataStore()) {
+            return@LaunchedEffect
+        }
+        if (isRefreshing && lazyCommentItems.loadState.refresh != LoadState.Loading) {
+            vm.setIsRefreshing(false)
+            listState.scrollToItem(0)
+        }
+    }
+
+
+    Scaffold { padding ->
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            state = pullToRefreshState,
+            indicator = {
+                PullToRefreshDefaults.Indicator(
+                    state = pullToRefreshState,
+                    isRefreshing = isRefreshing,
+                    color = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
+            },
+            modifier = Modifier.padding(top = padding.calculateTopPadding()),
+        ) {
+            val submission = submission
+            if (submission != null) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    // Submission body
+                    item(key = submission.name) {
+                        SubmissionCard(
+                            submission = submission,
+                            mode = SubmissionCardMode.DETAILS,
+                            onBack = onBack,
+                            onNavigate = onNavigate,
+                        )
+                    }
+
+                    // Comments
+                    items(
+                        count = lazyCommentItems.itemCount,
+                        key = { index ->
+                            lazyCommentItems[index]!!.name()
                         },
-                    )
+                    ) { index ->
+                        val comment = lazyCommentItems[index]!!
+                        CommentItem(
+                            comment = comment,
+                            baseDepth = topCommentDepth,
+                            onMore = {
+                                scope.launch {
+//                                    submissionViewModel.loadMore(comment.name())
+                                }
+                            },
+                        )
+                    }
+
+                    // Don't draw under nav bar
+                    item {
+                        Spacer(modifier = Modifier.height(padding.calculateBottomPadding()))
+                    }
                 }
             }
         }

@@ -3,6 +3,7 @@ package dev.evanchang.somnia.ui.redditscreen.submission
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import dev.evanchang.somnia.api.ApiResult
+import dev.evanchang.somnia.api.WaitForDataStore
 import dev.evanchang.somnia.api.reddit.RedditApiInstance
 import dev.evanchang.somnia.data.Comment
 import dev.evanchang.somnia.data.CommentSort
@@ -10,9 +11,14 @@ import dev.evanchang.somnia.data.flatten
 
 class SubmissionPagingSource(
     private val submissionId: String,
-    private val sort: CommentSort,
+    private val sort: CommentSort?,
 ) : PagingSource<List<String>, Comment>() {
     override suspend fun load(params: LoadParams<List<String>>): LoadResult<List<String>, Comment> {
+        // Sort may come async from datastore, return nothing if it hasn't loaded yet
+        if (sort == null) {
+            return LoadResult.Error(WaitForDataStore)
+        }
+
         val key = params.key
         if (key == null) {
             // If key is null, this is the first load

@@ -6,10 +6,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.dataStore
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.evanchang.somnia.api.RedditHttpClient
 import dev.evanchang.somnia.appSettings.AppSettingsSerializer
 import dev.evanchang.somnia.navigation.NavigationRoot
@@ -23,23 +26,36 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            val appSettings by dataStore.data.collectAsStateWithLifecycle(initialValue = null)
+            val context = LocalContext.current
+            val settings by context.dataStore.data.collectAsState(null)
+            var settingsLoaded by remember { mutableStateOf(false) }
 
             // Login/logout the current user if app settings have changed
-            LaunchedEffect(appSettings) {
-                val accountSettings = appSettings?.accountSettings?.get(appSettings?.activeUser)
+            LaunchedEffect(settings) {
+                val settings = settings
+                if (settings == null) {
+                    return@LaunchedEffect
+                }
+
+                // Set active user
+                val accountSettings = settings.accountSettings.get(settings.activeUser)
                 if (accountSettings != null) {
                     RedditHttpClient.login(accountSettings)
                 } else {
                     RedditHttpClient.logout()
                 }
 
-                val userAgent = appSettings?.apiSettings?.redditUserAgent
-                RedditHttpClient.setUserAgent(userAgent)
+                // Set user agent
+                RedditHttpClient.setUserAgent(settings.apiSettings.redditUserAgent)
+
+                // Account settings have been loaded at least once
+                settingsLoaded = true
             }
 
             SomniaTheme {
-                NavigationRoot()
+                if (settingsLoaded) {
+                    NavigationRoot()
+                }
             }
         }
     }

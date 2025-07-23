@@ -1,6 +1,10 @@
 package dev.evanchang.somnia.data
 
-enum class SortDuration {
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+enum class SortDuration : Parcelable {
     HOUR,
     DAY,
     WEEK,

@@ -1,16 +1,25 @@
 package dev.evanchang.somnia.data
 
+import android.os.Parcelable
 import androidx.annotation.Keep
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Keep
+@Parcelize
 @Serializable
-sealed class SubmissionSort {
+sealed class SubmissionSort : Parcelable {
+    @Parcelize
     object Best : SubmissionSort()
+    @Parcelize
     object Hot : SubmissionSort()
+    @Parcelize
     object New : SubmissionSort()
+    @Parcelize
     object Rising : SubmissionSort()
+    @Parcelize
     class Top(val duration: SortDuration) : SubmissionSort()
+    @Parcelize
     class Controversial(val duration: SortDuration) : SubmissionSort()
 
     override fun toString(): String {
