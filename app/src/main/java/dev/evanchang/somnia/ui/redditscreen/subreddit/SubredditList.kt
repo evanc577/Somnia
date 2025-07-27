@@ -35,6 +35,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.api.isWaitForDataStore
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.navigation.LocalNavigation
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.CARD_SPACING
@@ -51,9 +52,8 @@ fun SubredditList(
     listState: LazyListState,
     topPadding: Dp,
     bottomPadding: Dp,
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
 ) {
+    val nav = LocalNavigation.current
     val lazySubmissionItems: LazyPagingItems<Submission> =
         vm.submissions.collectAsLazyPagingItems()
 
@@ -128,8 +128,6 @@ fun SubredditList(
                     SubmissionCard(
                         submission = submission,
                         mode = SubmissionCardMode.PREVIEW_FULL,
-                        onBack = onBack,
-                        onNavigate = onNavigate,
                     )
                 }
             }

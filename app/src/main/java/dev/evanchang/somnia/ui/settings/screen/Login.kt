@@ -24,6 +24,7 @@ import dev.evanchang.somnia.api.ApiResult
 import dev.evanchang.somnia.api.reddit.RedditLoginApiInstance
 import dev.evanchang.somnia.appSettings.AccountSettings
 import dev.evanchang.somnia.dataStore
+import dev.evanchang.somnia.navigation.LocalNavigation
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 import kotlinx.collections.immutable.mutate
 import kotlinx.coroutines.launch
@@ -35,10 +36,10 @@ import kotlinx.serialization.Serializable
 fun LoginScreen(
     clientId: String,
     redirectUri: String,
-    onBack: (Int) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val nav = LocalNavigation.current
 
     // Declare a string that contains a url
     val state = generateRandomString()
@@ -76,19 +77,16 @@ fun LoginScreen(
                     accountSettings = loginResult.accountSettings,
                 )
             }
-            onBack(1)
+            nav.onBack(1)
         }
     }
     val onAuthorizationError: (error: String) -> Unit = { error ->
         onLoginFailure(LoginResult.Err(error = error))
-        onBack(1)
+        nav.onBack(1)
     }
 
     // Adding a WebView inside AndroidView with layout as full screen
-    SettingsScaffold(
-        title = "Log in",
-        onBack = onBack,
-    ) {
+    SettingsScaffold(title = "Log in") {
         if (!retrievingAccessToken) {
             AndroidView(factory = {
                 // Clear all webview data to force new login

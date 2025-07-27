@@ -15,6 +15,7 @@ import androidx.navigation3.runtime.NavKey
 import com.alorma.compose.settings.ui.SettingsGroup
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.dataStore
+import dev.evanchang.somnia.navigation.LocalNavigation
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.settings.composable.AccountItem
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
@@ -23,13 +24,11 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Composable
-fun AccountSettingsScreen(
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
-) {
+fun AccountSettingsScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val nav = LocalNavigation.current
 
     // Extract API settings
     val settings by context.dataStore.data.collectAsState(initial = null)
@@ -40,7 +39,6 @@ fun AccountSettingsScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        onBack = onBack,
     ) {
         if (appSettings != null) {
             SettingsMenuLink(
@@ -51,7 +49,7 @@ fun AccountSettingsScreen(
                             snackbarHostState.showSnackbar("Client ID not set")
                         }
                     } else {
-                        onNavigate(
+                        nav.onNavigate(
                             Nav.Settings(
                                 SettingsNavKey.Account(
                                     AccountSettingsNavKey.Login(
@@ -102,22 +100,16 @@ fun AccountSettingsScreen(
 
 fun AccountSettingsNav(
     key: AccountSettingsNavKey,
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
 ): NavEntry<NavKey> {
     return when (key) {
         is AccountSettingsNavKey.TopLevel -> NavEntry(key) {
-            AccountSettingsScreen(
-                onBack = onBack,
-                onNavigate = onNavigate,
-            )
+            AccountSettingsScreen()
         }
 
         is AccountSettingsNavKey.Login -> NavEntry(key) {
             LoginScreen(
                 clientId = key.clientId,
                 redirectUri = key.redirectUri,
-                onBack = onBack,
             )
         }
     }

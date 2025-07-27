@@ -11,13 +11,10 @@ import com.alorma.compose.settings.ui.SettingsMenuLink
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 
 @Composable
-fun GeneralSettingsScreen(onBack: (Int) -> Unit) {
+fun GeneralSettingsScreen() {
     var showSubmissionSortDialog by remember { mutableStateOf(false) }
 
-    SettingsScaffold(
-        title = "General Settings",
-        onBack = onBack,
-    ) {
+    SettingsScaffold(title = "General Settings") {
         SettingsMenuLink(
             title = { Text(text = "Default submissions sort") },
             onClick = { showSubmissionSortDialog = true },
@@ -28,5 +25,5 @@ fun GeneralSettingsScreen(onBack: (Int) -> Unit) {
 @Preview
 @Composable
 private fun GeneralSettingsPreview() {
-    GeneralSettingsScreen(onBack = {})
+    GeneralSettingsScreen()
 }

@@ -11,22 +11,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import com.alorma.compose.settings.ui.SettingsMenuLink
+import dev.evanchang.somnia.navigation.LocalNavigation
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.settings.composable.SettingsScaffold
 import kotlinx.serialization.Serializable
 
 @Composable
-fun SettingsScreen(
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
-) {
-    SettingsScaffold(
-        title = "Settings",
-        onBack = onBack,
-    ) {
+fun SettingsScreen() {
+    val nav = LocalNavigation.current
+    SettingsScaffold(title = "Settings") {
         SettingsMenuLink(
             title = { Text(text = "Account") },
-            onClick = { onNavigate(Nav.Settings(SettingsNavKey.Account(AccountSettingsNavKey.TopLevel))) },
+            onClick = { nav.onNavigate(Nav.Settings(SettingsNavKey.Account(AccountSettingsNavKey.TopLevel))) },
             icon = {
                 Icon(
                     imageVector = Icons.Default.AccountCircle, contentDescription = "account icon"
@@ -35,12 +31,12 @@ fun SettingsScreen(
         )
         SettingsMenuLink(
             title = { Text(text = "API") },
-            onClick = { onNavigate(Nav.Settings(SettingsNavKey.Api)) },
+            onClick = { nav.onNavigate(Nav.Settings(SettingsNavKey.Api)) },
             icon = { Icon(imageVector = Icons.Default.Api, contentDescription = "API icon") },
         )
         SettingsMenuLink(
             title = { Text(text = "General") },
-            onClick = { onNavigate(Nav.Settings(SettingsNavKey.General)) },
+            onClick = { nav.onNavigate(Nav.Settings(SettingsNavKey.General)) },
             icon = {
                 Icon(
                     imageVector = Icons.Default.Settings, contentDescription = "settings icon"
@@ -52,33 +48,20 @@ fun SettingsScreen(
 
 fun SettingsNav(
     key: SettingsNavKey,
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
 ): NavEntry<NavKey> {
     return when (key) {
         is SettingsNavKey.TopLevel -> NavEntry(key) {
-            SettingsScreen(
-                onBack = onBack,
-                onNavigate = onNavigate,
-            )
+            SettingsScreen()
         }
 
         is SettingsNavKey.Api -> NavEntry(key) {
-            ApiSettingsScreen(
-                onBack = onBack,
-            )
+            ApiSettingsScreen()
         }
 
-        is SettingsNavKey.Account -> AccountSettingsNav(
-            key = key.key,
-            onBack = onBack,
-            onNavigate = onNavigate,
-        )
+        is SettingsNavKey.Account -> AccountSettingsNav(key.key)
 
         is SettingsNavKey.General -> NavEntry(key) {
-            GeneralSettingsScreen(
-                onBack = onBack,
-            )
+            GeneralSettingsScreen()
         }
     }
 }
@@ -101,8 +84,5 @@ sealed class SettingsNavKey : NavKey {
 @Preview
 @Composable
 private fun SettingsScreenPreview() {
-    SettingsScreen(
-        onBack = {},
-        onNavigate = {},
-    )
+    SettingsScreen()
 }

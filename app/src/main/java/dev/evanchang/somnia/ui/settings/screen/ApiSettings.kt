@@ -18,17 +18,14 @@ import dev.evanchang.somnia.ui.settings.composable.SettingsTextEdit
 import kotlinx.coroutines.launch
 
 @Composable
-fun ApiSettingsScreen(onBack: (Int) -> Unit) {
+fun ApiSettingsScreen() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     val settings by context.dataStore.data.collectAsState(initial = null)
     val apiSettings = remember(settings) { settings?.apiSettings }
 
-    SettingsScaffold(
-        title = "API Settings",
-        onBack = onBack,
-    ) {
+    SettingsScaffold(title = "API Settings") {
         if (apiSettings != null) {
             SettingsGroup(title = { Text(text = "Reddit") }) {
                 SettingsTextEdit(
@@ -116,5 +113,5 @@ private suspend fun setRedditApiUserAgent(context: Context, userAgent: String) {
 @Preview
 @Composable
 private fun ApiSettingsScreenPreview() {
-    ApiSettingsScreen({})
+    ApiSettingsScreen()
 }

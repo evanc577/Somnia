@@ -56,8 +56,6 @@ import kotlinx.coroutines.launch
 fun SubmissionScreen(
     initialSubmission: Submission,
     submissionId: String,
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -138,8 +136,6 @@ fun SubmissionScreen(
                         SubmissionCard(
                             submission = submission,
                             mode = SubmissionCardMode.DETAILS,
-                            onBack = onBack,
-                            onNavigate = onNavigate,
                         )
                     }
 

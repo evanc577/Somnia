@@ -81,6 +81,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import dev.evanchang.somnia.data.SortDuration
 import dev.evanchang.somnia.data.SubmissionSort
 import dev.evanchang.somnia.dataStore
+import dev.evanchang.somnia.navigation.LocalNavigation
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
 import dev.evanchang.somnia.ui.UiConstants.DIALOG_HEADER_SPACING
@@ -106,12 +107,9 @@ class BottomBarNestedScrollConnection(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubredditScreen(
-    subreddit: String,
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
-) {
+fun SubredditScreen(subreddit: String) {
     val context = LocalContext.current
+    val nav = LocalNavigation.current
 
     val vm: SubredditViewModel = viewModel(
         factory = SubredditViewModel.Factory(
@@ -261,15 +259,13 @@ fun SubredditScreen(
                 listState = listState,
                 topPadding = topPadding,
                 bottomPadding = with(density) { navBarHeightPx.toDp() },
-                onBack = onBack,
-                onNavigate = onNavigate,
             )
         }
         if (showBottomSheet) {
             BottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 sheetState = sheetState,
-                onNavigateToSettings = { onNavigate(Nav.Settings(SettingsNavKey.TopLevel)) },
+                onNavigateToSettings = { nav.onNavigate(Nav.Settings(SettingsNavKey.TopLevel)) },
                 onSortSelected = { sort ->
                     updateSort = sort
                 },
@@ -278,7 +274,7 @@ fun SubredditScreen(
                     showBottomSheet = false
                 },
                 onGoToSubreddit = { subreddit ->
-                    onNavigate(Nav.Subreddit(subreddit))
+                    nav.onNavigate(Nav.Subreddit(subreddit))
                 },
             )
         }
@@ -560,9 +556,5 @@ private fun SortDurationSelection(
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    SubredditScreen(
-        subreddit = "dreamcatcher",
-        onBack = {},
-        onNavigate = {},
-    )
+    SubredditScreen(subreddit = "dreamcatcher")
 }

@@ -41,6 +41,7 @@ import dev.evanchang.somnia.data.PreviewImage
 import dev.evanchang.somnia.data.PreviewImages
 import dev.evanchang.somnia.data.Submission
 import dev.evanchang.somnia.data.SubmissionPreview
+import dev.evanchang.somnia.navigation.LocalNavigation
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants.BODY_TEXT_PADDING
 import dev.evanchang.somnia.ui.UiConstants.CARD_PADDING
@@ -60,10 +61,8 @@ enum class SubmissionCardMode {
 fun SubmissionCard(
     submission: Submission,
     mode: SubmissionCardMode,
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
 ) {
-    LocalContext.current
+    val nav = LocalNavigation.current
     val media = remember { submission.media() }
 
     Card(
@@ -73,7 +72,7 @@ fun SubmissionCard(
         shape = RoundedCornerShape(ROUNDED_CORNER_RADIUS),
         modifier =
             Modifier.clickable {
-                onNavigate(
+                nav.onNavigate(
                     Nav.Submission(
                         initialSubmission = submission,
                         submissionId = submission.id,
@@ -85,7 +84,7 @@ fun SubmissionCard(
         Column(modifier = Modifier.padding(all = CARD_PADDING)) {
             SubmissionCardHeader(
                 submission = submission,
-                onClickSubreddit = { onNavigate(Nav.Subreddit(submission.subreddit)) },
+                onClickSubreddit = { nav.onNavigate(Nav.Subreddit(submission.subreddit)) },
             )
             Spacer(modifier = Modifier.height(SPACER_SIZE))
             if (mode == SubmissionCardMode.PREVIEW_FULL && media != null) {
@@ -98,8 +97,6 @@ fun SubmissionCard(
                 SubmissionCardPreviewImage(
                     submission = submission,
                     compact = false,
-                    onBack = onBack,
-                    onNavigate = onNavigate,
                 )
             } else {
                 TextFlow(
@@ -112,8 +109,6 @@ fun SubmissionCard(
                         SubmissionCardPreviewImage(
                             submission = submission,
                             compact = true,
-                            onBack = onBack,
-                            onNavigate = onNavigate,
                         )
                     }
                 }
@@ -288,8 +283,6 @@ private fun SubmissionCardPreviewPreview() {
                     SubmissionCard(
                         submission = submission,
                         mode = SubmissionCardMode.PREVIEW_FULL,
-                        onBack = {},
-                        onNavigate = {},
                     )
                 }
             }
@@ -305,8 +298,6 @@ private fun SubmissionCardDetailsPreview() {
         SubmissionCard(
             submission = createFakeSubmission(),
             mode = SubmissionCardMode.DETAILS,
-            onBack = {},
-            onNavigate = {},
         )
     }
 }

@@ -44,6 +44,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import dev.evanchang.somnia.api.media.Media
 import dev.evanchang.somnia.data.Submission
+import dev.evanchang.somnia.navigation.LocalNavigation
 import dev.evanchang.somnia.navigation.Nav
 import dev.evanchang.somnia.ui.UiConstants
 import kotlinx.collections.immutable.toImmutableList
@@ -52,10 +53,9 @@ import kotlinx.collections.immutable.toImmutableList
 fun SubmissionCardPreviewImage(
     submission: Submission,
     compact: Boolean,
-    onBack: (Int) -> Unit,
-    onNavigate: (Nav) -> Unit,
     modifier: Modifier = Modifier.Companion,
 ) {
+    val nav = LocalNavigation.current
     val previewImage = remember { submission.previewImage() } ?: return
     val previewImageUrl = remember { previewImage.escapedUrl() }
 
@@ -93,7 +93,7 @@ fun SubmissionCardPreviewImage(
         onClick = {
             val media = submission.media()
             if (media != null) {
-                onNavigate(Nav.MediaViewer(media))
+                nav.onNavigate(Nav.MediaViewer(media))
             }
         },
         shape = RoundedCornerShape(UiConstants.ROUNDED_CORNER_RADIUS),
